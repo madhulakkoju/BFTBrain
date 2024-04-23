@@ -1,16 +1,16 @@
 package com.gbft.framework.core;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.stream.IntStream;
-
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.RequestData.Operation;
 import com.gbft.framework.utils.AdvanceConfig;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.IntStream;
 
 public class ClientDataset extends Dataset {
 
@@ -49,7 +49,7 @@ public class ClientDataset extends Dataset {
     }
 
     public RequestData createRequest(long reqnum) {
-
+        //generate record and operation randomly
         var record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
         var operation = Operation.values()[random.nextInt(5)];
         int value = 0;

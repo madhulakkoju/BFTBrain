@@ -372,6 +372,14 @@ public class CoordinatorUnit extends CoordinatorBase {
         unitData.forEach(item -> EntityMapUtils.addUnitData(item));
     }
 
+    public void initFromConfig(Map<String, String> configContent, String defaultProtocol, String defaultArchitecture, List<UnitData> unitData) {
+        initFromConfig(configContent, defaultProtocol, defaultArchitecture);
+
+        Printer.init();
+        PluginManager.initDefaultPlugins();
+        unitData.forEach(item -> EntityMapUtils.addUnitData(item));
+    }
+
     private Client genClient(String type, int id) {
         return type.equals("basic") ? new Client(id, this) : new DynamicClient(id, this);
     }

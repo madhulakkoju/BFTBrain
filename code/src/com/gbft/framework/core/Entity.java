@@ -55,6 +55,8 @@ import com.google.protobuf.ByteString;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class Entity {
 
@@ -70,6 +72,7 @@ public abstract class Entity {
 
     //Architecture
 
+    @Getter
     protected ArchManager archManager;
 
 
@@ -82,6 +85,7 @@ public abstract class Entity {
     public final List<RequestData> EMPTY_BLOCK;
     public final ByteString EMPTY_DIGEST;
 
+    @Getter
     public Dataset dataset;
 
     // Protocol State
@@ -618,6 +622,8 @@ public abstract class Entity {
         return transition;
     }
 
+
+    //TODO: change this to direct using architecture we created
     public void executor() {
         while (running) {
             Transition transition;
@@ -698,24 +704,32 @@ public abstract class Entity {
             checkpoint.throughput = throughput;
 
             String nextProtocol;
+            String nextArchitecture;
             if (!isClient() && !protocols.isEmpty()) {
                 // static switching in debug mode
                 nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
+                nextArchitecture = archManager.getRandomArchString();
             } else {
                 // dynamic switching via learning agent
                 // or client
                 nextProtocol = checkpoint.getDecision();
+                nextArchitecture = archManager.getRandomArchString();
+                //TODO: Update architecture from learining agent
             }
+
             // warm up episodes
             if (nextProtocol.equals("repeat")) {
                 nextProtocol = checkpoint.getProtocol();
             }
-            System.out.println(prefix + "nextProtocol = " + nextProtocol); 
+            System.out.println(prefix + "nextProtocol = " + nextProtocol);
+            System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
             Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
+            Printer.print(Verbosity.V, prefix, "nextArchitecture = " + nextArchitecture);
             Printer.flush();
 
             var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
             checkpointNew.setProtocol(nextProtocol);
+            checkpointNew.setArchitecture(nextArchitecture);
             
             // Record start of the next episode
             checkpointNew.beginTimestamp = System.nanoTime();
@@ -733,6 +747,8 @@ public abstract class Entity {
 
             // Update epoch to leader mode mapping
             Config.setCurrentProtocol(nextProtocol);
+            Config.setCurrentArchitecture(nextArchitecture);
+
             rolePlugin.roleWriteLock.lock();
             try {
                 rolePlugin.episodeLeaderMode.put(currentEpisodeNum.get() + 1, 

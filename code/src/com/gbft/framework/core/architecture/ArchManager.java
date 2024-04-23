@@ -26,8 +26,6 @@ public class ArchManager {
         architectures.put("SXOV", new StreamXOVArchitecture(entity));
 
         currentArchitectureKey = "OX";
-
-
         this.entity = entity;
     }
 
@@ -52,6 +50,16 @@ public class ArchManager {
         return currentArchitecture.performValidation(block);
     }
 
+    public List<String> getArchitectures() {
+        return List.copyOf(architectures.keySet());
+    }
 
+    public String getRandomArchString(){
+        return List.copyOf(architectures.keySet()).get((int) (Math.random() * architectures.size()));
+    }
+
+    public Architecture getRandomArch(){
+        return architectures.get(getRandomArchString());
+    }
 
 }

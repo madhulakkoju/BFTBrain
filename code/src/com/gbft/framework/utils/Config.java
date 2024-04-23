@@ -9,12 +9,18 @@ import java.util.Set;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
+import lombok.Getter;
+import lombok.Setter;
 
 public class Config {
 
     private static Map<String, ConfigObject> configs = new HashMap<>();
 
     private static String currentProtocol;
+
+    @Getter
+    @Setter
+    private static String currentArchitecture;
 
     public static void load(Map<String, String> configContents, String defaultProtocol) throws IOException {
         var framework = configContents.get("framework");
@@ -23,6 +29,16 @@ public class Config {
             configs.put(entry.getKey(), new ConfigObject(framework, entry.getValue()));
         }
         setCurrentProtocol(defaultProtocol);
+    }
+
+    public static void load(Map<String, String> configContents, String defaultProtocol, String defaultArchitecture) throws IOException {
+        var framework = configContents.get("framework");
+        for (var entry : configContents.entrySet()) {
+            if (entry.getKey().equals("framework")) continue;
+            configs.put(entry.getKey(), new ConfigObject(framework, entry.getValue()));
+        }
+        setCurrentProtocol(defaultProtocol);
+        setCurrentArchitecture(defaultArchitecture);
     }
 
     public static Set<String> getProtocols() {
@@ -36,6 +52,7 @@ public class Config {
     public static void setCurrentProtocol(String currentProtocol) {
         Config.currentProtocol = currentProtocol;
     }
+
 
     public static List<String> stringList(String property) {
         return configs.get(currentProtocol).stringList(property);

@@ -38,13 +38,22 @@ public class XOVArchitecture extends Architecture {
         return new ValidatorResponse(true, "Block is valid", block, List.of());
     }
 
-    //Default Block Execution : OX Architecture
-    public BlockExecResponse executeBlock(List<RequestData> block){
+    public List<RequestData> executeRequestsAhead(List<RequestData> block){
+        for (RequestData request : block) {
+            entity.getDataset().executeAhead(request);
+        }
+        return block;
+    }
+
+
+    // Block Execution : XOV Architecture
+    public BlockExecResponse executeBlock(long seqNum){
+        var block = getBlock(seqNum);
         //Register the block
         //Update this with the actual registration logic
-
-        var orderResponse = performOrdering(block);
-        var validatorResponse = performValidation(orderResponse.getOrderedBlock());
+        executeRequestsAhead(block); // X
+        var orderResponse = performOrdering(block); // O
+        var validatorResponse = performValidation(orderResponse.getOrderedBlock()); // V
 
         return new BlockExecResponse(
                 orderResponse.isSuccess() && validatorResponse.isSuccess(),

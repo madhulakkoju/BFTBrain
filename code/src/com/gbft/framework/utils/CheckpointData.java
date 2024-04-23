@@ -1,23 +1,17 @@
 package com.gbft.framework.utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.LongAdder;
-import java.util.concurrent.ConcurrentSkipListSet;
-
 import com.gbft.framework.core.Dataset;
 import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
 
 public class CheckpointData {
     private long num;
@@ -40,6 +34,9 @@ public class CheckpointData {
 
     // protocol
     protected AtomicReference<String> protocol = new AtomicReference<>();
+
+    //Architecture
+    protected AtomicReference<String> architecture = new AtomicReference<>();
 
     // performance
     public long beginTimestamp;
@@ -128,6 +125,7 @@ public class CheckpointData {
         return aggregationValues.getOrDefault(seqnum, new ConcurrentSkipListSet<>());
     }
 
+    //TODO: Understand if quorom is on all protocols or do we quorom
     public String getDecision() {
         Optional<String> nextProtocol;
         do {
@@ -204,5 +202,15 @@ public class CheckpointData {
 
     public String getProtocol() {
         return protocol.get();
+    }
+
+    public void setArchitecture(String architecture) {
+        this.architecture.set(architecture);
+
+        this.entity.getArchManager().setCurrentArchitecture(architecture);
+    }
+
+    public String getArchitecture() {
+        return architecture.get();
     }
 }

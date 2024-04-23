@@ -65,6 +65,29 @@ public abstract class CoordinatorBase {
         StateMachine.init();
     }
 
+
+    protected void initFromConfig(Map<String, String> yamlData, String defaultProtocol, String defaultArchitecture) {
+        try {
+            Config.load(yamlData, defaultProtocol, defaultArchitecture);
+
+            AdvanceConfig.load(yamlData.get("framework"));
+        } catch (IOException e) {
+            System.err.println("Error loading config.");
+            System.exit(1);
+        }
+
+        var unitConfig = Config.list("network.units");
+        for (var i = 0; i < unitConfig.size(); i++) {
+            var address = unitConfig.get(i).split(":");
+            unitAddressMap.put(i, Pair.of(address[0], Integer.parseInt(address[1])));
+        }
+
+        StateMachine.init();
+    }
+
+
+
+
     public void sendEvent(List<Integer> units, Event event) {
         for (var unit : units) {
             sendEvent(unit, event);

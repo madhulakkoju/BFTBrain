@@ -1,15 +1,15 @@
 package com.gbft.framework.core;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Dataset {
 
@@ -85,5 +85,33 @@ public class Dataset {
         var record = request.getRecord();
         records.get(record).set(value);
     }
+
+    public void executeAhead(RequestData request) {
+        var op = request.getOperation();
+        var record = request.getRecord();
+
+        int value = 0;
+
+        switch (op) {
+            case ADD:
+                value = records.get(record).get() + request.getValue();
+                break;
+            case SUB:
+                value = records.get(record).get() - request.getValue();
+                break;
+            case INC:
+                value = records.get(record).get() + 1;
+                break;
+            case DEC:
+                value = records.get(record).get() - 1;
+                break;
+            case READ_ONLY:
+                value = records.get(record).get();
+            default:
+                value = records.get(record).get();
+        }
+        request.setEarlyExecutionResultValue(value);
+    }
+
 
 }

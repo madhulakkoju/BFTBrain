@@ -3,12 +3,13 @@ package com.gbft.framework.core.architecture;
 import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.MiscUtils;
+import lombok.Data;
 
 import java.util.List;
 
+@Data
 public class Architecture {
-    private Entity entity;
-
+    protected Entity entity;
 
     public Architecture(Entity entity) {
         this.entity = entity;
@@ -44,13 +45,16 @@ public class Architecture {
         return block;
     }
 
+    public List<RequestData> getBlock(long seqNum){
+        var checkpoint = this.entity.getCheckpointManager().getCheckpointForSeq(seqNum);
+        return checkpoint.getRequestBlock(seqNum);
+    }
+
     //Default Block Execution : OX Architecture
     public BlockExecResponse executeBlock(long seqNum){
-        var checkpoint = this.entity.getCheckpointManager().getCheckpointForSeq(seqNum);
-        var block = checkpoint.getRequestBlock(seqNum);
+        var block = getBlock(seqNum);
         //Register the block
         //Update this with the actual registration logic
-
         var orderResponse = performOrdering(block);
         var validatorResponse = performValidation(orderResponse.getOrderedBlock());
 

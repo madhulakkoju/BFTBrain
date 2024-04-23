@@ -1,11 +1,5 @@
 package com.gbft.framework.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
@@ -17,12 +11,19 @@ import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class Node extends Entity {
 
     public Node(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
     }
 
+    // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
