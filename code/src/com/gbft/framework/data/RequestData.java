@@ -1647,5 +1647,14 @@ private static final long serialVersionUID = 0L;
     return DEFAULT_INSTANCE;
   }
 
+  public int earlyExecutionResultValue;
+
+  public int getEarlyExecutionResultValue() {
+    return earlyExecutionResultValue;
+  }
+
+  public void setEarlyExecutionResultValue(int earlyExecutionResultValue) {
+    this.earlyExecutionResultValue = earlyExecutionResultValue;
+  }
 }
 
