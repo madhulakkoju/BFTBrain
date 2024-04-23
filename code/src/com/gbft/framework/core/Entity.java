@@ -15,6 +15,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.core.architecture.ArchManager;
+import com.gbft.framework.core.architecture.Architecture;
 import com.gbft.framework.data.AgentCommGrpc;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
@@ -65,6 +67,11 @@ public abstract class Entity {
 
     protected final int id;
     public final String prefix; // The entity prefix when printing messages in output.
+
+    //Architecture
+
+    protected ArchManager archManager;
+
 
     // Protocol Data
 
@@ -145,6 +152,8 @@ public abstract class Entity {
         this.coordinator = coordinator;
 
         prefix = "{" + id + "} ";
+
+        archManager = new ArchManager(this);
 
         blockSize = Config.integer("benchmark.block-size");
         checkpointSize = Config.integer("benchmark.checkpoint-size");

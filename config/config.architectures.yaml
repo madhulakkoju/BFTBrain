@@ -1,0 +1,12 @@
+all-architectures:
+  - OX
+  - OXII
+  - XOV
+  - XOV++
+  - XOV#
+  - SXOV
+general:
+  verbosity: v
+  logfile: true
+  learning: true
+  default-architecture: OX
