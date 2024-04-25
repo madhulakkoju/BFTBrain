@@ -9,6 +9,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
@@ -31,7 +32,7 @@ public class Client extends Entity {
 
     public Client(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
-
+        l.write(id,"client called");
         intervalns = Config.integer("benchmark.request-interval-micros") * 1000L;
         var targetConfig = Config.string("protocol.general.request-target");
         requestTargetRole = StateMachine.roles.indexOf(targetConfig);
@@ -42,6 +43,8 @@ public class Client extends Entity {
         requestGenerator = createRequestGenerator();
         requestGenerator.init();
     }
+
+    public void xov_execute(MessageData message){}
 
     protected RequestGenerator createRequestGenerator() {
         if (Config.bool("benchmark.closed-loop.enable")) {
@@ -70,8 +73,8 @@ public class Client extends Entity {
 
     @Override
     protected void execute(long seqnum) {
+        l.write(id,"\nclient class | execute function\n seqnum :"+ Long.toString(seqnum));
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-
         var tally = checkpoint.getMessageTally();
         var viewnum = tally.getMaxQuorum(seqnum);
         var replies = tally.getQuorumReplies(seqnum, viewnum);
@@ -137,7 +140,7 @@ public class Client extends Entity {
 
                 while (running) {
                     var next = System.nanoTime() + intervalns;
-
+                    l.write(id,"\nrgr request_num: "+nextRequestNum);
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
 
@@ -225,7 +228,11 @@ public class Client extends Entity {
 
                         for (int i = 0; i < block_size + read_only_buf; i ++) {
                             var reqnum = nextRequestNum.getAndIncrement();
+                            l.write(id,"\nclr request_num: "+reqnum);
                             var request = dataset.createRequest(reqnum);
+//                            int a= dataset.execute(request);
+//                            request.setExeValue(a);
+//                            l.write(id,Integer.toString(request.getExeValue()));
 
                             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                                 read_only_buf ++;

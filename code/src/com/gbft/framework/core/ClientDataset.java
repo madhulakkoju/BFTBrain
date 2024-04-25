@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.IntStream;
 
@@ -36,6 +37,9 @@ public class ClientDataset extends Dataset {
         var record = request.getRecord();
         var op = request.getOperation();
 
+//        l.write(4,"\n update client dataset: ");
+//        l.write(4,"\n request: {\n "+request+"\n}");
+
         switch (op) {
         case INC:
             lookahead.get(record).increment();
@@ -46,10 +50,22 @@ public class ClientDataset extends Dataset {
         default:
             break;
         }
+        l.write(4,"\n request num: "+Long.toString(request.getRequestNum()));
+        //l.write(4,"\n record num: "+Integer.toString(record));
+        //l.write(4,"\n lookahead: "+lookahead.toString());
     }
 
     public RequestData createRequest(long reqnum) {
-
+        Scanner sc= new Scanner(System.in);
+//        System.out.println("waiting for input: ");
+//        int temp =sc.nextInt();
+        long delay = 1 * 10 * 1000;
+        try {
+            Thread.sleep(delay);
+            l.write(4,"\nrequest sent");
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
         var record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
         var operation = Operation.values()[random.nextInt(5)];
         int value = 0;
@@ -86,6 +102,7 @@ public class ClientDataset extends Dataset {
         }
 
         return DataUtils.createRequest(reqnum, record, operation, value, clientId);
+
     }
 
 }

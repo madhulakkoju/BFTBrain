@@ -38,6 +38,7 @@ message RequestData {
     bytes request_dummy = 8;
     int32 compute_factor = 9;
     int32 reply_size = 10;
+    int32 exe_value = 11;
 }
 
 message MessageData {

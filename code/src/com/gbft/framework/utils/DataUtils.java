@@ -171,6 +171,8 @@ public class DataUtils {
                    .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
                    .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
                    .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }

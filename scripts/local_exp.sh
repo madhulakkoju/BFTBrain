@@ -53,7 +53,7 @@ echo "Protocol $protocol : [0/6] Killing previous processes if needed ..."
 for (( i=0; i<$count; i++ ))
 do
   echo "Killing Bedrock and learning agent on machine $i ..."
-  tmux send-keys -t cloudlab:"$i" "cd ~/BFTBrain/code && ../scripts/kill_process_port.sh $((9020+$count)) && ../scripts/kill_process_port.sh $((9020+$count+20))" C-m
+  tmux send-keys -t cloudlab:"$i" "cd /Users/sai/Desktop/Project_P/BFTBrain/code && ../scripts/kill_process_port.sh $((9020+$count)) && ../scripts/kill_process_port.sh $((9020+$count+20))" C-m
 done
 
 echo "Protocol $protocol : [1/6] Starting Coordination Server"
@@ -75,7 +75,7 @@ done
 for (( i=0; i<$agent_count; i++ ))
 do
   echo "Protocol $protocol : [3/6] Starting Learning Agent for Coordination Unit $i"
-  tmux send-keys -t cloudlab-learning:"$i" "cd ~/BFTBrain/code/learning/ && python3 learning_agent.py -u $i -p $((9021+$i)) -n single" C-m
+  tmux send-keys -t cloudlab-learning:"$i" "cd /Users/sai/Desktop/Project_P/BFTBrain/code/learning/ && python3 learning_agent.py -u $i -p $((9021+$i)) -n single" C-m
 done
 sleep 5
 

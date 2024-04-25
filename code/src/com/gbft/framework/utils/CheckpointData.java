@@ -130,6 +130,7 @@ public class CheckpointData {
 
     public String getDecision() {
         Optional<String> nextProtocol;
+        entity.l.write(11,"decision: "+decisionMatching);
         do {
             nextProtocol = decisionMatching.entrySet().parallelStream()
                     .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
@@ -141,6 +142,10 @@ public class CheckpointData {
 
     public void addRequestBlock(long seqnum, List<RequestData> requestBlock) {
         requestBlock.forEach(request -> requests.put(request.getRequestNum(), request));
+        var requests=requestBlock;
+        for(var request:requests){
+            entity.l.write(entity.getId(), "\n{\nsingle_request_2:"+request.toString()+"\nvalue_2: "+request.getExeValue()+"}");
+        }
         requestBlocks.put(seqnum, requestBlock);
         // stateMap.put(seqnum, StateMachine.IDLE);
     }

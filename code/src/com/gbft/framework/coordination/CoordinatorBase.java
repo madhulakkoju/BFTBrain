@@ -32,10 +32,14 @@ public abstract class CoordinatorBase {
     protected Thread listenerThread;
 
     protected Map<Integer, Pair<String, Integer>> unitAddressMap;
+    public LogWrite l =new LogWrite();
+    public int s_port;
 
     public CoordinatorBase(int port) {
         isRunning = true;
         unitAddressMap = new HashMap<>();
+        l.Intialize(port);
+        this.s_port=port;
 
         try {
             serverSocket = new ServerSocket(port);
@@ -61,6 +65,9 @@ public abstract class CoordinatorBase {
             var address = unitConfig.get(i).split(":");
             unitAddressMap.put(i, Pair.of(address[0], Integer.parseInt(address[1])));
         }
+        System.out.println("cord base 64 new: " + unitAddressMap);
+        String abc = "cord base 64 new : " + unitAddressMap;
+        l.PortWrite(s_port,abc);
 
         StateMachine.init();
     }

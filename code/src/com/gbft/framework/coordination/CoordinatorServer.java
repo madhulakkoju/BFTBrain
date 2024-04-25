@@ -259,6 +259,8 @@ public class CoordinatorServer extends CoordinatorBase {
             CommandLine cmd = parser.parse(options, args);
             Number port = (Number) cmd.getParsedOptionValue("port");
             var protocol = cmd.getOptionValue("protocol");
+            //LogWrite t=new LogWrite();
+            //t.write(6,"protocol: "+protocol);
 
             new CoordinatorServer(protocol, port.intValue()).run();
         } catch (ParseException e) {

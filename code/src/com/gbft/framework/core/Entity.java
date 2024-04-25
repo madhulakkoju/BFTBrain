@@ -50,9 +50,12 @@ import com.gbft.plugin.role.PrimaryPassivePlugin;
 import com.gbft.framework.utils.Timekeeper;
 import com.google.protobuf.ByteString;
 
+import com.google.protobuf.Message;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+
+import com.gbft.framework.coordination.LogWrite;
 
 public abstract class Entity {
 
@@ -139,11 +142,13 @@ public abstract class Entity {
     protected FeatureManager featureManager;
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
+    public LogWrite l =new LogWrite();
 
     public Entity(int id, CoordinatorUnit coordinator) {
         this.id = id;
         this.coordinator = coordinator;
-
+        l.CoreIntialize(id);
+        l.write(id,Integer.toString(id));
         prefix = "{" + id + "} ";
 
         blockSize = Config.integer("benchmark.block-size");
@@ -326,7 +331,14 @@ public abstract class Entity {
         }
 
         var type = message.getMessageType();
+        l.write(id,"\nstatetype: "+type+"\nseqnum:"+message.getSequenceNum());
+
+//        if(type == 12 || type == 13){
+//            xov_execute(message);
+//        }
         if (type == StateMachine.REQUEST) {
+            //l.write(id,"seqnum"+message.getSequenceNum());
+            xov_execute(message);
             var request = message.getRequestsList().get(0);
             var seqnum = getRequestSequence(request.getRequestNum());
             if (seqnum == null) {
@@ -378,6 +390,7 @@ public abstract class Entity {
         Printer.print(Verbosity.VVVV, prefix, "StateUpdateLoop seqnum: " + seqnum);
 
         var result = stateUpdate(seqnum);
+        //l.write(id,"stateupdate: \n seqnum: "+Long.toString(seqnum) + "\n result: "+ result+" end.... ");
         while (running && result != null && !result.isEmpty()) {
             var next = result.pollFirst();
             var more = stateUpdate(next);
@@ -388,7 +401,7 @@ public abstract class Entity {
     }
 
     public TreeSet<Long> stateUpdate(long seqnum) {
-        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] begin stateUpdate: seqnum=" + seqnum + 
+        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] begin stateUpdate: seqnum=" + seqnum +
         //             " (nextSequence=" + nextSequence + ", lastExecutedSequenceNum=" + lastExecutedSequenceNum + ")");
         
         benchmarkManager.add(BenchmarkManager.STATE_UPDATE, 0, System.nanoTime());
@@ -431,6 +444,8 @@ public abstract class Entity {
 
         int local_cnt = 0;
         benchmarkManager.add(BenchmarkManager.BEGIN_WHILE_LOOP, 0, System.nanoTime());
+
+
         while (running) {
             local_cnt++;
 
@@ -440,6 +455,8 @@ public abstract class Entity {
             var currentState = checkpoint.getState(seqnum);
             var phase = StateMachine.states.get(currentState).phase;
             var roles = rolePlugin.getEntityRoles(seqnum, currentViewNum, phase, id);
+//            l.write(id,"\n currentstate: "+currentState+"\n phase: "+phase+"\n roles: "+roles);
+//            l.write(id,"\nseq num: "+seqnum);
 
             // System.out.println("[" + String.join(",", roles.stream().map(x -> x + "").toList()) + "]");
 
@@ -452,8 +469,10 @@ public abstract class Entity {
                 }
 
                 var state = StateMachine.states.get(statenum);
+                //l.write(id,"\n state: "+state);
                 for (var role : roles) {
                     var candidates = state.transitions.get(role);
+                    //l.write(id,"\n candidates: "+candidates);
                     if (candidates == null) {
                         continue;
                     }
@@ -461,6 +480,8 @@ public abstract class Entity {
                     for (var transition : candidates) {
                         var condition = transition.condition;
                         var conditionType = condition.getType();
+
+                       // l.write(id,"\ncondition: "+condition+"\n conditiontype: "+conditionType);
 
                         var conditionMet = false;
                         if (conditionType == Condition.TRUE_CONDITION) {
@@ -486,6 +507,7 @@ public abstract class Entity {
                                         block = new ArrayList<RequestData>(blockSize);
                                         for (var i = 0; i < blockSize; i++) {
                                             var request = pendingRequests.remove();
+                                            //l.write(id,"\nrequestnum:"+request.getRequestNum()+"  requestvalue:"+request.getExeValue());
                                             // carry the report quorum in the first request of this reserved block
                                             if (learning && seqnum == exchangeSequence && isPrimary(seqnum) && i == 0) {
                                                 var reportQuorum = new ArrayList<LearningData>(REPORT_QUORUM);
@@ -495,14 +517,23 @@ public abstract class Entity {
                                                 });
                                                 request = request.toBuilder().addAllReportQuorum(reportQuorum).build();                                                
                                             }
+                                            //l.write(id,"\nrequestnum:"+request.getRequestNum()+"  requestvalue:"+request.getExeValue());
                                             block.add(request);
+//                                            for(var request1:block){
+//                                                l.write(id, "\n{\nblockreq_0:"+request1.toString()+"\nblockvalue_0: "+request1.getExeValue()+"}");
+//                                            }
+
                                         }
                                     }
                                 }
 
                                 var message = createMessage(seqnum, currentViewNum, block, StateMachine.REQUEST, id,
                                         List.of(id));
+                                //l.write(id,"\ncreate message: "+message.toString());
                                 checkpoint.tally(message);
+//                                for(var request1:message.getRequestsList()){
+//                                    l.write(id, "\n{\nblockreq_2:"+request1.toString()+"\nblockvalue_2: "+request1.getExeValue()+"}");
+//                                }
                                 benchmarkManager.add(BenchmarkManager.CREATE_REQUEST_BLOCK, 0, System.nanoTime());
                                 
                                 proposedRequests += 1;
@@ -623,7 +654,7 @@ public abstract class Entity {
                 transition = executionQueue.get(lastExecutedSequenceNum + 1);
                 executionQueue.entrySet().removeIf(entry -> entry.getKey() <= lastExecutedSequenceNum + 1); 
                 lastExecutedSequenceNum += 1;
-
+                l.write(id,"\nxecutor seqnum: "+lastExecutedSequenceNum);
                 execute(lastExecutedSequenceNum);
                 // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] executed by executor thread: seqnum=" + lastExecutedSequenceNum);
             }
@@ -956,9 +987,9 @@ public abstract class Entity {
         }
 
         var hasblock = StateMachine.messages.get(type).hasRequestBlock;
-        if (hasblock) {
+        if (hasblock) { // creating message for block
             message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
-        } else {
+        } else { // creating message for replies
             var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
             message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
         }
@@ -982,9 +1013,17 @@ public abstract class Entity {
     }
 
     public MessageData processMessage(MessageData message) {
+        var msg= message;
+        // request getexecute state is there
         for (var i = 0; i < messagePlugins.size(); i++) {
             var plugin = messagePlugins.get(i);
             message = plugin.processOutgoingMessage(message);
+            // after pulugin state is missing
+        }
+        for(int i=0;i<message.getRequestsList().size();i++){
+            //message.getRequestsList().get(i).setExeValue(msg.getRequestsList().get(i).getExeValue());
+            //int a= message.getRequestsList().get(i).getExeValue();
+            l.write(id, "\n{\nrequestnum:"+message.getRequestsList().get(i).getRequestNum()+"\nblockvalue_5: "+message.getRequestsList().get(i).getExeValue()+"}");
         }
 
         return message;
@@ -1037,6 +1076,10 @@ public abstract class Entity {
         if (checkpoint.getRequestBlock(seqnum) == null) {
             for (var request : block) {
                 reqnumToSeqnumMap.put(request.getRequestNum(), seqnum);
+            }
+               // var requests=message.getRequestsList();
+            for(var request:block){
+                l.write(id, "\n{\nrequestnum:"+request.getRequestNum()+"\nregistervalue: "+request.getExeValue()+"}");
             }
 
             checkpoint.addRequestBlock(seqnum, block);
@@ -1113,6 +1156,8 @@ public abstract class Entity {
     // Abstract Methods
 
     protected abstract void execute(long seqnum);
+
+    protected abstract void xov_execute(MessageData message);
 
     public abstract boolean isClient();
 

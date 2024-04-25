@@ -10,8 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+import com.gbft.framework.coordination.LogWrite;
 
 public class Dataset {
+    public LogWrite l = new LogWrite();
 
     protected Map<Integer, AtomicInteger> records;
 
@@ -44,6 +46,7 @@ public class Dataset {
     public int execute(RequestData request) {
         var op = request.getOperation();
         var record = request.getRecord();
+        //l.write(4,"\ndataset class | execute recordnum: "+Integer.toString(record));
 
         // dummy computation
         if (request.getComputeFactor() > 0) {
@@ -84,6 +87,9 @@ public class Dataset {
     public void update(RequestData request, int value) {
         var record = request.getRecord();
         records.get(record).set(value);
+
+        l.write(4,"\n { dataset class | update function \n record: "+record+"" +
+                "\nrecord_value: "+records.get(record)+"}");
     }
 
 }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.AdvanceConfig;
@@ -16,22 +17,58 @@ import com.gbft.framework.utils.DataUtils;
 import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
+import com.google.protobuf.Message;
 
 public class Node extends Entity {
-
+    HashMap<String,Integer> exe_values=new HashMap<>(); // string = requestnum
+    HashMap<Long,Boolean> reqexe= new HashMap<>();
+    HashMap<Long, RequestData> msgreq = new HashMap<>();
     public Node(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
+    }
+    public void xov_execute(MessageData message){
+        var type = message.getMessageType();
+        if(type == 10){
+            var request = message.getRequestsList().get(0);
+            long reqnum = request.getRequestNum();
+            msgreq.put(reqnum,request);
+        }
+        else if(type == 113 && !reqexe.getOrDefault(message.getSequenceNum(),false)){
+            reqexe.put(message.getSequenceNum(),true);
+            for(long num : message.getRequestNumsList()){
+                var request = msgreq.get(num);
+                int a = dataset.execute(request);
+                request.setExeValue(a);
+                l.write(id, "\n{\nrequestnum:" + request.getRequestNum() + "\nxov_value:" + request.getExeValue() + "}");
+                exe_values.put(Long.toString(request.getRequestNum()), a);
+            }
+        }
+        else if(type == 0) { //12
+            reqexe.put(message.getSequenceNum(),true);
+            for (var request : message.getRequestsList()) {
+                int a = dataset.execute(request);
+                request.setExeValue(a);
+                l.write(id, "\n{\nrequestnum:" + request.getRequestNum() + "\nxov_value:" + request.getExeValue() + "}");
+                exe_values.put(Long.toString(request.getRequestNum()), a);
+            }
+        }
+        //exe_values.put(Integer.toString(request.getRecord()), dataset.execute(request));
     }
 
     @Override
     protected void execute(long seqnum) {
+        l.write(id,"\nnode execute seqnum: "+seqnum);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
+        //l.write(id,"\n{\nblock:"+requestBlock.toString()+"\n}");
 
         if (checkpoint.getReplies(seqnum) == null) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
-                replies.put(request.getRequestNum(), dataset.execute(request));
+                //int value = exe_values.get(Long.toString(request.getRequestNum()));
+                replies.put(request.getRequestNum(), request.getExeValue());
+                //replies.put(request.getRequestNum(), dataset.execute(request));
+                l.write(id,"\n{\nrequestnum:"+ request.getRequestNum()+"\nvaluefinal: "+request.getExeValue()+"}");
             }
             checkpoint.addReplies(seqnum, replies);
         }

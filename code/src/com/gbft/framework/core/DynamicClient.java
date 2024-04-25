@@ -24,6 +24,7 @@ public class DynamicClient extends Client {
 
     public DynamicClient(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
+        l.write(id,"client called");
         intervals = new ConcurrentHashMap<>();
         maxactive = pipelinePlugin.getMaxActiveSequences();
 
@@ -36,6 +37,7 @@ public class DynamicClient extends Client {
 
     @Override
     public void execute(long seqnum) {
+        l.write(id,"dc: "+ Long.toString(seqnum));
         super.execute(seqnum);
 
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
@@ -84,7 +86,7 @@ public class DynamicClient extends Client {
 
                 while (running) {
                     var next = System.nanoTime() + intervalns;
-
+                    l.write(id,"\ndynamic request_num: "+nextRequestNum);
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
 

@@ -42,10 +42,17 @@ public class DigestMessagePlugin implements MessagePlugin {
     public MessageData processOutgoingMessage(MessageData message) {
         var type = message.getMessageType();
         var hasblock = StateMachine.messages.get(type).hasRequestBlock;
+//        for(var request:message.getRequestsList()){
+//            entity.l.write(entity.getId(), "\npvalue:"+request.getExeValue());
+//        }
         if (hasblock && message.getDigest().isEmpty()) {
             var computed = getDigest(message.getRequestsList());
             message = MessageData.newBuilder(message).setDigest(computed).build();
         }
+//        entity.l.write(entity.getId(),"\nmessage from process:"+message.toString());
+//        for(var request:message.getRequestsList()){
+//            entity.l.write(entity.getId(), "\npvalue1:"+request.getExeValue());
+//        }
 
         return message;
     }

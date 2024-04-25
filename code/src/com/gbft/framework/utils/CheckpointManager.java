@@ -45,8 +45,12 @@ public class CheckpointManager {
         var targets = entity.getRolePlugin().getRoleEntities(0, 0, StateMachine.NORMAL_PHASE, StateMachine.NODE);
         var message = DataUtils.createMessage(checkpointNum, 0L, CHECKPOINT, entity.getId(), targets, List.of(),
                 entity.EMPTY_BLOCK, null, digest);
-        entity.sendMessage(message);       
-    } 
+//        var requests=message.getRequestsList();
+//        for(var request:requests){
+//            entity.l.write(entity.getId(), "\n{\nsingle_request_1:"+request.toString()+"\nvalue_1: "+request.getExeValue()+"}");
+//        }
+        entity.sendMessage(message);
+    }
 
     public ByteString getCheckpointDigest(long checkpointNum) {
         var stream = new ByteArrayOutputStream();

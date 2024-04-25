@@ -15,8 +15,8 @@ general:
   report-sequence: 2500
   exchange-sequence: 3000
 benchmark:
-  block-size: 10
-  checkpoint-size: 5000
+  block-size: 5
+  checkpoint-size: 5000 #5000
   catch-up-k: 2
   request-interval-micros: 100
   benchmark-interval-ms: 3000
@@ -31,7 +31,7 @@ benchmark:
   aggregation-delay-ms: 200
 workload:
   # lower for more contention
-  contention-level: 100
+  contention-level: 10
   dataset-size: 100
   payload:
     request-size: 1000000
@@ -75,7 +75,7 @@ fault:
       - 0
     attacking: true
     timer: 100
-    
+
 switching:
   protocol-pool:
     - pbft
