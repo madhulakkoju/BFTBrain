@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.AdvanceConfig;
@@ -24,16 +25,35 @@ public class Node extends Entity {
     }
 
     // TODO: Update this to use Architecture based Execution
+
+    protected boolean validate(RequestData request){
+       if( dataset.recCurrVersion.get(request.getRecord()) != request.getCurrVersion() ){
+           request= request.toBuilder().setIsTnxValid(false).build();
+           return false;
+       }
+       return true;
+    }
     @Override
     protected void execute(long seqnum) {
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
+        boolean isValid = false;
 
         if (checkpoint.getReplies(seqnum) == null) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
-                l.write(id,"\nnode exec request:"+request);
-                replies.put(request.getRequestNum(), dataset.execute(request));
+                if(this.getArchManager().getCurrentArchitectureKey().equals("XOV") ){
+                   if(validate(request)){
+                       replies.put(request.getRequestNum(),request.getEarlyExecResult());
+                       // update value to node
+                       dataset.update(request,request.getEarlyExecResult());
+                   }
+                }
+                else{
+                    l.write(id,"\nnode exec request:"+request);
+                    replies.put(request.getRequestNum(), dataset.execute(request));
+                }
+
             }
             checkpoint.addReplies(seqnum, replies);
         }

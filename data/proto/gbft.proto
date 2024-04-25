@@ -40,6 +40,7 @@ message RequestData {
 
     int32 early_exec_result = 11;
     bool is_tnx_valid = 12;
+    int64 curr_version =13;
 }
 
 message MessageData {

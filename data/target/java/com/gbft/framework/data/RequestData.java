@@ -374,6 +374,17 @@ private static final long serialVersionUID = 0L;
     return isTnxValid_;
   }
 
+  public static final int CURR_VERSION_FIELD_NUMBER = 13;
+  private long currVersion_ = 0L;
+  /**
+   * <code>int64 curr_version = 13;</code>
+   * @return The currVersion.
+   */
+  @java.lang.Override
+  public long getCurrVersion() {
+    return currVersion_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -423,6 +434,9 @@ private static final long serialVersionUID = 0L;
     }
     if (isTnxValid_ != false) {
       output.writeBool(12, isTnxValid_);
+    }
+    if (currVersion_ != 0L) {
+      output.writeInt64(13, currVersion_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -481,6 +495,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(12, isTnxValid_);
     }
+    if (currVersion_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt64Size(13, currVersion_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -522,6 +540,8 @@ private static final long serialVersionUID = 0L;
         != other.getEarlyExecResult()) return false;
     if (getIsTnxValid()
         != other.getIsTnxValid()) return false;
+    if (getCurrVersion()
+        != other.getCurrVersion()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -563,6 +583,9 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + IS_TNX_VALID_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getIsTnxValid());
+    hash = (37 * hash) + CURR_VERSION_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getCurrVersion());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -714,6 +737,7 @@ private static final long serialVersionUID = 0L;
       replySize_ = 0;
       earlyExecResult_ = 0;
       isTnxValid_ = false;
+      currVersion_ = 0L;
       return this;
     }
 
@@ -794,6 +818,9 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00000800) != 0)) {
         result.isTnxValid_ = isTnxValid_;
+      }
+      if (((from_bitField0_ & 0x00001000) != 0)) {
+        result.currVersion_ = currVersion_;
       }
     }
 
@@ -900,6 +927,9 @@ private static final long serialVersionUID = 0L;
       if (other.getIsTnxValid() != false) {
         setIsTnxValid(other.getIsTnxValid());
       }
+      if (other.getCurrVersion() != 0L) {
+        setCurrVersion(other.getCurrVersion());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -996,6 +1026,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000800;
               break;
             } // case 96
+            case 104: {
+              currVersion_ = input.readInt64();
+              bitField0_ |= 0x00001000;
+              break;
+            } // case 104
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1709,6 +1744,38 @@ private static final long serialVersionUID = 0L;
     public Builder clearIsTnxValid() {
       bitField0_ = (bitField0_ & ~0x00000800);
       isTnxValid_ = false;
+      onChanged();
+      return this;
+    }
+
+    private long currVersion_ ;
+    /**
+     * <code>int64 curr_version = 13;</code>
+     * @return The currVersion.
+     */
+    @java.lang.Override
+    public long getCurrVersion() {
+      return currVersion_;
+    }
+    /**
+     * <code>int64 curr_version = 13;</code>
+     * @param value The currVersion to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCurrVersion(long value) {
+      
+      currVersion_ = value;
+      bitField0_ |= 0x00001000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int64 curr_version = 13;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearCurrVersion() {
+      bitField0_ = (bitField0_ & ~0x00001000);
+      currVersion_ = 0L;
       onChanged();
       return this;
     }

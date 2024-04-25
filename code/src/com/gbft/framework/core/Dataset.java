@@ -81,13 +81,14 @@ public class Dataset {
         default:
             value = records.get(record).get();
         }
-
+        //recCurrVersion.put(record,recCurrVersion.getOrDefault(record,Long.valueOf(0))+1);
         return value;
     }
 
     public void update(RequestData request, int value) {
         var record = request.getRecord();
         records.get(record).set(value);
+        recCurrVersion.put(record,recCurrVersion.getOrDefault(record,Long.valueOf(0))+1);
         l.write(4,"\nrecord_executed:"+record+" value:"+value);
 
     }
@@ -116,10 +117,11 @@ public class Dataset {
             default:
                 value = records.get(record).get();
         }
-        //recLatestVersion.put(record,recLatestVersion.get(record)+1);
+        //recLatestVersion.put(record,recLatestVersion.getOrDefault(record,Integer.toUnsignedLong(0))+1);
         // set version num as requestnum
         //send currentversion = latestversion to the client
-        var request1 = request.toBuilder().setEarlyExecResult(value).build();
+        var request1 = request.toBuilder().setEarlyExecResult(value)
+                .setCurrVersion(recCurrVersion.getOrDefault(record,Long.valueOf(0))).build();
         //l.write(6,"req:"+request1);
         return request1;
     }
