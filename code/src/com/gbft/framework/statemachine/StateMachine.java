@@ -1,22 +1,16 @@
 package com.gbft.framework.statemachine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.amihaiemil.eoyaml.Node;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
+import com.gbft.framework.coordination.LogWrite;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.Timekeeper;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class StateMachine {
 
@@ -47,6 +41,8 @@ public class StateMachine {
     public static List<String> phases;
     public static List<StateInfo> states;
     public static List<MessageInfo> messages;
+    public static  LogWrite l =new LogWrite();
+
 
     // TODO: Use record
     public static class StateInfo {
@@ -69,6 +65,7 @@ public class StateMachine {
         // Set roles according to CheapBFT since it covers all the roles needed
         Config.setCurrentProtocol("cheapbft");
         roles = Config.list("protocol.roles");
+        l.write(6,"roles"+roles.toString());
         phases = new ArrayList<>();
         states = new ArrayList<>();
         messages = new ArrayList<>();

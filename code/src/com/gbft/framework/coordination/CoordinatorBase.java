@@ -1,26 +1,22 @@
 package com.gbft.framework.coordination;
 
+import com.gbft.framework.data.Event;
+import com.gbft.framework.data.Event.EventType;
+import com.gbft.framework.statemachine.StateMachine;
+import com.gbft.framework.utils.AdvanceConfig;
+import com.gbft.framework.utils.Config;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.gbft.framework.data.Event;
-import com.gbft.framework.data.Event.EventType;
-import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.AdvanceConfig;
-import com.gbft.framework.utils.Config;
 
 public abstract class CoordinatorBase {
     protected static final int SERVER = -1;
@@ -32,9 +28,13 @@ public abstract class CoordinatorBase {
     protected Thread listenerThread;
 
     protected Map<Integer, Pair<String, Integer>> unitAddressMap;
+    public LogWrite l =new LogWrite();
+    public int port;
 
     public CoordinatorBase(int port) {
         isRunning = true;
+        this.port=port;
+        l.Intialize(port);
         unitAddressMap = new HashMap<>();
 
         try {
@@ -61,7 +61,7 @@ public abstract class CoordinatorBase {
             var address = unitConfig.get(i).split(":");
             unitAddressMap.put(i, Pair.of(address[0], Integer.parseInt(address[1])));
         }
-
+        l.PortWrite(port,unitAddressMap.toString());
         StateMachine.init();
     }
 

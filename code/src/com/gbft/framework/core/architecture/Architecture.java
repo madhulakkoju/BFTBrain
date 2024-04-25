@@ -4,10 +4,10 @@ import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -15,11 +15,6 @@ public class Architecture {
     protected Entity entity;
 
     public static int EndorsementPolicy = 1;
-
-
-
-
-
 
 
     public Architecture(Entity entity) {
@@ -43,6 +38,10 @@ public class Architecture {
 
     public ValidatorResponse performValidation(List<RequestData> block){
         //Perform Validation of the block
+        for(var request : block){
+           // if current version == request current version then update latest version and set valid field
+            // else valid field == false
+        }
         //Update this with the actual validation logic
         return new ValidatorResponse(true, "Block is valid", block, List.of());
     }
@@ -79,15 +78,25 @@ public class Architecture {
 
     public RequestData executeRequestAhead(RequestData request){
 
-        entity.getDataset().executeAhead(request);
-
-        return request;
+        return entity.getDataset().executeAhead(request);
     }
 
     public List<RequestData> executeRequestsAhead(List<RequestData> block){
+
+        List<RequestData> dummyList = new ArrayList<>();
+
         for (RequestData request : block) {
-            entity.getDataset().executeAhead(request);
+            dummyList.add(request);
         }
+
+        while(block.size() > 0){
+            block.removeFirst();
+        }
+
+        for (RequestData req : dummyList){
+            block.add( this.executeRequestAhead(req) );
+        }
+
         return block;
     }
 
@@ -95,14 +104,15 @@ public class Architecture {
     public MessageData createEndorsedMessageToClient(MessageData oldMessage){
         //Create a new message to be sent to the client
         //Update this with the actual logic
-        var nodesTargetRole = StateMachine.roles.indexOf(Config.string("client"));
+        var nodesTargetRole = StateMachine.roles.indexOf("client");
+
+        oldMessage = oldMessage.toBuilder().setXovState(1).setIsEndorsementRequest(true).build();
 
         var clients = this.entity.getRolePlugin().getRoleEntities(
                 oldMessage.getSequenceNum(),
                 oldMessage.getViewNum(),
                 StateMachine.NORMAL_PHASE,
                 nodesTargetRole);
-
         var targetsList = oldMessage.getTargetsList();
         targetsList.removeAll(targetsList);
 

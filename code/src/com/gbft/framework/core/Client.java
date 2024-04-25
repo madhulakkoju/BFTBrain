@@ -31,10 +31,12 @@ public class Client extends Entity {
 
     public Client(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
+        l.write(id,"client called");
 
         intervalns = Config.integer("benchmark.request-interval-micros") * 1000L;
         var targetConfig = Config.string("protocol.general.request-target");
         requestTargetRole = StateMachine.roles.indexOf(targetConfig);
+        l.write(id,targetConfig);
 
         dataset = new ClientDataset(id);
         nextRequestNum = 0L;
@@ -45,9 +47,9 @@ public class Client extends Entity {
 
     protected RequestGenerator createRequestGenerator() {
         if (Config.bool("benchmark.closed-loop.enable")) {
-            return new ClosedLoopRequestGenerator();
+            return new ClosedLoopRequestGenerator(this);
         } else {
-            return new RequestGenerator();
+            return new RequestGenerator(this);
         }
     }
 
@@ -133,6 +135,14 @@ public class Client extends Entity {
             threads.add(new Thread(new RequestGeneratorRunner()));
         }
 
+        public RequestGenerator(){
+
+        }
+
+        public RequestGenerator(Client client){
+
+        }
+
         public void init(Client client) {
             this.init();
             this.client = client;
@@ -173,6 +183,8 @@ public class Client extends Entity {
             var reqnum = request.getRequestNum();
             var seqnum = reqnum / blockSize;
             var view = currentViewNum;
+
+            l.write(id,"\nrequest sent reqnum:"+reqnum);
 
             // wait to know the leader mode if necessary
             var episode = getEpisodeNum(seqnum);
@@ -218,7 +230,9 @@ public class Client extends Entity {
         public MessageData createEndorsementMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
                                          List<Integer> targets) {
             var message = createMessage(seqnum, viewNum, block, type, source, targets);
-            message.toBuilder().setIsEndorsementRequest(true);
+            message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
+//            l.write(id,"cop:"+message.toString());
+//            l.write(id,"\n xov: "+message.getXovState());
             return processMessage(message);
         }
 
@@ -250,15 +264,12 @@ public class Client extends Entity {
             } finally {
                 rolePlugin.roleReadLock.unlock();
             }
-
-            var nodesTargetRole = StateMachine.roles.indexOf(Config.string("nodes"));
+            var nodesTargetRole = StateMachine.roles.indexOf("nodes");
 
             var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
-
             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
-
             var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
             sendMessage(message);
 
@@ -288,6 +299,14 @@ public class Client extends Entity {
 
         protected long reqnumcnt = 0l;
 
+        public ClosedLoopRequestGenerator(){
+
+        }
+
+        public ClosedLoopRequestGenerator(Client client){
+            this.client = client;
+        }
+
         @Override
         public void init() {
             for (int i = 0; i < Config.integer("benchmark.closed-loop.num-client"); i ++) {
@@ -309,6 +328,7 @@ public class Client extends Entity {
 
             @Override
             public void run() {
+                //l.write(id,"clr entered");
                 while (running) {
                     try {
                         semaphore.acquire();
@@ -322,6 +342,7 @@ public class Client extends Entity {
                         for (int i = 0; i < block_size + read_only_buf; i ++) {
                             var reqnum = nextRequestNum.getAndIncrement();
                             var request = dataset.createRequest(reqnum);
+                            //l.write(id,"clr created");
 
                             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                                 read_only_buf ++;
@@ -329,11 +350,21 @@ public class Client extends Entity {
 
                             // System.out.println("client " + id + " record " + (++ reqnumcnt));
                             // System.out.println("client " + id + " send request " + reqnum);
+                            if(this.client == null){
+                                l.write(id,"null");
+                                if(this.client.getArchManager() == null){
+                                    l.write(id,"archmanagernull");
+                                }
+                            }
 
-                            if(this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
+                            if(this.client != null &&
+                                    this.client.getArchManager() != null &&
+                                    this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
+                                l.write(id,"reqnum created:"+request.getRequestNum());
                                 sendEndorserRequest(request);
                             }
                             else {
+                                l.write(id,"went to ox");
                                 sendRequest(request);
                             }
                         }

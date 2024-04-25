@@ -1,5 +1,6 @@
 package com.gbft.framework.core;
 
+import com.gbft.framework.coordination.LogWrite;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
@@ -14,9 +15,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
+    protected Map<Integer, Long> recCurrVersion;
+    protected Map<Integer, Long> recLatestVersion;
 
     public static final int DEFAULT_VALUE = 1000;
     public static final int RECORD_COUNT = Config.integer("workload.dataset-size");
+    public LogWrite l= new LogWrite();
 
     public Dataset() {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
@@ -84,9 +88,11 @@ public class Dataset {
     public void update(RequestData request, int value) {
         var record = request.getRecord();
         records.get(record).set(value);
+        l.write(4,"\nrecord_executed:"+record+" value:"+value);
+
     }
 
-    public void executeAhead(RequestData request) {
+    public RequestData executeAhead(RequestData request) {
         var op = request.getOperation();
         var record = request.getRecord();
 
@@ -110,7 +116,10 @@ public class Dataset {
             default:
                 value = records.get(record).get();
         }
-        request.toBuilder().setEarlyExecResult(value);
+        //recLatestVersion.put(record,recLatestVersion.get(record)+1);
+        // set version num as requestnum
+        //send currentversion = latestversion to the client
+        return request.toBuilder().setEarlyExecResult(value).build();
     }
 
 

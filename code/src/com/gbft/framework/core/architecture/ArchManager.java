@@ -22,12 +22,12 @@ public class ArchManager {
         architectures = new HashMap<>();
         architectures.put("OX", new OXArchitecture(entity));
         architectures.put("XOV", new XOVArchitecture(entity));
-        architectures.put("OXII", new OXIIArchitecture(entity));
-        architectures.put("XOV++", new XOVppArchitecture(entity));
-        architectures.put("XOV#", new XOVSerialArchitecture(entity));
-        architectures.put("SXOV", new StreamXOVArchitecture(entity));
+//        architectures.put("OXII", new OXIIArchitecture(entity));
+//        architectures.put("XOV++", new XOVppArchitecture(entity));
+//        architectures.put("XOV#", new XOVSerialArchitecture(entity));
+//        architectures.put("SXOV", new StreamXOVArchitecture(entity));
 
-        currentArchitectureKey = "OX";
+        currentArchitectureKey = "XOV";
         this.entity = entity;
     }
 

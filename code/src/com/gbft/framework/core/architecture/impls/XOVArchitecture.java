@@ -11,6 +11,7 @@ import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class XOVArchitecture extends Architecture {
@@ -42,17 +43,15 @@ public class XOVArchitecture extends Architecture {
     }
 
     public List<RequestData> executeRequestsAhead(List<RequestData> block){
+        List<RequestData> executeAheadBlock = new ArrayList<>(block.size());
         for (RequestData request : block) {
-            entity.getDataset().executeAhead(request);
+            executeAheadBlock.add(entity.getDataset().executeAhead(request));
         }
-        return block;
+        return executeAheadBlock;
     }
 
     public RequestData executeRequestAhead(RequestData request){
-
-        entity.getDataset().executeAhead(request);
-
-        return request;
+        return entity.getDataset().executeAhead(request);
     }
 
 

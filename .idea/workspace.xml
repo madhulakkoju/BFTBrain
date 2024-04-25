@@ -5,23 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="include execute intiations and added block retrieve using seq num">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EventOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EventOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" afterDir="false" />
@@ -29,12 +30,11 @@
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.architectures.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.architectures.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/DigestMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/DigestMessagePlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,83 +84,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Shell Script.local_exp.sh.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/msiddhu/IdeaProjects/BFTBrain&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Shell Script.local_exp.sh.executor": "Run",
+    "git-widget-placeholder": "praneeth__max",
+    "ignore.preview.features.used": "true",
+    "ignore_missing_gitignore": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/sai/Desktop/Project_P/BFTBrain",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.gbft.framework.core.architecture" />
       <recent name="com.gbft.framework.core.architecture.impls" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="BFTBrain" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="BFTBrain" />
-      <option name="filePath" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <module name="BFTBrain" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="BFTBrain" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <method v="2" />
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-17.0.10-corretto-17.0.10-f644763e9732-f00315f9" />
+        <option value="jdk-11.0.22-corretto-11.0.22-3183f394aec4-fdae186d" />
+        <option value="jdk-21.0.2-openjdk-21.0.2-4caba194b151-322ed176" />
       </set>
     </attachedChunks>
   </component>
@@ -216,51 +170,5 @@
     <MESSAGE value="included base code for ordering and fixed all old codebase to removbe common orderer and validator" />
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
     <option name="LAST_COMMIT_MESSAGE" value="include execute intiations and added block retrieve using seq num" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java</url>
-          <line>63</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
-          <line>28</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
-          <line>60</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>704</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>722</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>715</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>713</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>586</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

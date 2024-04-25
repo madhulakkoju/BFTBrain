@@ -1,62 +1,37 @@
 package com.gbft.framework.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.coordination.LogWrite;
 import com.gbft.framework.core.architecture.ArchManager;
 import com.gbft.framework.core.architecture.Architecture;
-import com.gbft.framework.data.AgentCommGrpc;
-import com.gbft.framework.data.LearningData;
-import com.gbft.framework.data.MessageData;
-import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.SwitchingData;
+import com.gbft.framework.data.*;
 import com.gbft.framework.data.AgentCommGrpc.AgentCommBlockingStub;
-import com.gbft.framework.data.RequestData.Operation;
 import com.gbft.framework.fault.InDarkFault;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.fault.SlowProposalFault;
 import com.gbft.framework.fault.TimeoutFault;
-import com.gbft.framework.plugins.MessagePlugin;
-import com.gbft.framework.plugins.PipelinePlugin;
-import com.gbft.framework.plugins.PluginManager;
-import com.gbft.framework.plugins.RolePlugin;
-import com.gbft.framework.plugins.TransitionPlugin;
+import com.gbft.framework.plugins.*;
 import com.gbft.framework.statemachine.Condition;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
-import com.gbft.framework.utils.BenchmarkManager;
-import com.gbft.framework.utils.CheckpointManager;
-import com.gbft.framework.utils.Config;
-import com.gbft.framework.utils.DataUtils;
-import com.gbft.framework.utils.EntityMapUtils;
-import com.gbft.framework.utils.FeatureManager;
-import com.gbft.framework.utils.MessageTally;
+import com.gbft.framework.utils.*;
 import com.gbft.framework.utils.MessageTally.QuorumId;
-import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
 import com.gbft.plugin.role.BasicPrimaryPlugin;
 import com.gbft.plugin.role.PrimaryPassivePlugin;
-import com.gbft.framework.utils.Timekeeper;
 import com.google.protobuf.ByteString;
-
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public abstract class Entity {
 
@@ -157,10 +132,12 @@ public abstract class Entity {
     protected FeatureManager featureManager;
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
+    public LogWrite l=new LogWrite();
 
     public Entity(int id, CoordinatorUnit coordinator) {
         this.id = id;
         this.coordinator = coordinator;
+        l.CoreIntialize(id);
 
         prefix = "{" + id + "} ";
 
@@ -333,6 +310,8 @@ public abstract class Entity {
 
     public void handleMessage(MessageData message) {
 
+        l.write(id,"\n message:"+message.toString());
+
         if (Printer.verbosity >= Verbosity.VVV) {
             Printer.print(Verbosity.VVV, prefix, "Processing ", message);
         }
@@ -346,20 +325,28 @@ public abstract class Entity {
             return;
         }
 
+        l.write(id,"client xov endorced"+ !this.isClient()+" "+this.getArchManager().getCurrentArchitectureKey().contains("XOV")+" "+message.getIsEndorsementRequest());
 
-        if( ! this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest()){
+        if( !this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest()){
             //Here, it is an endorsement. so execute ahead and send back to client
-            this.getArchManager().currentArchitecture.executeRequestsAhead(message.getRequestsList());
+            l.write(id,"lopala");
+            var messageReqList = message.getRequestsList();
+            l.write(id,"lopala.5");
+            this.getArchManager().getCurrentArchitecture().executeRequestsAhead(messageReqList);
+            l.write(id,"lopala_1");
             var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message);
-
+            l.write(id,"lopala__2");
+            l.write(id, "\nendorced executed reqnum : "+messageToClient.getRequestsList().get(0).getRequestNum());
             sendMessage(messageToClient);
+            l.write(id,"lopala 3");
+
         }
 
         if( this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest()){
 
 
             //Endorsement Policy: atleast 1 endorsed response needed to pass on
-
+            l.write(id, "message response:"+message.toString());
             switch (message.getXovState()){
                 case 0:
                     //Endorsement Request
@@ -377,9 +364,11 @@ public abstract class Entity {
                                 this.getEndorsementQueue().remove(req.getRequestNum());
                                 this.getEndorsementCounts().remove(req.getRequestNum());
 
+                                l.write(id,"\nreqgenerator:"+(requestGenerator != null));
                                 // Send message to state 3 to Leader
                                 if(requestGenerator != null){
                                     //Send the request to the client
+                                    l.write(id,"\nendoresed requestnum:"+req.getRequestNum());
                                     requestGenerator.sendRequest(req);
                                 }
 
@@ -388,10 +377,6 @@ public abstract class Entity {
                     }
                     break;
             }
-
-
-
-
 
         }
 
@@ -1014,7 +999,6 @@ public abstract class Entity {
             Printer.print(Verbosity.VVV, prefix, "Sending message: ", message);
         }
         // Printer.print(Verbosity.V, prefix, "Sending message: ", message);
-
         pipelinePlugin.sendMessage(message, this.id);
     }
 
