@@ -31,9 +31,11 @@ public interface ReportDataOrBuilder extends
    * <code>map&lt;string, .ReportData.ReportItem&gt; report_data = 1;</code>
    */
 
-  com.gbft.framework.data.ReportData.ReportItem getReportDataOrDefault(
+  /* nullable */
+com.gbft.framework.data.ReportData.ReportItem getReportDataOrDefault(
       java.lang.String key,
-      com.gbft.framework.data.ReportData.ReportItem defaultValue);
+      /* nullable */
+com.gbft.framework.data.ReportData.ReportItem defaultValue);
   /**
    * <code>map&lt;string, .ReportData.ReportItem&gt; report_data = 1;</code>
    */

@@ -4,7 +4,6 @@ option java_package = "com.gbft.framework.data";
 option java_multiple_files = true;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
 
 service EntityComm {
@@ -38,6 +37,9 @@ message RequestData {
     bytes request_dummy = 8;
     int32 compute_factor = 9;
     int32 reply_size = 10;
+
+    int32 early_exec_result = 11;
+    bool is_tnx_valid = 12;
 }
 
 message MessageData {
@@ -65,6 +67,10 @@ message MessageData {
     SwitchingData switch = 18;
 
     repeated int64 aggregation_values = 19;
+
+    bool is_endorsement_request = 20;
+
+    int32 xov_state = 21; // 0: DO_ENDORSE -> all nodes, 1: ENDORSED -> client .........OX........ 3: Validate on all nodes
 }
 
 message SwitchingData {

@@ -31,9 +31,11 @@ public interface ConfigDataOrBuilder extends
    * <code>map&lt;string, string&gt; data = 1;</code>
    */
 
-  java.lang.String getDataOrDefault(
+  /* nullable */
+java.lang.String getDataOrDefault(
       java.lang.String key,
-      java.lang.String defaultValue);
+      /* nullable */
+java.lang.String defaultValue);
   /**
    * <code>map&lt;string, string&gt; data = 1;</code>
    */

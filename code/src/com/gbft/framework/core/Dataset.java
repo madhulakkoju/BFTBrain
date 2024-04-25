@@ -110,7 +110,7 @@ public class Dataset {
             default:
                 value = records.get(record).get();
         }
-        request.setEarlyExecutionResultValue(value);
+        request.toBuilder().setEarlyExecResult(value);
     }
 
 

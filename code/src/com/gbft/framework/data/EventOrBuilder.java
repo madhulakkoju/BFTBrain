@@ -95,6 +95,11 @@ public interface EventOrBuilder extends
 
   /**
    * <code>int32 target = 7;</code>
+   * @return Whether the target field is set.
+   */
+  boolean hasTarget();
+  /**
+   * <code>int32 target = 7;</code>
    * @return The target.
    */
   int getTarget();

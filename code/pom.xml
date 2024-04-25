@@ -66,6 +66,12 @@
       <artifactId>grpc-stub</artifactId>
       <version>1.54.1</version>
     </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>protoc-gen-grpc-java</artifactId>
+      <version>1.63.0</version>
+      <type>pom</type>
+    </dependency>
     <dependency> <!-- necessary for Java 9+ -->
       <groupId>org.apache.tomcat</groupId>
       <artifactId>annotations-api</artifactId>

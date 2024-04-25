@@ -210,9 +210,11 @@ public interface MessageDataOrBuilder extends
    * <code>map&lt;int32, bytes&gt; extra_data = 13;</code>
    */
 
-  com.google.protobuf.ByteString getExtraDataOrDefault(
+  /* nullable */
+com.google.protobuf.ByteString getExtraDataOrDefault(
       int key,
-      com.google.protobuf.ByteString defaultValue);
+      /* nullable */
+com.google.protobuf.ByteString defaultValue);
   /**
    * <code>map&lt;int32, bytes&gt; extra_data = 13;</code>
    */
@@ -311,4 +313,20 @@ public interface MessageDataOrBuilder extends
    * @return The aggregationValues at the given index.
    */
   long getAggregationValues(int index);
+
+  /**
+   * <code>bool is_endorsement_request = 20;</code>
+   * @return The isEndorsementRequest.
+   */
+  boolean getIsEndorsementRequest();
+
+  /**
+   * <pre>
+   * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+   * </pre>
+   *
+   * <code>int32 xov_state = 21;</code>
+   * @return The xovState.
+   */
+  int getXovState();
 }

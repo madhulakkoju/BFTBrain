@@ -36,286 +36,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private MessageData(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    int mutable_bitField0_ = 0;
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8: {
-
-            sequenceNum_ = input.readInt64();
-            break;
-          }
-          case 16: {
-
-            viewNum_ = input.readInt64();
-            break;
-          }
-          case 24: {
-
-            messageType_ = input.readInt32();
-            break;
-          }
-          case 32: {
-
-            source_ = input.readInt32();
-            break;
-          }
-          case 40: {
-            if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-              targets_ = newIntList();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            targets_.addInt(input.readInt32());
-            break;
-          }
-          case 42: {
-            int length = input.readRawVarint32();
-            int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-              targets_ = newIntList();
-              mutable_bitField0_ |= 0x00000001;
-            }
-            while (input.getBytesUntilLimit() > 0) {
-              targets_.addInt(input.readInt32());
-            }
-            input.popLimit(limit);
-            break;
-          }
-          case 50: {
-            if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-              requests_ = new java.util.ArrayList<com.gbft.framework.data.RequestData>();
-              mutable_bitField0_ |= 0x00000002;
-            }
-            requests_.add(
-                input.readMessage(com.gbft.framework.data.RequestData.parser(), extensionRegistry));
-            break;
-          }
-          case 56: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
-              requestNums_ = newLongList();
-              mutable_bitField0_ |= 0x00000004;
-            }
-            requestNums_.addLong(input.readInt64());
-            break;
-          }
-          case 58: {
-            int length = input.readRawVarint32();
-            int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000004) != 0) && input.getBytesUntilLimit() > 0) {
-              requestNums_ = newLongList();
-              mutable_bitField0_ |= 0x00000004;
-            }
-            while (input.getBytesUntilLimit() > 0) {
-              requestNums_.addLong(input.readInt64());
-            }
-            input.popLimit(limit);
-            break;
-          }
-          case 64: {
-
-            hasRequestData_ = input.readBool();
-            break;
-          }
-          case 74: {
-
-            digest_ = input.readBytes();
-            break;
-          }
-          case 80: {
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
-              flags_ = newIntList();
-              mutable_bitField0_ |= 0x00000008;
-            }
-            flags_.addInt(input.readInt32());
-            break;
-          }
-          case 82: {
-            int length = input.readRawVarint32();
-            int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000008) != 0) && input.getBytesUntilLimit() > 0) {
-              flags_ = newIntList();
-              mutable_bitField0_ |= 0x00000008;
-            }
-            while (input.getBytesUntilLimit() > 0) {
-              flags_.addInt(input.readInt32());
-            }
-            input.popLimit(limit);
-            break;
-          }
-          case 90: {
-            if (!((mutable_bitField0_ & 0x00000010) != 0)) {
-              replyData_ = com.google.protobuf.MapField.newMapField(
-                  ReplyDataDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000010;
-            }
-            com.google.protobuf.MapEntry<java.lang.Long, java.lang.Integer>
-            replyData__ = input.readMessage(
-                ReplyDataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-            replyData_.getMutableMap().put(
-                replyData__.getKey(), replyData__.getValue());
-            break;
-          }
-          case 98: {
-            if (!((mutable_bitField0_ & 0x00000020) != 0)) {
-              extraValues_ = com.google.protobuf.MapField.newMapField(
-                  ExtraValuesDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000020;
-            }
-            com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Long>
-            extraValues__ = input.readMessage(
-                ExtraValuesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-            extraValues_.getMutableMap().put(
-                extraValues__.getKey(), extraValues__.getValue());
-            break;
-          }
-          case 106: {
-            if (!((mutable_bitField0_ & 0x00000040) != 0)) {
-              extraData_ = com.google.protobuf.MapField.newMapField(
-                  ExtraDataDefaultEntryHolder.defaultEntry);
-              mutable_bitField0_ |= 0x00000040;
-            }
-            com.google.protobuf.MapEntry<java.lang.Integer, com.google.protobuf.ByteString>
-            extraData__ = input.readMessage(
-                ExtraDataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
-            extraData_.getMutableMap().put(
-                extraData__.getKey(), extraData__.getValue());
-            break;
-          }
-          case 114: {
-            com.google.protobuf.Timestamp.Builder subBuilder = null;
-            if (timestamp_ != null) {
-              subBuilder = timestamp_.toBuilder();
-            }
-            timestamp_ = input.readMessage(com.google.protobuf.Timestamp.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(timestamp_);
-              timestamp_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 122: {
-            com.gbft.framework.data.FaultData.Builder subBuilder = null;
-            if (fault_ != null) {
-              subBuilder = fault_.toBuilder();
-            }
-            fault_ = input.readMessage(com.gbft.framework.data.FaultData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(fault_);
-              fault_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 130: {
-            com.gbft.framework.data.FetchData.Builder subBuilder = null;
-            if (fetch_ != null) {
-              subBuilder = fetch_.toBuilder();
-            }
-            fetch_ = input.readMessage(com.gbft.framework.data.FetchData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(fetch_);
-              fetch_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 138: {
-            com.gbft.framework.data.LearningData.Builder subBuilder = null;
-            if (report_ != null) {
-              subBuilder = report_.toBuilder();
-            }
-            report_ = input.readMessage(com.gbft.framework.data.LearningData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(report_);
-              report_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 146: {
-            com.gbft.framework.data.SwitchingData.Builder subBuilder = null;
-            if (switch_ != null) {
-              subBuilder = switch_.toBuilder();
-            }
-            switch_ = input.readMessage(com.gbft.framework.data.SwitchingData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom(switch_);
-              switch_ = subBuilder.buildPartial();
-            }
-
-            break;
-          }
-          case 152: {
-            if (!((mutable_bitField0_ & 0x00000080) != 0)) {
-              aggregationValues_ = newLongList();
-              mutable_bitField0_ |= 0x00000080;
-            }
-            aggregationValues_.addLong(input.readInt64());
-            break;
-          }
-          case 154: {
-            int length = input.readRawVarint32();
-            int limit = input.pushLimit(length);
-            if (!((mutable_bitField0_ & 0x00000080) != 0) && input.getBytesUntilLimit() > 0) {
-              aggregationValues_ = newLongList();
-              mutable_bitField0_ |= 0x00000080;
-            }
-            while (input.getBytesUntilLimit() > 0) {
-              aggregationValues_.addLong(input.readInt64());
-            }
-            input.popLimit(limit);
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      if (((mutable_bitField0_ & 0x00000001) != 0)) {
-        targets_.makeImmutable(); // C
-      }
-      if (((mutable_bitField0_ & 0x00000002) != 0)) {
-        requests_ = java.util.Collections.unmodifiableList(requests_);
-      }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
-        requestNums_.makeImmutable(); // C
-      }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
-        flags_.makeImmutable(); // C
-      }
-      if (((mutable_bitField0_ & 0x00000080) != 0)) {
-        aggregationValues_.makeImmutable(); // C
-      }
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return com.gbft.framework.data.Gbft.internal_static_MessageData_descriptor;
@@ -936,6 +656,32 @@ private static final long serialVersionUID = 0L;
   }
   private int aggregationValuesMemoizedSerializedSize = -1;
 
+  public static final int IS_ENDORSEMENT_REQUEST_FIELD_NUMBER = 20;
+  private boolean isEndorsementRequest_;
+  /**
+   * <code>bool is_endorsement_request = 20;</code>
+   * @return The isEndorsementRequest.
+   */
+  @java.lang.Override
+  public boolean getIsEndorsementRequest() {
+    return isEndorsementRequest_;
+  }
+
+  public static final int XOV_STATE_FIELD_NUMBER = 21;
+  private int xovState_;
+  /**
+   * <pre>
+   * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+   * </pre>
+   *
+   * <code>int32 xov_state = 21;</code>
+   * @return The xovState.
+   */
+  @java.lang.Override
+  public int getXovState() {
+    return xovState_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -1033,7 +779,13 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < aggregationValues_.size(); i++) {
       output.writeInt64NoTag(aggregationValues_.getLong(i));
     }
-    unknownFields.writeTo(output);
+    if (isEndorsementRequest_ != false) {
+      output.writeBool(20, isEndorsementRequest_);
+    }
+    if (xovState_ != 0) {
+      output.writeInt32(21, xovState_);
+    }
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -1176,7 +928,15 @@ private static final long serialVersionUID = 0L;
       }
       aggregationValuesMemoizedSerializedSize = dataSize;
     }
-    size += unknownFields.getSerializedSize();
+    if (isEndorsementRequest_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(20, isEndorsementRequest_);
+    }
+    if (xovState_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(21, xovState_);
+    }
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -1244,7 +1004,11 @@ private static final long serialVersionUID = 0L;
     }
     if (!getAggregationValuesList()
         .equals(other.getAggregationValuesList())) return false;
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (getIsEndorsementRequest()
+        != other.getIsEndorsementRequest()) return false;
+    if (getXovState()
+        != other.getXovState()) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -1322,7 +1086,12 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + AGGREGATION_VALUES_FIELD_NUMBER;
       hash = (53 * hash) + getAggregationValuesList().hashCode();
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (37 * hash) + IS_ENDORSEMENT_REQUEST_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getIsEndorsementRequest());
+    hash = (37 * hash) + XOV_STATE_FIELD_NUMBER;
+    hash = (53 * hash) + getXovState();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -1469,19 +1238,13 @@ private static final long serialVersionUID = 0L;
 
     // Construct using com.gbft.framework.data.MessageData.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-        getRequestsFieldBuilder();
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
@@ -1498,10 +1261,11 @@ private static final long serialVersionUID = 0L;
       bitField0_ = (bitField0_ & ~0x00000001);
       if (requestsBuilder_ == null) {
         requests_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
       } else {
+        requests_ = null;
         requestsBuilder_.clear();
       }
+      bitField0_ = (bitField0_ & ~0x00000002);
       requestNums_ = emptyLongList();
       bitField0_ = (bitField0_ & ~0x00000004);
       hasRequestData_ = false;
@@ -1545,6 +1309,10 @@ private static final long serialVersionUID = 0L;
       }
       aggregationValues_ = emptyLongList();
       bitField0_ = (bitField0_ & ~0x00000080);
+      isEndorsementRequest_ = false;
+
+      xovState_ = 0;
+
       return this;
     }
 
@@ -1638,6 +1406,8 @@ private static final long serialVersionUID = 0L;
         bitField0_ = (bitField0_ & ~0x00000080);
       }
       result.aggregationValues_ = aggregationValues_;
+      result.isEndorsementRequest_ = isEndorsementRequest_;
+      result.xovState_ = xovState_;
       onBuilt();
       return result;
     }
@@ -1791,7 +1561,13 @@ private static final long serialVersionUID = 0L;
         }
         onChanged();
       }
-      this.mergeUnknownFields(other.unknownFields);
+      if (other.getIsEndorsementRequest() != false) {
+        setIsEndorsementRequest(other.getIsEndorsementRequest());
+      }
+      if (other.getXovState() != 0) {
+        setXovState(other.getXovState());
+      }
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1806,17 +1582,206 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.gbft.framework.data.MessageData parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              sequenceNum_ = input.readInt64();
+
+              break;
+            } // case 8
+            case 16: {
+              viewNum_ = input.readInt64();
+
+              break;
+            } // case 16
+            case 24: {
+              messageType_ = input.readInt32();
+
+              break;
+            } // case 24
+            case 32: {
+              source_ = input.readInt32();
+
+              break;
+            } // case 32
+            case 40: {
+              int v = input.readInt32();
+              ensureTargetsIsMutable();
+              targets_.addInt(v);
+              break;
+            } // case 40
+            case 42: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              ensureTargetsIsMutable();
+              while (input.getBytesUntilLimit() > 0) {
+                targets_.addInt(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            } // case 42
+            case 50: {
+              com.gbft.framework.data.RequestData m =
+                  input.readMessage(
+                      com.gbft.framework.data.RequestData.parser(),
+                      extensionRegistry);
+              if (requestsBuilder_ == null) {
+                ensureRequestsIsMutable();
+                requests_.add(m);
+              } else {
+                requestsBuilder_.addMessage(m);
+              }
+              break;
+            } // case 50
+            case 56: {
+              long v = input.readInt64();
+              ensureRequestNumsIsMutable();
+              requestNums_.addLong(v);
+              break;
+            } // case 56
+            case 58: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              ensureRequestNumsIsMutable();
+              while (input.getBytesUntilLimit() > 0) {
+                requestNums_.addLong(input.readInt64());
+              }
+              input.popLimit(limit);
+              break;
+            } // case 58
+            case 64: {
+              hasRequestData_ = input.readBool();
+
+              break;
+            } // case 64
+            case 74: {
+              digest_ = input.readBytes();
+
+              break;
+            } // case 74
+            case 80: {
+              int v = input.readInt32();
+              ensureFlagsIsMutable();
+              flags_.addInt(v);
+              break;
+            } // case 80
+            case 82: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              ensureFlagsIsMutable();
+              while (input.getBytesUntilLimit() > 0) {
+                flags_.addInt(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            } // case 82
+            case 90: {
+              com.google.protobuf.MapEntry<java.lang.Long, java.lang.Integer>
+              replyData__ = input.readMessage(
+                  ReplyDataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              internalGetMutableReplyData().getMutableMap().put(
+                  replyData__.getKey(), replyData__.getValue());
+              break;
+            } // case 90
+            case 98: {
+              com.google.protobuf.MapEntry<java.lang.Integer, java.lang.Long>
+              extraValues__ = input.readMessage(
+                  ExtraValuesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              internalGetMutableExtraValues().getMutableMap().put(
+                  extraValues__.getKey(), extraValues__.getValue());
+              break;
+            } // case 98
+            case 106: {
+              com.google.protobuf.MapEntry<java.lang.Integer, com.google.protobuf.ByteString>
+              extraData__ = input.readMessage(
+                  ExtraDataDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+              internalGetMutableExtraData().getMutableMap().put(
+                  extraData__.getKey(), extraData__.getValue());
+              break;
+            } // case 106
+            case 114: {
+              input.readMessage(
+                  getTimestampFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 114
+            case 122: {
+              input.readMessage(
+                  getFaultFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 122
+            case 130: {
+              input.readMessage(
+                  getFetchFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 130
+            case 138: {
+              input.readMessage(
+                  getReportFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 138
+            case 146: {
+              input.readMessage(
+                  getSwitchFieldBuilder().getBuilder(),
+                  extensionRegistry);
+
+              break;
+            } // case 146
+            case 152: {
+              long v = input.readInt64();
+              ensureAggregationValuesIsMutable();
+              aggregationValues_.addLong(v);
+              break;
+            } // case 152
+            case 154: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              ensureAggregationValuesIsMutable();
+              while (input.getBytesUntilLimit() > 0) {
+                aggregationValues_.addLong(input.readInt64());
+              }
+              input.popLimit(limit);
+              break;
+            } // case 154
+            case 160: {
+              isEndorsementRequest_ = input.readBool();
+
+              break;
+            } // case 160
+            case 168: {
+              xovState_ = input.readInt32();
+
+              break;
+            } // case 168
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.gbft.framework.data.MessageData) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int bitField0_;
@@ -2855,7 +2820,10 @@ private static final long serialVersionUID = 0L;
         int key,
         com.google.protobuf.ByteString value) {
       
-      if (value == null) { throw new java.lang.NullPointerException(); }
+      if (value == null) {
+  throw new NullPointerException("map value");
+}
+
       internalGetMutableExtraData().getMutableMap()
           .put(key, value);
       return this;
@@ -3544,6 +3512,80 @@ private static final long serialVersionUID = 0L;
       onChanged();
       return this;
     }
+
+    private boolean isEndorsementRequest_ ;
+    /**
+     * <code>bool is_endorsement_request = 20;</code>
+     * @return The isEndorsementRequest.
+     */
+    @java.lang.Override
+    public boolean getIsEndorsementRequest() {
+      return isEndorsementRequest_;
+    }
+    /**
+     * <code>bool is_endorsement_request = 20;</code>
+     * @param value The isEndorsementRequest to set.
+     * @return This builder for chaining.
+     */
+    public Builder setIsEndorsementRequest(boolean value) {
+      
+      isEndorsementRequest_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>bool is_endorsement_request = 20;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearIsEndorsementRequest() {
+      
+      isEndorsementRequest_ = false;
+      onChanged();
+      return this;
+    }
+
+    private int xovState_ ;
+    /**
+     * <pre>
+     * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+     * </pre>
+     *
+     * <code>int32 xov_state = 21;</code>
+     * @return The xovState.
+     */
+    @java.lang.Override
+    public int getXovState() {
+      return xovState_;
+    }
+    /**
+     * <pre>
+     * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+     * </pre>
+     *
+     * <code>int32 xov_state = 21;</code>
+     * @param value The xovState to set.
+     * @return This builder for chaining.
+     */
+    public Builder setXovState(int value) {
+      
+      xovState_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+     * </pre>
+     *
+     * <code>int32 xov_state = 21;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearXovState() {
+      
+      xovState_ = 0;
+      onChanged();
+      return this;
+    }
     @java.lang.Override
     public final Builder setUnknownFields(
         final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -3577,7 +3619,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new MessageData(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

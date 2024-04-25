@@ -3,10 +3,12 @@ package com.gbft.framework.core.architecture;
 import com.gbft.framework.core.Entity;
 import com.gbft.framework.core.architecture.impls.*;
 import com.gbft.framework.data.RequestData;
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.List;
 
+@Data
 public class ArchManager {
 
     public HashMap<String, Architecture> architectures;

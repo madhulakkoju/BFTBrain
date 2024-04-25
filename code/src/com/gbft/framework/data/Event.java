@@ -31,124 +31,6 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private Event(
-      com.google.protobuf.CodedInputStream input,
-      com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-      throws com.google.protobuf.InvalidProtocolBufferException {
-    this();
-    if (extensionRegistry == null) {
-      throw new java.lang.NullPointerException();
-    }
-    com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-        com.google.protobuf.UnknownFieldSet.newBuilder();
-    try {
-      boolean done = false;
-      while (!done) {
-        int tag = input.readTag();
-        switch (tag) {
-          case 0:
-            done = true;
-            break;
-          case 8: {
-            int rawValue = input.readEnum();
-
-            eventType_ = rawValue;
-            break;
-          }
-          case 18: {
-            com.gbft.framework.data.UnitData.Builder subBuilder = null;
-            if (eventDataCase_ == 2) {
-              subBuilder = ((com.gbft.framework.data.UnitData) eventData_).toBuilder();
-            }
-            eventData_ =
-                input.readMessage(com.gbft.framework.data.UnitData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((com.gbft.framework.data.UnitData) eventData_);
-              eventData_ = subBuilder.buildPartial();
-            }
-            eventDataCase_ = 2;
-            break;
-          }
-          case 26: {
-            com.gbft.framework.data.ConfigData.Builder subBuilder = null;
-            if (eventDataCase_ == 3) {
-              subBuilder = ((com.gbft.framework.data.ConfigData) eventData_).toBuilder();
-            }
-            eventData_ =
-                input.readMessage(com.gbft.framework.data.ConfigData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((com.gbft.framework.data.ConfigData) eventData_);
-              eventData_ = subBuilder.buildPartial();
-            }
-            eventDataCase_ = 3;
-            break;
-          }
-          case 34: {
-            com.gbft.framework.data.PluginData.Builder subBuilder = null;
-            if (eventDataCase_ == 4) {
-              subBuilder = ((com.gbft.framework.data.PluginData) eventData_).toBuilder();
-            }
-            eventData_ =
-                input.readMessage(com.gbft.framework.data.PluginData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((com.gbft.framework.data.PluginData) eventData_);
-              eventData_ = subBuilder.buildPartial();
-            }
-            eventDataCase_ = 4;
-            break;
-          }
-          case 42: {
-            com.gbft.framework.data.ReportData.Builder subBuilder = null;
-            if (eventDataCase_ == 5) {
-              subBuilder = ((com.gbft.framework.data.ReportData) eventData_).toBuilder();
-            }
-            eventData_ =
-                input.readMessage(com.gbft.framework.data.ReportData.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((com.gbft.framework.data.ReportData) eventData_);
-              eventData_ = subBuilder.buildPartial();
-            }
-            eventDataCase_ = 5;
-            break;
-          }
-          case 50: {
-            com.gbft.framework.data.MessageBlock.Builder subBuilder = null;
-            if (eventDataCase_ == 6) {
-              subBuilder = ((com.gbft.framework.data.MessageBlock) eventData_).toBuilder();
-            }
-            eventData_ =
-                input.readMessage(com.gbft.framework.data.MessageBlock.parser(), extensionRegistry);
-            if (subBuilder != null) {
-              subBuilder.mergeFrom((com.gbft.framework.data.MessageBlock) eventData_);
-              eventData_ = subBuilder.buildPartial();
-            }
-            eventDataCase_ = 6;
-            break;
-          }
-          case 56: {
-            eventDataCase_ = 7;
-            eventData_ = input.readInt32();
-            break;
-          }
-          default: {
-            if (!parseUnknownField(
-                input, unknownFields, extensionRegistry, tag)) {
-              done = true;
-            }
-            break;
-          }
-        }
-      }
-    } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (java.io.IOException e) {
-      throw new com.google.protobuf.InvalidProtocolBufferException(
-          e).setUnfinishedMessage(this);
-    } finally {
-      this.unknownFields = unknownFields.build();
-      makeExtensionsImmutable();
-    }
-  }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
     return com.gbft.framework.data.Gbft.internal_static_Event_descriptor;
@@ -586,6 +468,14 @@ private static final long serialVersionUID = 0L;
   public static final int TARGET_FIELD_NUMBER = 7;
   /**
    * <code>int32 target = 7;</code>
+   * @return Whether the target field is set.
+   */
+  @java.lang.Override
+  public boolean hasTarget() {
+    return eventDataCase_ == 7;
+  }
+  /**
+   * <code>int32 target = 7;</code>
    * @return The target.
    */
   @java.lang.Override
@@ -632,7 +522,7 @@ private static final long serialVersionUID = 0L;
       output.writeInt32(
           7, (int)((java.lang.Integer) eventData_));
     }
-    unknownFields.writeTo(output);
+    getUnknownFields().writeTo(output);
   }
 
   @java.lang.Override
@@ -670,7 +560,7 @@ private static final long serialVersionUID = 0L;
         .computeInt32Size(
             7, (int)((java.lang.Integer) eventData_));
     }
-    size += unknownFields.getSerializedSize();
+    size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
   }
@@ -715,7 +605,7 @@ private static final long serialVersionUID = 0L;
       case 0:
       default:
     }
-    if (!unknownFields.equals(other.unknownFields)) return false;
+    if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
 
@@ -756,7 +646,7 @@ private static final long serialVersionUID = 0L;
       case 0:
       default:
     }
-    hash = (29 * hash) + unknownFields.hashCode();
+    hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
   }
@@ -873,24 +763,34 @@ private static final long serialVersionUID = 0L;
 
     // Construct using com.gbft.framework.data.Event.newBuilder()
     private Builder() {
-      maybeForceBuilderInitialization();
+
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
       super(parent);
-      maybeForceBuilderInitialization();
-    }
-    private void maybeForceBuilderInitialization() {
-      if (com.google.protobuf.GeneratedMessageV3
-              .alwaysUseFieldBuilders) {
-      }
+
     }
     @java.lang.Override
     public Builder clear() {
       super.clear();
       eventType_ = 0;
 
+      if (unitDataBuilder_ != null) {
+        unitDataBuilder_.clear();
+      }
+      if (configDataBuilder_ != null) {
+        configDataBuilder_.clear();
+      }
+      if (pluginDataBuilder_ != null) {
+        pluginDataBuilder_.clear();
+      }
+      if (reportDataBuilder_ != null) {
+        reportDataBuilder_.clear();
+      }
+      if (messageBlockBuilder_ != null) {
+        messageBlockBuilder_.clear();
+      }
       eventDataCase_ = 0;
       eventData_ = null;
       return this;
@@ -1039,7 +939,7 @@ private static final long serialVersionUID = 0L;
           break;
         }
       }
-      this.mergeUnknownFields(other.unknownFields);
+      this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
     }
@@ -1054,17 +954,75 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      com.gbft.framework.data.Event parsedMessage = null;
+      if (extensionRegistry == null) {
+        throw new java.lang.NullPointerException();
+      }
       try {
-        parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            case 8: {
+              eventType_ = input.readEnum();
+
+              break;
+            } // case 8
+            case 18: {
+              input.readMessage(
+                  getUnitDataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              eventDataCase_ = 2;
+              break;
+            } // case 18
+            case 26: {
+              input.readMessage(
+                  getConfigDataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              eventDataCase_ = 3;
+              break;
+            } // case 26
+            case 34: {
+              input.readMessage(
+                  getPluginDataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              eventDataCase_ = 4;
+              break;
+            } // case 34
+            case 42: {
+              input.readMessage(
+                  getReportDataFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              eventDataCase_ = 5;
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  getMessageBlockFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              eventDataCase_ = 6;
+              break;
+            } // case 50
+            case 56: {
+              eventData_ = input.readInt32();
+              eventDataCase_ = 7;
+              break;
+            } // case 56
+            default: {
+              if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                done = true; // was an endgroup tag
+              }
+              break;
+            } // default:
+          } // switch (tag)
+        } // while (!done)
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (com.gbft.framework.data.Event) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
-        if (parsedMessage != null) {
-          mergeFrom(parsedMessage);
-        }
-      }
+        onChanged();
+      } // finally
       return this;
     }
     private int eventDataCase_ = 0;
@@ -1211,8 +1169,9 @@ private static final long serialVersionUID = 0L;
       } else {
         if (eventDataCase_ == 2) {
           unitDataBuilder_.mergeFrom(value);
+        } else {
+          unitDataBuilder_.setMessage(value);
         }
-        unitDataBuilder_.setMessage(value);
       }
       eventDataCase_ = 2;
       return this;
@@ -1352,8 +1311,9 @@ private static final long serialVersionUID = 0L;
       } else {
         if (eventDataCase_ == 3) {
           configDataBuilder_.mergeFrom(value);
+        } else {
+          configDataBuilder_.setMessage(value);
         }
-        configDataBuilder_.setMessage(value);
       }
       eventDataCase_ = 3;
       return this;
@@ -1493,8 +1453,9 @@ private static final long serialVersionUID = 0L;
       } else {
         if (eventDataCase_ == 4) {
           pluginDataBuilder_.mergeFrom(value);
+        } else {
+          pluginDataBuilder_.setMessage(value);
         }
-        pluginDataBuilder_.setMessage(value);
       }
       eventDataCase_ = 4;
       return this;
@@ -1634,8 +1595,9 @@ private static final long serialVersionUID = 0L;
       } else {
         if (eventDataCase_ == 5) {
           reportDataBuilder_.mergeFrom(value);
+        } else {
+          reportDataBuilder_.setMessage(value);
         }
-        reportDataBuilder_.setMessage(value);
       }
       eventDataCase_ = 5;
       return this;
@@ -1775,8 +1737,9 @@ private static final long serialVersionUID = 0L;
       } else {
         if (eventDataCase_ == 6) {
           messageBlockBuilder_.mergeFrom(value);
+        } else {
+          messageBlockBuilder_.setMessage(value);
         }
-        messageBlockBuilder_.setMessage(value);
       }
       eventDataCase_ = 6;
       return this;
@@ -1844,6 +1807,13 @@ private static final long serialVersionUID = 0L;
 
     /**
      * <code>int32 target = 7;</code>
+     * @return Whether the target field is set.
+     */
+    public boolean hasTarget() {
+      return eventDataCase_ == 7;
+    }
+    /**
+     * <code>int32 target = 7;</code>
      * @return The target.
      */
     public int getTarget() {
@@ -1908,7 +1878,18 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new Event(input, extensionRegistry);
+      Builder builder = newBuilder();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(builder.buildPartial());
+      } catch (com.google.protobuf.UninitializedMessageException e) {
+        throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(e)
+            .setUnfinishedMessage(builder.buildPartial());
+      }
+      return builder.buildPartial();
     }
   };
 

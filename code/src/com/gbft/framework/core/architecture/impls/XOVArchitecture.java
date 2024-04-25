@@ -5,7 +5,10 @@ import com.gbft.framework.core.architecture.Architecture;
 import com.gbft.framework.core.architecture.BlockExecResponse;
 import com.gbft.framework.core.architecture.OrderResponse;
 import com.gbft.framework.core.architecture.ValidatorResponse;
+import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
+import com.gbft.framework.statemachine.StateMachine;
+import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 
 import java.util.List;
@@ -45,6 +48,14 @@ public class XOVArchitecture extends Architecture {
         return block;
     }
 
+    public RequestData executeRequestAhead(RequestData request){
+
+        entity.getDataset().executeAhead(request);
+
+        return request;
+    }
+
+
 
     // Block Execution : XOV Architecture
     public BlockExecResponse executeBlock(long seqNum){
@@ -60,6 +71,30 @@ public class XOVArchitecture extends Architecture {
                 orderResponse,
                 validatorResponse
         );
+    }
+
+
+
+
+
+
+
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage){
+        //Create a new message to be sent to the client
+        //Update this with the actual logic
+        var nodesTargetRole = StateMachine.roles.indexOf(Config.string("client"));
+
+        var clients = this.entity.getRolePlugin().getRoleEntities(
+                oldMessage.getSequenceNum(),
+                oldMessage.getViewNum(),
+                StateMachine.NORMAL_PHASE,
+                nodesTargetRole);
+
+       var targetsList = oldMessage.getTargetsList();
+       targetsList.removeAll(targetsList);
+
+       targetsList.addAll(clients);
+        return oldMessage;
     }
 
 

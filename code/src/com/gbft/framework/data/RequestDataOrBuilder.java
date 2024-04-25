@@ -98,4 +98,16 @@ public interface RequestDataOrBuilder extends
    * @return The replySize.
    */
   int getReplySize();
+
+  /**
+   * <code>int32 early_exec_result = 11;</code>
+   * @return The earlyExecResult.
+   */
+  int getEarlyExecResult();
+
+  /**
+   * <code>bool is_tnx_valid = 12;</code>
+   * @return The isTnxValid.
+   */
+  boolean getIsTnxValid();
 }

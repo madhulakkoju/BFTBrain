@@ -1,14 +1,7 @@
 package com.gbft.framework.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.LockSupport;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
@@ -19,6 +12,13 @@ import com.gbft.framework.utils.MessageTally.QuorumId;
 import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.LockSupport;
+
 public class Client extends Entity {
 
     protected long nextRequestNum;
@@ -27,7 +27,7 @@ public class Client extends Entity {
 
     protected ClientDataset dataset;
 
-    private RequestGenerator requestGenerator;
+
 
     public Client(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
@@ -125,13 +125,23 @@ public class Client extends Entity {
         return true;
     }
 
+
     public class RequestGenerator {
+        public Client client;
 
         public void init() {
             threads.add(new Thread(new RequestGeneratorRunner()));
         }
 
+        public void init(Client client) {
+            this.init();
+            this.client = client;
+        }
+
+
         protected class RequestGeneratorRunner implements Runnable {
+
+            public Client client;
             @Override
             public void run() {
 
@@ -141,7 +151,16 @@ public class Client extends Entity {
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
 
+
+                    // from here sending generated request to leader
                     sendRequest(request);
+
+
+
+
+
+
+
 
                     while (System.nanoTime() < next) {
                         LockSupport.parkNanos(intervalns / 3);
@@ -192,6 +211,72 @@ public class Client extends Entity {
             }
         }
 
+
+
+        //Endorsement Requests
+
+        public MessageData createEndorsementMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
+                                         List<Integer> targets) {
+            var message = createMessage(seqnum, viewNum, block, type, source, targets);
+            message.toBuilder().setIsEndorsementRequest(true);
+            return processMessage(message);
+        }
+
+
+        protected void sendEndorserRequest(RequestData request) {
+            var reqnum = request.getRequestNum();
+            var seqnum = reqnum / blockSize;
+            var view = currentViewNum;
+
+            // wait to know the leader mode if necessary
+            var episode = getEpisodeNum(seqnum);
+            rolePlugin.roleReadLock.lock();
+            try {
+                if (rolePlugin.episodeLeaderMode.get(episode) == null) {
+                    rolePlugin.roleReadLock.unlock();
+                    rolePlugin.roleWriteLock.lock();
+                    try {
+                        while (rolePlugin.episodeLeaderMode.get(episode) == null) {
+                            rolePlugin.roleCondition.await();
+                        }
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } finally {
+                        rolePlugin.roleWriteLock.unlock();
+                        rolePlugin.roleReadLock.lock();
+                    }
+                }
+            } finally {
+                rolePlugin.roleReadLock.unlock();
+            }
+
+            var nodesTargetRole = StateMachine.roles.indexOf(Config.string("nodes"));
+
+            var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
+
+            if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
+                targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
+            }
+
+            var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
+            sendMessage(message);
+
+            if (Printer.verbosity >= Verbosity.VVV) {
+                Printer.print(Verbosity.VVV, prefix, "Endorser Request created: ", request);
+            }
+
+
+
+            //this.client.getEndorsementQueue().put(message.getRequestsList().get(0).getRequestNum(), message);
+
+            for (var req : message.getRequestsList()) {
+                this.client.getEndorsementQueue().put(req.getRequestNum(), message);
+            }
+
+        }
+
+
         protected void execute() {}
     }
 
@@ -206,11 +291,22 @@ public class Client extends Entity {
         @Override
         public void init() {
             for (int i = 0; i < Config.integer("benchmark.closed-loop.num-client"); i ++) {
-                threads.add(new Thread(new ClosedLoopRequestGeneratorRunner()));
+                threads.add(new Thread(new ClosedLoopRequestGeneratorRunner(client)));
             }
         }
         
         protected class ClosedLoopRequestGeneratorRunner implements Runnable {
+
+            public Client client;
+
+            public ClosedLoopRequestGeneratorRunner() {
+            }
+
+            public ClosedLoopRequestGeneratorRunner(Client client) {
+                this.client = client;
+            }
+
+
             @Override
             public void run() {
                 while (running) {
@@ -234,7 +330,12 @@ public class Client extends Entity {
                             // System.out.println("client " + id + " record " + (++ reqnumcnt));
                             // System.out.println("client " + id + " send request " + reqnum);
 
-                            sendRequest(request);
+                            if(this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
+                                sendEndorserRequest(request);
+                            }
+                            else {
+                                sendRequest(request);
+                            }
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();

@@ -36,8 +36,10 @@ public class StateMachine {
 
     // Special Protocol Message
     public static int REQUEST;
+
+    public  static int ENDORSE_REQUEST;
     public static int REPLY;
-    public static final Set<String> specialMessages = Set.of("request", "reply", "report", "checkpoint", "fetch");
+    public static final Set<String> specialMessages = Set.of("request", "reply", "report", "checkpoint", "fetch","endorse");
 
     // Config
 
