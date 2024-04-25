@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 public class Node extends Entity {
 
+
     public Node(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
     }
@@ -32,7 +33,25 @@ public class Node extends Entity {
         if (checkpoint.getReplies(seqnum) == null) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
+
+//                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
+//                    if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
+//
+//                        //TODO: something seems odd in this type of validation and updation
+//                        logger.write("Node:: Request is validated amd updated with "+ request.getEarlyExecResult());
+//                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
+//                        logger.write("Node:: Dataset is updated with value "+ request.getEarlyExecResult());
+//                        //update value on node dataset
+//                        dataset.update(request, request.getEarlyExecResult());
+//                    }
+//                }
+//                else{
+//                      replies.put(request.getRequestNum(), dataset.execute(request));
+//                }
+
+
                 replies.put(request.getRequestNum(), dataset.execute(request));
+
             }
             checkpoint.addReplies(seqnum, replies);
         }

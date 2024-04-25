@@ -8,9 +8,9 @@ import com.gbft.framework.core.architecture.ValidatorResponse;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class XOVArchitecture extends Architecture {
@@ -18,6 +18,8 @@ public class XOVArchitecture extends Architecture {
     public XOVArchitecture(Entity entity) {
         super(entity);
     }
+
+
 
 
     public OrderResponse performOrdering(List<RequestData> block){
@@ -42,17 +44,15 @@ public class XOVArchitecture extends Architecture {
     }
 
     public List<RequestData> executeRequestsAhead(List<RequestData> block){
+        List<RequestData> executeAheadBlock = new ArrayList<>(block.size());
         for (RequestData request : block) {
-            entity.getDataset().executeAhead(request);
+            executeAheadBlock.add(entity.getDataset().executeAhead(request));
         }
-        return block;
+        return executeAheadBlock;
     }
 
     public RequestData executeRequestAhead(RequestData request){
-
-        entity.getDataset().executeAhead(request);
-
-        return request;
+        return entity.getDataset().executeAhead(request);
     }
 
 
@@ -74,27 +74,30 @@ public class XOVArchitecture extends Architecture {
     }
 
 
-
-
-
-
-
-    public MessageData createEndorsedMessageToClient(MessageData oldMessage){
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage, List<RequestData> requests){
         //Create a new message to be sent to the client
         //Update this with the actual logic
-        var nodesTargetRole = StateMachine.roles.indexOf(Config.string("client"));
+        var targetClients = StateMachine.roles.indexOf("client");
 
         var clients = this.entity.getRolePlugin().getRoleEntities(
                 oldMessage.getSequenceNum(),
                 oldMessage.getViewNum(),
                 StateMachine.NORMAL_PHASE,
-                nodesTargetRole);
+                targetClients);
 
-       var targetsList = oldMessage.getTargetsList();
-       targetsList.removeAll(targetsList);
+        var newMessage = this.entity.createMessage(
+                oldMessage.getSequenceNum(),
+                oldMessage.getViewNum(),
+                requests,
+                oldMessage.getMessageType(),
+                entity.getId(),
+                clients
+        );
+        newMessage = newMessage.toBuilder().setXovState(2)
+                .setIsEndorsementRequest(true)
+                .build();
 
-       targetsList.addAll(clients);
-        return oldMessage;
+        return newMessage;
     }
 
 

@@ -69,6 +69,8 @@ public class StateMachine {
         // Set roles according to CheapBFT since it covers all the roles needed
         Config.setCurrentProtocol("cheapbft");
         roles = Config.list("protocol.roles");
+
+
         phases = new ArrayList<>();
         states = new ArrayList<>();
         messages = new ArrayList<>();

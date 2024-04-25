@@ -14,7 +14,6 @@ public class ArchManager {
     public HashMap<String, Architecture> architectures;
 
     public String currentArchitectureKey;
-    public Architecture currentArchitecture;
 
     private Entity entity;
 
@@ -22,12 +21,12 @@ public class ArchManager {
         architectures = new HashMap<>();
         architectures.put("OX", new OXArchitecture(entity));
         architectures.put("XOV", new XOVArchitecture(entity));
-        architectures.put("OXII", new OXIIArchitecture(entity));
-        architectures.put("XOV++", new XOVppArchitecture(entity));
-        architectures.put("XOV#", new XOVSerialArchitecture(entity));
-        architectures.put("SXOV", new StreamXOVArchitecture(entity));
+//        architectures.put("OXII", new OXIIArchitecture(entity));
+//        architectures.put("XOV++", new XOVppArchitecture(entity));
+//        architectures.put("XOV#", new XOVSerialArchitecture(entity));
+//        architectures.put("SXOV", new StreamXOVArchitecture(entity));
 
-        currentArchitectureKey = "OX";
+        currentArchitectureKey = "XOV";
         this.entity = entity;
     }
 
@@ -41,15 +40,14 @@ public class ArchManager {
 
     public void setCurrentArchitecture(String arch) {
         currentArchitectureKey = arch;
-        currentArchitecture = architectures.get(arch);
     }
 
     public OrderResponse performOrdering(List<RequestData> block) {
-        return currentArchitecture.performOrdering(block);
+        return this.getCurrentArchitecture().performOrdering(block);
     }
 
     public ValidatorResponse performValidation(List<RequestData> block) {
-        return currentArchitecture.performValidation(block);
+        return this.getCurrentArchitecture().performValidation(block);
     }
 
     public List<String> getArchitectures() {

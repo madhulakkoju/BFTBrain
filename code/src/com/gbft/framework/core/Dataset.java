@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,11 +16,19 @@ public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
 
+    @Getter
+    protected Map<Integer, Long> recordCurrentVersion;
+
+    @Getter
+    public Map<Integer, Long> recordLatestVersion;
+
     public static final int DEFAULT_VALUE = 1000;
     public static final int RECORD_COUNT = Config.integer("workload.dataset-size");
 
     public Dataset() {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
+        recordCurrentVersion = new TreeMap<>();
+        recordLatestVersion = new TreeMap<>();
     }
 
     // use this for copying service state
@@ -28,6 +37,9 @@ public class Dataset {
         for (var entry : dataset.records.entrySet()) {
             this.records.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
         }
+        recordCurrentVersion = new TreeMap<>();
+        recordLatestVersion = new TreeMap<>();
+
     }
 
     public void setRecords(Map<Integer, Integer> records) {
@@ -84,9 +96,11 @@ public class Dataset {
     public void update(RequestData request, int value) {
         var record = request.getRecord();
         records.get(record).set(value);
+
+        this.recordCurrentVersion.put(record, recordCurrentVersion.getOrDefault(record, 0L) + 1);
     }
 
-    public void executeAhead(RequestData request) {
+    public RequestData executeAhead(RequestData request) {
         var op = request.getOperation();
         var record = request.getRecord();
 
@@ -110,7 +124,9 @@ public class Dataset {
             default:
                 value = records.get(record).get();
         }
-        request.toBuilder().setEarlyExecResult(value);
+        return request.toBuilder().setEarlyExecResult(value)
+                .setCurrentVersion(recordCurrentVersion.getOrDefault(record, 0L))
+                .build();
     }
 
 

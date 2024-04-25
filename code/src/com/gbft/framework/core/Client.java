@@ -11,6 +11,8 @@ import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MessageTally.QuorumId;
 import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,9 +47,9 @@ public class Client extends Entity {
 
     protected RequestGenerator createRequestGenerator() {
         if (Config.bool("benchmark.closed-loop.enable")) {
-            return new ClosedLoopRequestGenerator();
+            return new ClosedLoopRequestGenerator(this);
         } else {
-            return new RequestGenerator();
+            return new RequestGenerator(this);
         }
     }
 
@@ -126,6 +128,8 @@ public class Client extends Entity {
     }
 
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     public class RequestGenerator {
         public Client client;
 
@@ -218,7 +222,7 @@ public class Client extends Entity {
         public MessageData createEndorsementMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
                                          List<Integer> targets) {
             var message = createMessage(seqnum, viewNum, block, type, source, targets);
-            message.toBuilder().setIsEndorsementRequest(true);
+            message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
             return processMessage(message);
         }
 
@@ -251,7 +255,7 @@ public class Client extends Entity {
                 rolePlugin.roleReadLock.unlock();
             }
 
-            var nodesTargetRole = StateMachine.roles.indexOf(Config.string("nodes"));
+            var nodesTargetRole = StateMachine.roles.indexOf("nodes");
 
             var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
 
@@ -272,6 +276,7 @@ public class Client extends Entity {
 
             for (var req : message.getRequestsList()) {
                 this.client.getEndorsementQueue().put(req.getRequestNum(), message);
+                this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
             }
 
         }
@@ -280,11 +285,16 @@ public class Client extends Entity {
         protected void execute() {}
     }
 
+    @NoArgsConstructor
     public class ClosedLoopRequestGenerator extends RequestGenerator {
         protected final Semaphore semaphore = new Semaphore(Config.integer("benchmark.closed-loop.num-client"));
         protected final int block_size = Config.integer("benchmark.block-size");
 
         protected AtomicLong nextRequestNum = new AtomicLong(0l);
+
+        public ClosedLoopRequestGenerator(Client client) {
+            super(client);
+        }
 
         protected long reqnumcnt = 0l;
 
@@ -294,18 +304,12 @@ public class Client extends Entity {
                 threads.add(new Thread(new ClosedLoopRequestGeneratorRunner(client)));
             }
         }
-        
+
+        @NoArgsConstructor
+        @AllArgsConstructor
         protected class ClosedLoopRequestGeneratorRunner implements Runnable {
 
             public Client client;
-
-            public ClosedLoopRequestGeneratorRunner() {
-            }
-
-            public ClosedLoopRequestGeneratorRunner(Client client) {
-                this.client = client;
-            }
-
 
             @Override
             public void run() {
@@ -330,7 +334,9 @@ public class Client extends Entity {
                             // System.out.println("client " + id + " record " + (++ reqnumcnt));
                             // System.out.println("client " + id + " send request " + reqnum);
 
-                            if(this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
+                            if( this.client != null &&
+                                this.client.getArchManager() != null &&
+                                this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
                                 sendEndorserRequest(request);
                             }
                             else {

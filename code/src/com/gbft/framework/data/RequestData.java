@@ -374,6 +374,17 @@ private static final long serialVersionUID = 0L;
     return isTnxValid_;
   }
 
+  public static final int CURRENT_VERSION_FIELD_NUMBER = 13;
+  private long currentVersion_;
+  /**
+   * <code>int64 current_version = 13;</code>
+   * @return The currentVersion.
+   */
+  @java.lang.Override
+  public long getCurrentVersion() {
+    return currentVersion_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -423,6 +434,9 @@ private static final long serialVersionUID = 0L;
     }
     if (isTnxValid_ != false) {
       output.writeBool(12, isTnxValid_);
+    }
+    if (currentVersion_ != 0L) {
+      output.writeInt64(13, currentVersion_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -481,6 +495,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(12, isTnxValid_);
     }
+    if (currentVersion_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt64Size(13, currentVersion_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -522,6 +540,8 @@ private static final long serialVersionUID = 0L;
         != other.getEarlyExecResult()) return false;
     if (getIsTnxValid()
         != other.getIsTnxValid()) return false;
+    if (getCurrentVersion()
+        != other.getCurrentVersion()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -563,6 +583,9 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + IS_TNX_VALID_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getIsTnxValid());
+    hash = (37 * hash) + CURRENT_VERSION_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getCurrentVersion());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -724,6 +747,8 @@ private static final long serialVersionUID = 0L;
 
       isTnxValid_ = false;
 
+      currentVersion_ = 0L;
+
       return this;
     }
 
@@ -775,6 +800,7 @@ private static final long serialVersionUID = 0L;
       result.replySize_ = replySize_;
       result.earlyExecResult_ = earlyExecResult_;
       result.isTnxValid_ = isTnxValid_;
+      result.currentVersion_ = currentVersion_;
       onBuilt();
       return result;
     }
@@ -882,6 +908,9 @@ private static final long serialVersionUID = 0L;
       if (other.getIsTnxValid() != false) {
         setIsTnxValid(other.getIsTnxValid());
       }
+      if (other.getCurrentVersion() != 0L) {
+        setCurrentVersion(other.getCurrentVersion());
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -978,6 +1007,11 @@ private static final long serialVersionUID = 0L;
 
               break;
             } // case 96
+            case 104: {
+              currentVersion_ = input.readInt64();
+
+              break;
+            } // case 104
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1686,6 +1720,37 @@ private static final long serialVersionUID = 0L;
     public Builder clearIsTnxValid() {
       
       isTnxValid_ = false;
+      onChanged();
+      return this;
+    }
+
+    private long currentVersion_ ;
+    /**
+     * <code>int64 current_version = 13;</code>
+     * @return The currentVersion.
+     */
+    @java.lang.Override
+    public long getCurrentVersion() {
+      return currentVersion_;
+    }
+    /**
+     * <code>int64 current_version = 13;</code>
+     * @param value The currentVersion to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCurrentVersion(long value) {
+      
+      currentVersion_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int64 current_version = 13;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearCurrentVersion() {
+      
+      currentVersion_ = 0L;
       onChanged();
       return this;
     }

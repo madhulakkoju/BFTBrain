@@ -4,10 +4,10 @@ import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -78,35 +78,60 @@ public class Architecture {
     }
 
     public RequestData executeRequestAhead(RequestData request){
-
-        entity.getDataset().executeAhead(request);
-
-        return request;
+        return entity.getDataset().executeAhead(request);
     }
 
     public List<RequestData> executeRequestsAhead(List<RequestData> block){
-        for (RequestData request : block) {
-            entity.getDataset().executeAhead(request);
+
+        List<RequestData> dummyList = new ArrayList<RequestData>();
+        dummyList.addAll(block);
+
+        while(!block.isEmpty()){
+            block.remove(0);
+        }
+
+        for (RequestData request : dummyList) {
+            block.add(entity.getDataset().executeAhead(request));
         }
         return block;
     }
 
 
-    public MessageData createEndorsedMessageToClient(MessageData oldMessage){
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage, List<RequestData> requests){
         //Create a new message to be sent to the client
         //Update this with the actual logic
-        var nodesTargetRole = StateMachine.roles.indexOf(Config.string("client"));
+        var targetClients = StateMachine.roles.indexOf("client");
 
         var clients = this.entity.getRolePlugin().getRoleEntities(
                 oldMessage.getSequenceNum(),
                 oldMessage.getViewNum(),
                 StateMachine.NORMAL_PHASE,
-                nodesTargetRole);
+                targetClients);
 
-        var targetsList = oldMessage.getTargetsList();
-        targetsList.removeAll(targetsList);
+        var newMessage = this.entity.createMessage(
+                oldMessage.getSequenceNum(),
+                oldMessage.getViewNum(),
+                requests,
+                oldMessage.getMessageType(),
+                entity.getId(),
+                clients
+        );
+        newMessage = newMessage.toBuilder().setXovState(2)
+                .setIsEndorsementRequest(true)
+                .build();
 
-        targetsList.addAll(clients);
-        return oldMessage;
+        return newMessage;
+    }
+
+    public boolean isValidRequest(RequestData request){
+        //Check if the request is valid
+        //Update this with the actual logic
+
+        if(this.entity.getDataset().getRecordCurrentVersion().get(request.getRecord()) != request.getCurrentVersion()){
+            request = request.toBuilder().setIsTnxValid(false).build();
+            return false;
+        }
+
+        return true;
     }
 }

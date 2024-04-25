@@ -110,4 +110,10 @@ public interface RequestDataOrBuilder extends
    * @return The isTnxValid.
    */
   boolean getIsTnxValid();
+
+  /**
+   * <code>int64 current_version = 13;</code>
+   * @return The currentVersion.
+   */
+  long getCurrentVersion();
 }

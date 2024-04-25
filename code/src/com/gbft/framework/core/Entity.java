@@ -37,19 +37,11 @@ import com.gbft.framework.statemachine.Condition;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
-import com.gbft.framework.utils.BenchmarkManager;
-import com.gbft.framework.utils.CheckpointManager;
-import com.gbft.framework.utils.Config;
-import com.gbft.framework.utils.DataUtils;
-import com.gbft.framework.utils.EntityMapUtils;
-import com.gbft.framework.utils.FeatureManager;
-import com.gbft.framework.utils.MessageTally;
+import com.gbft.framework.utils.*;
 import com.gbft.framework.utils.MessageTally.QuorumId;
-import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
 import com.gbft.plugin.role.BasicPrimaryPlugin;
 import com.gbft.plugin.role.PrimaryPassivePlugin;
-import com.gbft.framework.utils.Timekeeper;
 import com.google.protobuf.ByteString;
 
 import io.grpc.Grpc;
@@ -158,13 +150,19 @@ public abstract class Entity {
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
 
+    LogUtils logger = new LogUtils();
+
     public Entity(int id, CoordinatorUnit coordinator) {
         this.id = id;
         this.coordinator = coordinator;
+        logger.CoreIntialize(id);
 
         prefix = "{" + id + "} ";
 
         archManager = new ArchManager(this);
+
+        endorsementQueue = new HashMap<Long, MessageData>();
+        endorsementCounts = new HashMap<Long, Integer>();
 
         blockSize = Config.integer("benchmark.block-size");
         checkpointSize = Config.integer("benchmark.checkpoint-size");
@@ -199,7 +197,7 @@ public abstract class Entity {
         threads = new ArrayList<>();
         timekeeper = new Timekeeper(this);
         threads.add(new Thread(() -> executor()));
-        threads.add(new Thread(() -> endorser()));
+        //threads.add(new Thread(() -> endorser()));
         threads.add(new Thread(() -> triggerSlowProposal()));
         threads.add(new Thread(() -> aggStateUpdate()));
 
@@ -332,72 +330,73 @@ public abstract class Entity {
     }
 
     public void handleMessage(MessageData message) {
+        try {
+            //logger.write("all .. Message received: " + message.toString());
 
-        if (Printer.verbosity >= Verbosity.VVV) {
-            Printer.print(Verbosity.VVV, prefix, "Processing ", message);
-        }
+            if (Printer.verbosity >= Verbosity.VVV) {
+                Printer.print(Verbosity.VVV, prefix, "Processing ", message);
+            }
 
-        for (var i = messagePlugins.size() - 1; i >= 0; i--) {
-            var plugin = messagePlugins.get(i);
-            message = plugin.processIncomingMessage(message);
-        }
+            for (var i = messagePlugins.size() - 1; i >= 0; i--) {
+                var plugin = messagePlugins.get(i);
+                message = plugin.processIncomingMessage(message);
+            }
 
-        if (message.getFlagsList().contains(DataUtils.INVALID)) {
-            return;
-        }
+            if (message.getFlagsList().contains(DataUtils.INVALID)) {
+                logger.errors("Invalid message received: " + message.getFlagsList().toString());
+                //return;
+            }
 
+//            logger.write("First Condition check: " + !this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
+//            logger.write("IS Endorsement Req: " + message.getIsEndorsementRequest());
+//            logger.write("XOV State: " + message.getXovState());
 
-        if( ! this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest()){
-            //Here, it is an endorsement. so execute ahead and send back to client
-            this.getArchManager().currentArchitecture.executeRequestsAhead(message.getRequestsList());
-            var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message);
+            if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
+                //Here, it is an endorsement. so execute ahead and send back to client
+                //logger.write("Endorsement Request received to Node");
+                var aheadExecutedReqs = this.getArchManager().getCurrentArchitecture().executeRequestsAhead(message.getRequestsList());
+                var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message, aheadExecutedReqs);
+                //logger.write("Endorsement Response sending to client");
+                sendMessage(messageToClient);
+                //logger.write("Endorsement Response sent to client + " + messageToClient.toString());
+                return;
+            }
 
-            sendMessage(messageToClient);
-        }
+            //logger.write("Message received: " + message.toString());
+            logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 
-        if( this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest()){
+            if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
+                //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
+                //Endorsement Response
+                logger.write("Endorsement Response received");
+                for (var req : message.getRequestsList()) {
+                    //logger.write("Request: " + req.toString());
+                    if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+                        logger.write("Request found in endorsement queue:  " + req.getRequestNum());
 
-            //Endorsement Policy: atleast 1 endorsed response needed to pass on
+                        this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
+                        logger.write("Increasing counts of received transaction ids");
+                        if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
+                            //Remove the request from the queue
+                            logger.write("Removing requests from Queue and counts");
+                            this.getEndorsementQueue().remove(req.getRequestNum());
+                            this.getEndorsementCounts().remove(req.getRequestNum());
+                            logger.write("Removed requests from Queue and counts");
 
-            switch (message.getXovState()){
-                case 0:
-                    //Endorsement Request
-                    break;
-                case 1:
-                    //Endorsement Response
-                    for (var req: message.getRequestsList()) {
-
-                        if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-
-                            this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-
-                            if(this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy){
-                                //Remove the request from the queue
-                                this.getEndorsementQueue().remove(req.getRequestNum());
-                                this.getEndorsementCounts().remove(req.getRequestNum());
-
-                                // Send message to state 3 to Leader
-                                if(requestGenerator != null){
-                                    //Send the request to the client
-                                    requestGenerator.sendRequest(req);
-                                }
-
+                            // Send message to state 3 to Leader
+                            if (requestGenerator != null) {
+                                //Send the request to the client
+                                logger.write("Sending requests to Leader to continue..");
+                                requestGenerator.sendRequest(req);
                             }
                         }
                     }
-                    break;
+                }
+                return;
             }
 
-
-
-
-
-        }
-
-
-
-
+        // old code rom here
 
         var type = message.getMessageType();
         if (type == StateMachine.REQUEST) {
@@ -446,6 +445,10 @@ public abstract class Entity {
 
         var start = DataUtils.toLong(message.getTimestamp());
         benchmarkManager.messageProcessed(start, System.nanoTime());
+        }
+        catch (Exception e){
+            logger.errors("Error in handling message: " + e.getMessage());
+        }
     }
 
     public void stateUpdateLoop(long seqnum) {
