@@ -101,22 +101,46 @@ public class Architecture {
     }
 
 
-    public MessageData createEndorsedMessageToClient(MessageData oldMessage){
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage,List<RequestData> requests){
         //Create a new message to be sent to the client
         //Update this with the actual logic
+//        entity.l.write(entity.getId(),"g0");
+//        var nodesTargetRole = StateMachine.roles.indexOf("client");
+//        entity.l.write(entity.getId(),"g1");
+//
+//        oldMessage = oldMessage.toBuilder().setXovState(1).setIsEndorsementRequest(true).build();
+//        entity.l.write(entity.getId(),"g2");
+//
+//        var clients = this.entity.getRolePlugin().getRoleEntities(
+//                oldMessage.getSequenceNum(),
+//                oldMessage.getViewNum(),
+//                StateMachine.NORMAL_PHASE,
+//                nodesTargetRole);
+//        entity.l.write(entity.getId(), "clients:"+clients);
+//        var targetsList = oldMessage.getTargetsList();
+//        entity.l.write(entity.getId(),"g3");
+//        targetsList.removeAll(targetsList);
+//        entity.l.write(entity.getId(),"g4");
+//
+//        targetsList.addAll(clients);
+//        return oldMessage;
         var nodesTargetRole = StateMachine.roles.indexOf("client");
-
-        oldMessage = oldMessage.toBuilder().setXovState(1).setIsEndorsementRequest(true).build();
-
         var clients = this.entity.getRolePlugin().getRoleEntities(
                 oldMessage.getSequenceNum(),
                 oldMessage.getViewNum(),
                 StateMachine.NORMAL_PHASE,
                 nodesTargetRole);
-        var targetsList = oldMessage.getTargetsList();
-        targetsList.removeAll(targetsList);
+        var newmessage = this.entity.createMessage(oldMessage.getSequenceNum(), oldMessage.getViewNum(), requests, oldMessage.getMessageType(), oldMessage.getSource(), clients);
+        newmessage = newmessage.toBuilder().setXovState(2)
+                .setIsEndorsementRequest(true)
+                .build();
 
-        targetsList.addAll(clients);
-        return oldMessage;
+        var targetsList = oldMessage.getTargetsList();
+        entity.l.write(entity.getId(),"g3"+ targetsList);
+        //var message = createMessage(seqnum, viewNum, block, type, source, targets);
+        //message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
+        entity.l.write(entity.getId(),"g5"+newmessage.toString());
+        //targetsList.addAll(clients);
+        return newmessage;
     }
 }

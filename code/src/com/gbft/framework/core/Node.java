@@ -32,7 +32,7 @@ public class Node extends Entity {
         if (checkpoint.getReplies(seqnum) == null) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
-                l.write(id,"\nrequest:"+request);
+                l.write(id,"\nnode exec request:"+request);
                 replies.put(request.getRequestNum(), dataset.execute(request));
             }
             checkpoint.addReplies(seqnum, replies);

@@ -4,36 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="include execute intiations and added block retrieve using seq num">
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="xov half completed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/DigestMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/DigestMessagePlugin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +129,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713904639035</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="xov half completed">
+      <option name="closed" value="true" />
+      <created>1714027118120</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1714027118120</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -169,6 +155,7 @@
     <MESSAGE value="Base code for Architecture implementations" />
     <MESSAGE value="included base code for ordering and fixed all old codebase to removbe common orderer and validator" />
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
-    <option name="LAST_COMMIT_MESSAGE" value="include execute intiations and added block retrieve using seq num" />
+    <MESSAGE value="xov half completed" />
+    <option name="LAST_COMMIT_MESSAGE" value="xov half completed" />
   </component>
 </project>

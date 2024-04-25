@@ -119,7 +119,9 @@ public class Dataset {
         //recLatestVersion.put(record,recLatestVersion.get(record)+1);
         // set version num as requestnum
         //send currentversion = latestversion to the client
-        return request.toBuilder().setEarlyExecResult(value).build();
+        var request1 = request.toBuilder().setEarlyExecResult(value).build();
+        //l.write(6,"req:"+request1);
+        return request1;
     }
 
 

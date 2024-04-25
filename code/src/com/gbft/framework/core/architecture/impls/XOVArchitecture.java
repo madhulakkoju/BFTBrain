@@ -8,7 +8,6 @@ import com.gbft.framework.core.architecture.ValidatorResponse;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.MiscUtils;
 
 import java.util.ArrayList;
@@ -78,22 +77,27 @@ public class XOVArchitecture extends Architecture {
 
 
 
-    public MessageData createEndorsedMessageToClient(MessageData oldMessage){
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage,List<RequestData> requests){
         //Create a new message to be sent to the client
         //Update this with the actual logic
-        var nodesTargetRole = StateMachine.roles.indexOf(Config.string("client"));
-
+        var nodesTargetRole = StateMachine.roles.indexOf("client");
         var clients = this.entity.getRolePlugin().getRoleEntities(
                 oldMessage.getSequenceNum(),
                 oldMessage.getViewNum(),
                 StateMachine.NORMAL_PHASE,
                 nodesTargetRole);
+        var newmessage = this.entity.createMessage(oldMessage.getSequenceNum(), oldMessage.getViewNum(), requests, oldMessage.getMessageType(), entity.getId(), clients);
+        newmessage = newmessage.toBuilder().setXovState(2)
+                .setIsEndorsementRequest(true)
+                .build();
 
-       var targetsList = oldMessage.getTargetsList();
-       targetsList.removeAll(targetsList);
-
-       targetsList.addAll(clients);
-        return oldMessage;
+        var targetsList = oldMessage.getTargetsList();
+        entity.l.write(entity.getId(),"g3"+ targetsList);
+        //var message = createMessage(seqnum, viewNum, block, type, source, targets);
+        //message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
+        //entity.l.write(entity.getId(),"g5"+newmessage.toString());
+        //targetsList.addAll(clients);
+        return newmessage;
     }
 
 
