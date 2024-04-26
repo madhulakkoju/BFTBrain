@@ -789,25 +789,28 @@ public abstract class Entity {
             } else {
                 // dynamic switching via learning agent
                 // or client
-                String decision = checkpoint.getDecision();
-                logger.write("Decision LA print: " + decision);
+//                String decision = checkpoint.getDecision();
+//                logger.write("Decision LA print: " + decision);
+//
+//                if(decision.equals("repeat")){
+//                    logger.write("initiating repeat");
+//                    nextProtocol = checkpoint.getProtocol();
+//                    nextArchitecture = checkpoint.getArchitecture();
+//                }
+//                else{
+//                    if(decision.contains("_")){
+//                        nextProtocol = decision.split("_")[0];
+//                        nextArchitecture = decision.split("_")[1];
+//                    }
+//                    else{
+//                        nextProtocol = decision;
+//                        nextArchitecture = archManager.getRandomArchString();
+//                    }
+//                }
+//
 
-                if(decision.equals("repeat")){
-                    logger.write("initiating repeat");
-                    nextProtocol = checkpoint.getProtocol();
-                    nextArchitecture = checkpoint.getArchitecture();
-                }
-                else{
-                    if(decision.contains("_")){
-                        nextProtocol = decision.split("_")[0];
-                        nextArchitecture = decision.split("_")[1];
-                    }
-                    else{
-                        nextProtocol = decision;
-                        nextArchitecture = archManager.getRandomArchString();
-                    }
-                }
-
+                nextProtocol = checkpoint.getDecision();
+                nextArchitecture = archManager.getRandomArchString();
 
 //                nextProtocol = decision; //.split("_")[0];
 //                nextArchitecture = archManager.getRandomArchString();
@@ -817,6 +820,7 @@ public abstract class Entity {
             // warm up episodes
             if (nextProtocol.equals("repeat")) {
                 nextProtocol = checkpoint.getProtocol();
+                //nextArchitecture = archManager.getRandomArchString();
             }
             System.out.println(prefix + "nextProtocol = " + nextProtocol);
             System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
@@ -863,6 +867,7 @@ public abstract class Entity {
             reportSequence += EPISODE_SIZE;
             exchangeSequence += EPISODE_SIZE;
             this.getArchManager().setCurrentArchitecture(nextArchitecture);
+            logger.write("Switching to protocol: " + nextProtocol + " and architecture: " + nextArchitecture);
             currentEpisodeNum.incrementAndGet();
         }
     }

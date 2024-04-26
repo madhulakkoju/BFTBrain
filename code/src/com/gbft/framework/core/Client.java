@@ -14,6 +14,7 @@ import com.gbft.framework.utils.Printer.Verbosity;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,9 +258,17 @@ public class Client extends Entity {
             }
 
             var nodesTargetRole = StateMachine.roles.indexOf("nodes");
-
-            var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
-
+            List<Integer> targets = new ArrayList<>();
+            var targetsList = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
+            for(var target: targetsList){
+                if( reqnum % 2 == 0 && target % 2 == 0) {
+                    targets.add(target);
+                }
+                else if( reqnum % 2 != 0 && target % 2 != 0) {
+                    targets.add(target);
+                }
+            }
+            logger.write("Reqnum: " + reqnum + " Targets: " + targets.toString() + "\n");
             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
