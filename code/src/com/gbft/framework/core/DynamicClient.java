@@ -1,5 +1,8 @@
 package com.gbft.framework.core;
 
+import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.data.RequestData;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -7,9 +10,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.LockSupport;
 import java.util.stream.IntStream;
-
-import com.gbft.framework.coordination.CoordinatorUnit;
-import com.gbft.framework.data.RequestData;
 
 public class DynamicClient extends Client {
 
@@ -36,20 +36,23 @@ public class DynamicClient extends Client {
 
     @Override
     public void execute(long seqnum) {
-        super.execute(seqnum);
+        try{
+            super.execute(seqnum);
+            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
 
-        var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+            var tally = checkpoint.getMessageTally();
+            var viewnum = tally.getMaxQuorum(seqnum);
+            var replies = tally.getQuorumReplies(seqnum, viewnum);
 
-        var tally = checkpoint.getMessageTally();
-        var viewnum = tally.getMaxQuorum(seqnum);
-        var replies = tally.getQuorumReplies(seqnum, viewnum);
+            if (viewnum > currentViewNum) {
+                currentViewNum = viewnum;
+            }
 
-        if (viewnum > currentViewNum) {
-            currentViewNum = viewnum;
-        }
-
-        if (replies != null) {
-            updateInterval(replies.keySet(), seqnum);
+            if (replies != null) {
+                updateInterval(replies.keySet(), seqnum);
+            }
+        }catch (Exception e){
+            l.write(999,"dynexe"+e.getMessage());
         }
     }
 

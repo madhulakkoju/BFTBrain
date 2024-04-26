@@ -85,6 +85,7 @@ public class Client extends Entity {
                 var reqnum = entry.getKey();
                 var request = checkpoint.getRequest(reqnum);
                 dataset.update(request, entry.getValue());
+                l.write(id,"\nrecord_executed:"+request.getRequestNum());
 
                 // benchmarkManager.requestExecuted(reqnum, now);
             }
@@ -160,17 +161,8 @@ public class Client extends Entity {
 
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
-
-
                     // from here sending generated request to leader
                     sendRequest(request);
-
-
-
-
-
-
-
 
                     while (System.nanoTime() < next) {
                         LockSupport.parkNanos(intervalns / 3);
@@ -231,8 +223,6 @@ public class Client extends Entity {
                                          List<Integer> targets) {
             var message = createMessage(seqnum, viewNum, block, type, source, targets);
             message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
-//            l.write(id,"cop:"+message.toString());
-//            l.write(id,"\n xov: "+message.getXovState());
             return processMessage(message);
         }
 
@@ -271,7 +261,14 @@ public class Client extends Entity {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
             var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
+
             sendMessage(message);
+
+            for (var req : message.getRequestsList()) {
+                //l.write(id,"what: "+this.client.getEndorsementQueue().toString()); getting error
+                this.client.getEndorsementQueue().put(req.getRequestNum(), message);
+                this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
+            }
 
             if (Printer.verbosity >= Verbosity.VVV) {
                 Printer.print(Verbosity.VVV, prefix, "Endorser Request created: ", request);
@@ -279,11 +276,9 @@ public class Client extends Entity {
 
 
 
-            //this.client.getEndorsementQueue().put(message.getRequestsList().get(0).getRequestNum(), message);
 
-            for (var req : message.getRequestsList()) {
-                this.client.getEndorsementQueue().put(req.getRequestNum(), message);
-            }
+
+            //this.client.getEndorsementQueue().put(message.getRequestsList().get(0).getRequestNum(), message);
 
         }
 
@@ -328,7 +323,6 @@ public class Client extends Entity {
 
             @Override
             public void run() {
-                //l.write(id,"clr entered");
                 while (running) {
                     try {
                         semaphore.acquire();
@@ -342,14 +336,12 @@ public class Client extends Entity {
                         for (int i = 0; i < block_size + read_only_buf; i ++) {
                             var reqnum = nextRequestNum.getAndIncrement();
                             var request = dataset.createRequest(reqnum);
-                            //l.write(id,"clr created");
+
 
                             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                                 read_only_buf ++;
                             }
 
-                            // System.out.println("client " + id + " record " + (++ reqnumcnt));
-                            // System.out.println("client " + id + " send request " + reqnum);
                             if(this.client == null){
                                 l.write(id,"null");
                                 if(this.client.getArchManager() == null){
@@ -369,6 +361,7 @@ public class Client extends Entity {
                             }
                         }
                     } catch (InterruptedException e) {
+                        l.write(999,"creating requests:"+e.getMessage());
                         e.printStackTrace();
                     }
                 }

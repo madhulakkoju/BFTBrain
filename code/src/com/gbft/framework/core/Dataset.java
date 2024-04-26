@@ -15,12 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
-    protected Map<Integer, Long> recCurrVersion;
-    protected Map<Integer, Long> recLatestVersion;
+    protected Map<Integer, Long> recCurrVersion = new TreeMap<>();
+    protected Map<Integer, Long> recLatestVersion = new TreeMap<>();
 
     public static final int DEFAULT_VALUE = 1000;
     public static final int RECORD_COUNT = Config.integer("workload.dataset-size");
     public LogWrite l= new LogWrite();
+
 
     public Dataset() {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
@@ -32,6 +33,7 @@ public class Dataset {
         for (var entry : dataset.records.entrySet()) {
             this.records.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
         }
+
     }
 
     public void setRecords(Map<Integer, Integer> records) {
@@ -86,44 +88,57 @@ public class Dataset {
     }
 
     public void update(RequestData request, int value) {
-        var record = request.getRecord();
-        records.get(record).set(value);
-        recCurrVersion.put(record,recCurrVersion.getOrDefault(record,Long.valueOf(0))+1);
-        l.write(4,"\nrecord_executed:"+record+" value:"+value);
+        try{
+            var record = request.getRecord();
+            records.get(record).set(value);
+            recCurrVersion.put(record,recCurrVersion.getOrDefault(record,Long.valueOf(0))+1);
+            //l.write(4,"\nrecord_executed:"+record+" value:"+value);
+        }catch(Exception e){
+            l.write(999,"update:"+e.getMessage());
+        }
+
 
     }
 
     public RequestData executeAhead(RequestData request) {
-        var op = request.getOperation();
-        var record = request.getRecord();
+        try {
+            var op = request.getOperation();
+            var record = request.getRecord();
 
-        int value = 0;
+            int value = 0;
 
-        switch (op) {
-            case ADD:
-                value = records.get(record).get() + request.getValue();
-                break;
-            case SUB:
-                value = records.get(record).get() - request.getValue();
-                break;
-            case INC:
-                value = records.get(record).get() + 1;
-                break;
-            case DEC:
-                value = records.get(record).get() - 1;
-                break;
-            case READ_ONLY:
-                value = records.get(record).get();
-            default:
-                value = records.get(record).get();
+            switch (op) {
+                case ADD:
+                    value = records.get(record).get() + request.getValue();
+                    break;
+                case SUB:
+                    value = records.get(record).get() - request.getValue();
+                    break;
+                case INC:
+                    value = records.get(record).get() + 1;
+                    break;
+                case DEC:
+                    value = records.get(record).get() - 1;
+                    break;
+                case READ_ONLY:
+                    value = records.get(record).get();
+                default:
+                    value = records.get(record).get();
+            }
+            //recLatestVersion.put(record,recLatestVersion.getOrDefault(record,Integer.toUnsignedLong(0))+1);
+            // set version num as requestnum
+            //send currentversion = latestversion to the client
+            //recCurrVersion.getOrDefault(Long.valueOf(record),Long.valueOf(0))
+            var request1 = request.toBuilder().setEarlyExecResult(value)
+                    .setCurrVersion(recCurrVersion.getOrDefault(record, Long.valueOf(1)))
+                    .build();
+            //l.write(6, "req1:" + request1);
+            return request1;
         }
-        //recLatestVersion.put(record,recLatestVersion.getOrDefault(record,Integer.toUnsignedLong(0))+1);
-        // set version num as requestnum
-        //send currentversion = latestversion to the client
-        var request1 = request.toBuilder().setEarlyExecResult(value)
-                .setCurrVersion(recCurrVersion.getOrDefault(record,Long.valueOf(0))).build();
-        //l.write(6,"req:"+request1);
-        return request1;
+        catch(Exception e){
+            l.write( 999,"error: "+e.getMessage());
+        }
+        return  null;
     }
 
 

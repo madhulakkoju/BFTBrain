@@ -4,20 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="xov node side fix">
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="xov node side fix and validation completed">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/LogWrite.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/LogWrite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/DynamicClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/DynamicClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.framework.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.framework.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -151,7 +149,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714038828617</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="xov node side fix and validation completed">
+      <option name="closed" value="true" />
+      <created>1714071707296</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1714071707296</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -171,6 +177,7 @@
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
     <MESSAGE value="xov half completed" />
     <MESSAGE value="xov node side fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="xov node side fix" />
+    <MESSAGE value="xov node side fix and validation completed" />
+    <option name="LAST_COMMIT_MESSAGE" value="xov node side fix and validation completed" />
   </component>
 </project>

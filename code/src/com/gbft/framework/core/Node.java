@@ -27,8 +27,8 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
 
     protected boolean validate(RequestData request){
-       if( dataset.recCurrVersion.get(request.getRecord()) != request.getCurrVersion() ){
-           request= request.toBuilder().setIsTnxValid(false).build();
+       if( dataset.recCurrVersion.getOrDefault(request.getRecord(),Long.valueOf(1)) != request.getCurrVersion() ){
+           //request= request.toBuilder().setIsTnxValid(false).build();
            return false;
        }
        return true;
@@ -42,11 +42,15 @@ public class Node extends Entity {
         if (checkpoint.getReplies(seqnum) == null) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
-                if(this.getArchManager().getCurrentArchitectureKey().equals("XOV") ){
+                if(this.getArchManager().getCurrentArchitectureKey().equals("XOV")){
                    if(validate(request)){
                        replies.put(request.getRequestNum(),request.getEarlyExecResult());
                        // update value to node
                        dataset.update(request,request.getEarlyExecResult());
+                       l.write(id,"validated");
+                   }
+                   else {
+                       l.write(id,"rejected");
                    }
                 }
                 else{

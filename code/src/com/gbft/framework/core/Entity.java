@@ -75,6 +75,8 @@ public abstract class Entity {
     @Getter
     public Map<Long, MessageData> endorsementQueue;
 
+    public Map<Long,Boolean> endq;
+
     @Getter
     public Map<Long, Integer> endorsementCounts;
 
@@ -145,6 +147,9 @@ public abstract class Entity {
 
         blockSize = Config.integer("benchmark.block-size");
         checkpointSize = Config.integer("benchmark.checkpoint-size");
+
+        endorsementCounts = new HashMap<>();
+        endorsementQueue = new HashMap<>();
 
         learning = Config.bool("general.learning");
         reportSequence = Config.integer("general.report-sequence");
@@ -310,8 +315,6 @@ public abstract class Entity {
 
     public void handleMessage(MessageData message) {
 
-        l.write(id,"\n message:"+message.toString());
-
         if (Printer.verbosity >= Verbosity.VVV) {
             Printer.print(Verbosity.VVV, prefix, "Processing ", message);
         }
@@ -325,113 +328,91 @@ public abstract class Entity {
             return;
         }
 
-        l.write(id,"client xov endorced"+ !this.isClient()+" "+this.getArchManager().getCurrentArchitectureKey().contains("XOV")+" "+message.getIsEndorsementRequest());
-        //l.write(id,this.isClient()+" for client: "+message.toString());
+        //l.write(id,"client xov endorced"+ !this.isClient()+" "+this.getArchManager().getCurrentArchitectureKey().contains("XOV")+" "+message.getIsEndorsementRequest());
+
         if( !this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getIsEndorsementRequest() && message.getXovState() == 1){
             //Here, it is an endorsement. so execute ahead and send back to client
-
             var messageReqList = message.getRequestsList();
 
             var exe_requests =this.getArchManager().getCurrentArchitecture().executeRequestsAhead(messageReqList);
-            l.write(id,"prevmsg:"+message.toString());
-
             var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message,exe_requests);
-
-            l.write(id, "\nendorced executed reqnum : "+messageToClient);
             sendMessage(messageToClient);
-
-
+            return;
         }
-        //is endorcement request is not there for ox requests
-        else if( this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV")  &&  message.getXovState() == 2){
-
+        if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
             //Endorsement Policy: atleast 1 endorsed response needed to pass on
-            l.write(id, "message response:"+message.toString());
-            switch (message.getXovState()){
-                case 0:
-                    //Endorsement Request
-                    break;
-                case 1:
-                    //Endorsement Request
-                    break;
-                case 2:
-                    //Endorsement Response
-                    for (var req: message.getRequestsList()) {
+            //Endorsement Response
+            for (var req : message.getRequestsList()) {
 
-                        if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+                if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
 
-                            this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
+                    this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
 
-                            if(this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy){
-                                //Remove the request from the queue
-                                this.getEndorsementQueue().remove(req.getRequestNum());
-                                this.getEndorsementCounts().remove(req.getRequestNum());
+                    if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
+                        //Remove the request from the queue
+                        this.getEndorsementQueue().remove(req.getRequestNum());
+                        this.getEndorsementCounts().remove(req.getRequestNum());
 
-                                l.write(id,"\nreqgenerator:"+(requestGenerator != null));
-                                // Send message to state 3 to Leader
-                                if(requestGenerator != null){
-                                    //Send the request to the client
-                                    l.write(id,"\nendoresed requestnum:"+req.getRequestNum());
-                                    requestGenerator.sendRequest(req);
-                                }
+                        // Send message to state 3 to Leader
+                        if (requestGenerator != null) {
+                            //Send the request to the client
+                            requestGenerator.sendRequest(req);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        l.write(id,"\n message for consensus seqnum:"+message.getSequenceNum());
 
+        var type = message.getMessageType();
+        if (type == StateMachine.REQUEST) {
+            var request = message.getRequestsList().get(0);
+            var seqnum = getRequestSequence(request.getRequestNum());
+            if (seqnum == null) {
+                // slow proposal
+                if (slowProposalFault.getPerRequestDelay(this.id) > 0) {
+                    // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] add slow proposal: reqnum=" + request.getRequestNum());
+                    addSlowProposal(request);
+                } else {
+                    // clean up if switch back to fault free
+                    if (slowProposalRequests.size() > 0) {
+                        synchronized (slowProposalRequests) {
+                            while (slowProposalRequests.size() > 0) {
+                                pendingRequests.offer(slowProposalRequests.remove(0));
                             }
                         }
                     }
-                    break;
+                    // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] received request: reqnum=" + request.getRequestNum());
+                    pendingRequests.offer(request);
+                    stateUpdateLoop(nextSequence);
+                }
+            }
+        } else {
+            Long seqnum = message.getSequenceNum();
+            if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
+                return;
             }
 
-        }
-        else if( !this.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
-
-            var type = message.getMessageType();
-            if (type == StateMachine.REQUEST) {
-                var request = message.getRequestsList().get(0);
-                var seqnum = getRequestSequence(request.getRequestNum());
-                if (seqnum == null) {
-                    // slow proposal
-                    if (slowProposalFault.getPerRequestDelay(this.id) > 0) {
-                        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] add slow proposal: reqnum=" + request.getRequestNum());
-                        addSlowProposal(request);
-                    } else {
-                        // clean up if switch back to fault free
-                        if (slowProposalRequests.size() > 0) {
-                            synchronized (slowProposalRequests) {
-                                while (slowProposalRequests.size() > 0) {
-                                    pendingRequests.offer(slowProposalRequests.remove(0));
-                                }
-                            }
-                        }
-                        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] received request: reqnum=" + request.getRequestNum());
-                        pendingRequests.offer(request);
-                        stateUpdateLoop(nextSequence);
-                    }
-                }
-            } else {
-                Long seqnum = message.getSequenceNum();
-                if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
-                    return;
-                }
-
-                if (!isValidMessage(message)) {
-                    return;
-                }
-
-                var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-                checkpoint.tally(message);
-                checkpoint.addAggregationValue(message);
-                timekeeper.messageReceived(seqnum, currentViewNum, checkpoint.getState(seqnum), message);
-
-                if (Printer.verbosity >= Verbosity.VVV) {
-                    Printer.print(Verbosity.VVV, prefix, "Tally message ", message);
-                }
-
-                stateUpdateLoop(seqnum);
+            if (!isValidMessage(message)) {
+                return;
             }
 
-            var start = DataUtils.toLong(message.getTimestamp());
-            benchmarkManager.messageProcessed(start, System.nanoTime());
+            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+            checkpoint.tally(message);
+            checkpoint.addAggregationValue(message);
+            timekeeper.messageReceived(seqnum, currentViewNum, checkpoint.getState(seqnum), message);
+
+            if (Printer.verbosity >= Verbosity.VVV) {
+                Printer.print(Verbosity.VVV, prefix, "Tally message ", message);
+            }
+
+            stateUpdateLoop(seqnum);
         }
+
+        var start = DataUtils.toLong(message.getTimestamp());
+        benchmarkManager.messageProcessed(start, System.nanoTime());
+
     }
 
     public void stateUpdateLoop(long seqnum) {
@@ -685,8 +666,11 @@ public abstract class Entity {
                 transition = executionQueue.get(lastExecutedSequenceNum + 1);
                 executionQueue.entrySet().removeIf(entry -> entry.getKey() <= lastExecutedSequenceNum + 1); 
                 lastExecutedSequenceNum += 1;
-
-                execute(lastExecutedSequenceNum);
+                try{
+                    execute(lastExecutedSequenceNum);
+                }catch (Exception e){
+                    l.write(999,"error in execute +"+e.getMessage());
+                }
                 // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] executed by executor thread: seqnum=" + lastExecutedSequenceNum);
             }
 
@@ -706,7 +690,12 @@ public abstract class Entity {
                             } catch (InterruptedException e) {
                             }
                         }
-                        execute(localSeq);
+                        try{
+                            execute(localSeq);
+                        }catch (Exception e){
+                            l.write(999,"error in execute +"+e.getMessage());
+                        }
+
                     }
 
                     benchmarkManager.sequenceExecuted(localSeq, System.nanoTime());
@@ -1000,7 +989,7 @@ public abstract class Entity {
             Printer.print(Verbosity.VVV, prefix, "Sending message: ", message);
         }
         // Printer.print(Verbosity.V, prefix, "Sending message: ", message);
-        l.write(id,"send msg: "+message);
+        //l.write(id,"send msg: "+message);
         pipelinePlugin.sendMessage(message, this.id);
     }
 

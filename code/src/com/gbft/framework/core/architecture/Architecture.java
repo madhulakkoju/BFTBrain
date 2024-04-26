@@ -136,11 +136,6 @@ public class Architecture {
                 .build();
 
         var targetsList = oldMessage.getTargetsList();
-        entity.l.write(entity.getId(),"g3"+ targetsList);
-        //var message = createMessage(seqnum, viewNum, block, type, source, targets);
-        //message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
-        entity.l.write(entity.getId(),"g5"+newmessage.toString());
-        //targetsList.addAll(clients);
         return newmessage;
     }
 }

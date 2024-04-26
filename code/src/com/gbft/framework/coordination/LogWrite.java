@@ -83,7 +83,7 @@ public class LogWrite{
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             bufferedWriter.write("\n"+s +" ["+formattedTime+"]");
             bufferedWriter.close();
-            System.out.println("Text has been written to the file successfully.");
+            //System.out.println("Text has been written to the file successfully.");
         } catch (IOException e) {
             // Print an error message if an IOException occurs
             System.out.println("An error occurred while writing to the file: " + e.getMessage());
