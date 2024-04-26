@@ -343,8 +343,8 @@ public abstract class Entity {
             }
 
             if (message.getFlagsList().contains(DataUtils.INVALID)) {
-                logger.errors("Invalid message received: " + message.getFlagsList().toString());
-                //return;
+              //  logger.errors("Invalid message received: " + message.getFlagsList().toString());
+                return;
             }
 
 //            logger.write("First Condition check: " + !this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
@@ -363,31 +363,31 @@ public abstract class Entity {
             }
 
             //logger.write("Message received: " + message.toString());
-            logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
+           // logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
                 //Endorsement Response
-                logger.write("Endorsement Response received");
+                //logger.write("Endorsement Response received");
                 for (var req : message.getRequestsList()) {
                     //logger.write("Request: " + req.toString());
                     if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                        logger.write("Request found in endorsement queue:  " + req.getRequestNum());
+                       // logger.write("Request found in endorsement queue:  " + req.getRequestNum());
 
                         this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        logger.write("Increasing counts of received transaction ids");
+                      //  logger.write("Increasing counts of received transaction ids");
                         if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
                             //Remove the request from the queue
-                            logger.write("Removing requests from Queue and counts");
+                          //  logger.write("Removing requests from Queue and counts");
                             this.getEndorsementQueue().remove(req.getRequestNum());
                             this.getEndorsementCounts().remove(req.getRequestNum());
-                            logger.write("Removed requests from Queue and counts");
+                           // logger.write("Removed requests from Queue and counts");
 
                             // Send message to state 3 to Leader
                             if (requestGenerator != null) {
                                 //Send the request to the client
-                                logger.write("Sending requests to Leader to continue..");
+                              //  logger.write("Sending requests to Leader to continue..");
                                 requestGenerator.sendRequest(req);
                             }
                         }
@@ -766,7 +766,7 @@ public abstract class Entity {
             var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
                     .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
 
-            var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol()
+            var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
                     + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
             System.out.println(episodeReport);
             Printer.print(Verbosity.V, prefix, episodeReport);
