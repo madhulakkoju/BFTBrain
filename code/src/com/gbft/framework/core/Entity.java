@@ -363,31 +363,31 @@ public abstract class Entity {
             }
 
             //logger.write("Message received: " + message.toString());
-            logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
+            //logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
                 //Endorsement Response
-                logger.write("Endorsement Response received");
+                //logger.write("Endorsement Response received");
                 for (var req : message.getRequestsList()) {
                     //logger.write("Request: " + req.toString());
                     if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                        logger.write("Request found in endorsement queue:  " + req.getRequestNum());
+                        //logger.write("Request found in endorsement queue:  " + req.getRequestNum());
 
                         this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        logger.write("Increasing counts of received transaction ids");
+                       // logger.write("Increasing counts of received transaction ids");
                         if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
                             //Remove the request from the queue
-                            logger.write("Removing requests from Queue and counts");
+                         //   logger.write("Removing requests from Queue and counts");
                             this.getEndorsementQueue().remove(req.getRequestNum());
                             this.getEndorsementCounts().remove(req.getRequestNum());
-                            logger.write("Removed requests from Queue and counts");
+                         //   logger.write("Removed requests from Queue and counts");
 
                             // Send message to state 3 to Leader
                             if (requestGenerator != null) {
                                 //Send the request to the client
-                                logger.write("Sending requests to Leader to continue..");
+                             //   logger.write("Sending requests to Leader to continue..");
                                 requestGenerator.sendRequest(req);
                             }
                         }
@@ -1200,8 +1200,12 @@ public abstract class Entity {
 
         report.put("current-episode", "value: " + currentEpisodeNum.get());
         report.put("current-protocol", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol());
+        report.put("current-architecture", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
 
         reportnum += 1;
+
+        logger.write("Benchmark Report\n: " + report.toString());
+
         return report;
     }
 
