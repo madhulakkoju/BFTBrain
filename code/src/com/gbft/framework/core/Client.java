@@ -112,7 +112,8 @@ public class Client extends Entity {
         report.put("throughput", String.format("%.2freq/s", throughput));
         report.put("last-executed-sequence", "num: " + lastExecutedSequenceNum);
         report.put("current-episode", "value: " + currentEpisodeNum.get());
-        report.put("current-protocol", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol());
+        report.put("current-protocol", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol() + "_" +
+                checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() );
 
         var blockCount = benchmark.count(BenchmarkManager.BLOCK_EXECUTE);
         var timeoutCount = benchmark.count(BenchmarkManager.TIMEOUT);

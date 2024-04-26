@@ -150,7 +150,7 @@ public abstract class Entity {
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
 
-    LogUtils logger = new LogUtils();
+    public LogUtils logger = new LogUtils();
 
     public Entity(int id, CoordinatorUnit coordinator) {
         this.id = id;
@@ -219,6 +219,8 @@ public abstract class Entity {
         pollutionFault = new PollutionFault();
 
         checkpointManager.getCheckpoint(0).setProtocol(coordinator.defaultProtocol);
+        checkpointManager.getCheckpoint(0).setArchitecture(archManager.defaultArchitectureKey);
+
         checkpointManager.getCheckpoint(0).beginTimestamp = System.nanoTime();
         rolePlugin.episodeLeaderMode.put(0, Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
 
@@ -363,31 +365,31 @@ public abstract class Entity {
             }
 
             //logger.write("Message received: " + message.toString());
-            logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
+            //logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
                 //Endorsement Response
-                logger.write("Endorsement Response received");
+                //logger.write("Endorsement Response received");
                 for (var req : message.getRequestsList()) {
                     //logger.write("Request: " + req.toString());
                     if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                        logger.write("Request found in endorsement queue:  " + req.getRequestNum());
+                        //logger.write("Request found in endorsement queue:  " + req.getRequestNum());
 
                         this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        logger.write("Increasing counts of received transaction ids");
+                        //logger.write("Increasing counts of received transaction ids");
                         if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
                             //Remove the request from the queue
-                            logger.write("Removing requests from Queue and counts");
+                            //logger.write("Removing requests from Queue and counts");
                             this.getEndorsementQueue().remove(req.getRequestNum());
                             this.getEndorsementCounts().remove(req.getRequestNum());
-                            logger.write("Removed requests from Queue and counts");
+                            //logger.write("Removed requests from Queue and counts");
 
                             // Send message to state 3 to Leader
                             if (requestGenerator != null) {
                                 //Send the request to the client
-                                logger.write("Sending requests to Leader to continue..");
+                                //logger.write("Sending requests to Leader to continue..");
                                 requestGenerator.sendRequest(req);
                             }
                         }
@@ -753,6 +755,7 @@ public abstract class Entity {
     }
 
     private void checkSwitching(long seqnum) {
+        //logger.write("Check Switching Seq Num: " + seqnum);
         if (protocols.isEmpty() && !learning) {
             return;
         }
@@ -766,8 +769,11 @@ public abstract class Entity {
             var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
                     .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
 
-            var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol()
+            var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = "
+                    + checkpoint.getProtocol() + "_" + checkpoint.getArchitecture()
                     + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
+            logger.write(episodeReport);
+
             System.out.println(episodeReport);
             Printer.print(Verbosity.V, prefix, episodeReport);
             Printer.flush();
@@ -777,13 +783,34 @@ public abstract class Entity {
             String nextArchitecture;
             if (!isClient() && !protocols.isEmpty()) {
                 // static switching in debug mode
+                logger.write("static switching");
                 nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
                 nextArchitecture = archManager.getRandomArchString();
             } else {
                 // dynamic switching via learning agent
                 // or client
-                nextProtocol = checkpoint.getDecision();
-                nextArchitecture = archManager.getRandomArchString();
+                String decision = checkpoint.getDecision();
+                logger.write("Decision LA print: " + decision);
+
+                if(decision.equals("repeat")){
+                    logger.write("initiating repeat");
+                    nextProtocol = checkpoint.getProtocol();
+                    nextArchitecture = checkpoint.getArchitecture();
+                }
+                else{
+                    if(decision.contains("_")){
+                        nextProtocol = decision.split("_")[0];
+                        nextArchitecture = decision.split("_")[1];
+                    }
+                    else{
+                        nextProtocol = decision;
+                        nextArchitecture = archManager.getRandomArchString();
+                    }
+                }
+
+
+//                nextProtocol = decision; //.split("_")[0];
+//                nextArchitecture = archManager.getRandomArchString();
                 //TODO: Update architecture from learining agent
             }
 
@@ -835,7 +862,7 @@ public abstract class Entity {
             // Update report and exchange sequence
             reportSequence += EPISODE_SIZE;
             exchangeSequence += EPISODE_SIZE;
-
+            this.getArchManager().setCurrentArchitecture(nextArchitecture);
             currentEpisodeNum.incrementAndGet();
         }
     }

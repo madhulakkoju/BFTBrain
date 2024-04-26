@@ -134,6 +134,7 @@ public class CheckpointData {
                     .findAny();
         } while (!nextProtocol.isPresent());
 
+        this.entity.logger.write("Decision: " + nextProtocol.get() + " with " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
         return nextProtocol.get();
     }
 

@@ -15,6 +15,7 @@ public class ArchManager {
 
     public String currentArchitectureKey;
 
+    public String defaultArchitectureKey = "XOV";
     private Entity entity;
 
     public ArchManager(Entity entity) {
@@ -26,7 +27,7 @@ public class ArchManager {
 //        architectures.put("XOV#", new XOVSerialArchitecture(entity));
 //        architectures.put("SXOV", new StreamXOVArchitecture(entity));
 
-        currentArchitectureKey = "XOV";
+        currentArchitectureKey = defaultArchitectureKey;
         this.entity = entity;
     }
 
