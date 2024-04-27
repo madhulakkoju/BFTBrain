@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -257,7 +258,19 @@ public class Client extends Entity {
 
             var nodesTargetRole = StateMachine.roles.indexOf("nodes");
 
-            var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
+            var targetsList = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
+
+            List<Integer> targets = new ArrayList<>();
+
+            for(var target : targetsList) {
+                if(target %2 == 0 && reqnum %2 == 0) {
+                    targets.add(target);
+                }
+                if(target %2 == 1 && reqnum %2 == 1) {
+                    targets.add(target);
+                }
+            }
+
 
             if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);

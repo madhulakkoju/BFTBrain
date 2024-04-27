@@ -4,22 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="include execute intiations and added block retrieve using seq num">
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java" afterDir="false" />
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="added parallel execute ahead requests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/XOVArchitecture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/statemachine/StateMachine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,24 +57,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;Shell Script.local_exp.sh.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/msiddhu/IdeaProjects/BFTBrain&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "Shell Script.local_exp.sh.executor": "Run",
+    "git-widget-placeholder": "working__check__here",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/msiddhu/IdeaProjects/BFTBrain",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="com.gbft.framework.core.architecture" />
@@ -133,7 +121,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713904639035</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="added parallel execute ahead requests">
+      <option name="closed" value="true" />
+      <created>1714166787677</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1714166787677</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -151,7 +147,8 @@
     <MESSAGE value="Base code for Architecture implementations" />
     <MESSAGE value="included base code for ordering and fixed all old codebase to removbe common orderer and validator" />
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
-    <option name="LAST_COMMIT_MESSAGE" value="include execute intiations and added block retrieve using seq num" />
+    <MESSAGE value="added parallel execute ahead requests" />
+    <option name="LAST_COMMIT_MESSAGE" value="added parallel execute ahead requests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -173,27 +170,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>707</line>
+          <line>697</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>725</line>
+          <line>715</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>718</line>
+          <line>708</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>716</line>
+          <line>706</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>589</line>
+          <line>579</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">

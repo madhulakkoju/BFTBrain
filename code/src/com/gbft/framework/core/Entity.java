@@ -362,32 +362,22 @@ public abstract class Entity {
                 return;
             }
 
-            //logger.write("Message received: " + message.toString());
-            logger.write("Second Condition check: " + this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
-
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
                 //Endorsement Response
-                logger.write("Endorsement Response received");
                 for (var req : message.getRequestsList()) {
-                    //logger.write("Request: " + req.toString());
                     if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                        logger.write("Request found in endorsement queue:  " + req.getRequestNum());
 
                         this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        logger.write("Increasing counts of received transaction ids");
                         if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
                             //Remove the request from the queue
-                            logger.write("Removing requests from Queue and counts");
                             this.getEndorsementQueue().remove(req.getRequestNum());
                             this.getEndorsementCounts().remove(req.getRequestNum());
-                            logger.write("Removed requests from Queue and counts");
 
                             // Send message to state 3 to Leader
                             if (requestGenerator != null) {
                                 //Send the request to the client
-                                logger.write("Sending requests to Leader to continue..");
                                 requestGenerator.sendRequest(req);
                             }
                         }
@@ -756,88 +746,93 @@ public abstract class Entity {
         if (protocols.isEmpty() && !learning) {
             return;
         }
+try {
+    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
 
-        var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+    // Switch to the next episode
+    if (seqnum == getEndOfEpisode(seqnum)) {
+        var episodeDuration = (System.nanoTime() - checkpoint.beginTimestamp) / 1e9f;
+        cumulativeDuration += (double) episodeDuration;
+        var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
+                .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
 
-        // Switch to the next episode
-        if (seqnum == getEndOfEpisode(seqnum)) {
-            var episodeDuration = (System.nanoTime() - checkpoint.beginTimestamp) / 1e9f;
-            cumulativeDuration += (double) episodeDuration;
-            var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
-                    .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
+        var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
+                + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
+        System.out.println(episodeReport);
+        Printer.print(Verbosity.V, prefix, episodeReport);
+        Printer.flush();
+        checkpoint.throughput = throughput;
 
-            var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol()
-                    + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
-            System.out.println(episodeReport);
-            Printer.print(Verbosity.V, prefix, episodeReport);
-            Printer.flush();
-            checkpoint.throughput = throughput;
-
-            String nextProtocol;
-            String nextArchitecture;
-            if (!isClient() && !protocols.isEmpty()) {
-                // static switching in debug mode
-                nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
-                nextArchitecture = archManager.getRandomArchString();
-            } else {
-                // dynamic switching via learning agent
-                // or client
-                nextProtocol = checkpoint.getDecision();
-                nextArchitecture = archManager.getRandomArchString();
-                //TODO: Update architecture from learining agent
-            }
-
-            // warm up episodes
-            if (nextProtocol.equals("repeat")) {
-                nextProtocol = checkpoint.getProtocol();
-            }
-            System.out.println(prefix + "nextProtocol = " + nextProtocol);
-            System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
-            Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
-            Printer.print(Verbosity.V, prefix, "nextArchitecture = " + nextArchitecture);
-            Printer.flush();
-
-            var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
-            checkpointNew.setProtocol(nextProtocol);
-            checkpointNew.setArchitecture(nextArchitecture);
-            
-            // Record start of the next episode
-            checkpointNew.beginTimestamp = System.nanoTime();
-
-            // Reload special knobs in protocol.config file
-            slowProposalFault.reloadProtocol(nextProtocol);
-            indarkFault.reloadProtocol(nextProtocol);
-            
-            // Update localSeq for Prime
-            if (nextProtocol.equals("prime")) {
-                synchronized (aggregationBuffer) {
-                    lastLocalSeq = seqnum;
-                }
-            }
-
-            // Update epoch to leader mode mapping
-            Config.setCurrentProtocol(nextProtocol);
-            Config.setCurrentArchitecture(nextArchitecture);
-
-            rolePlugin.roleWriteLock.lock();
-            try {
-                rolePlugin.episodeLeaderMode.put(currentEpisodeNum.get() + 1, 
-                        Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
-                System.out.println("leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
-                Printer.print(Verbosity.V, prefix, "leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
-                Printer.flush();
-                // signal that leader mode for a new episode is available
-                rolePlugin.roleCondition.signalAll();
-            } finally {
-                rolePlugin.roleWriteLock.unlock();
-            }
-        
-            // Update report and exchange sequence
-            reportSequence += EPISODE_SIZE;
-            exchangeSequence += EPISODE_SIZE;
-
-            currentEpisodeNum.incrementAndGet();
+        String nextProtocol;
+        String nextArchitecture;
+        if (!isClient() && !protocols.isEmpty()) {
+            // static switching in debug mode
+            nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
+            nextArchitecture = archManager.getRandomArchString();
+        } else {
+            // dynamic switching via learning agent
+            // or client
+            nextProtocol = checkpoint.getDecision();
+            nextArchitecture = archManager.getRandomArchString();
+            //TODO: Update architecture from learining agent
         }
+
+        // warm up episodes
+        if (nextProtocol.equals("repeat")) {
+            nextProtocol = checkpoint.getProtocol();
+        }
+        System.out.println(prefix + "nextProtocol = " + nextProtocol);
+        System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
+        Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
+        Printer.print(Verbosity.V, prefix, "nextArchitecture = " + nextArchitecture);
+        Printer.flush();
+
+        var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
+        checkpointNew.setProtocol(nextProtocol);
+        checkpointNew.setArchitecture(nextArchitecture);
+
+        // Record start of the next episode
+        checkpointNew.beginTimestamp = System.nanoTime();
+
+        // Reload special knobs in protocol.config file
+        slowProposalFault.reloadProtocol(nextProtocol);
+        indarkFault.reloadProtocol(nextProtocol);
+
+        // Update localSeq for Prime
+        if (nextProtocol.equals("prime")) {
+            synchronized (aggregationBuffer) {
+                lastLocalSeq = seqnum;
+            }
+        }
+
+        // Update epoch to leader mode mapping
+        Config.setCurrentProtocol(nextProtocol);
+        Config.setCurrentArchitecture(nextArchitecture);
+
+        rolePlugin.roleWriteLock.lock();
+        try {
+            rolePlugin.episodeLeaderMode.put(currentEpisodeNum.get() + 1,
+                    Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
+            System.out.println("leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
+            Printer.print(Verbosity.V, prefix, "leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
+            Printer.flush();
+            // signal that leader mode for a new episode is available
+            rolePlugin.roleCondition.signalAll();
+        } finally {
+            rolePlugin.roleWriteLock.unlock();
+        }
+
+        // Update report and exchange sequence
+        reportSequence += EPISODE_SIZE;
+        exchangeSequence += EPISODE_SIZE;
+
+        currentEpisodeNum.incrementAndGet();
+
+    }
+}
+catch (Exception e){
+    logger.errors("Error in checkSwitching: " + e.getMessage());
+}
     }
 
     public void setServiceState(Map<Integer, Integer> service_state, long lastExecutedSequenceNum) {
@@ -1200,8 +1195,11 @@ public abstract class Entity {
 
         report.put("current-episode", "value: " + currentEpisodeNum.get());
         report.put("current-protocol", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol());
-
+        report.put("current-architecture", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
         reportnum += 1;
+
+        logger.write("Report Benchmark: \n" + report.toString());
+
         return report;
     }
 
