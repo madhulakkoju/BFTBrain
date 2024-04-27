@@ -1,10 +1,11 @@
-all-architectures:
-  - OX
-  - OXII
-  - XOV
-  - XOV++
-  - XOV#
-  - SXOV
+switching:
+  architecture-pool:
+    - OX
+    - OXII
+    - XOV
+    - XOV++
+    - XOV#
+    - SXOV
 general:
   verbosity: v
   logfile: true

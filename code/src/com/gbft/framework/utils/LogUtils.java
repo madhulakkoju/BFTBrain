@@ -16,8 +16,11 @@ public class LogUtils{
     private static String folderPath = "/home/msiddhu/Desktop/LOGS/";
 
     public static LogUtils errorLog = new LogUtils();
+    public static LogUtils commonLog = new LogUtils();
+
     static{
         errorLog.CoreIntialize(9999);
+        commonLog.CoreIntialize(8888);
     }
 
     int portId;
@@ -104,5 +107,13 @@ public class LogUtils{
 
     public void errors(String s){
         errorLog.write(s);
+    }
+
+    public static void LogError(String s){
+        errorLog.write(s);
+    }
+
+    public static void LogCommon(String s){
+        commonLog.write(s);
     }
 }
