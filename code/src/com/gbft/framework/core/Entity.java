@@ -43,7 +43,7 @@ import com.gbft.framework.utils.Printer.Verbosity;
 import com.gbft.plugin.role.BasicPrimaryPlugin;
 import com.gbft.plugin.role.PrimaryPassivePlugin;
 import com.google.protobuf.ByteString;
-
+import com.gbft.framework.utils.*;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
@@ -758,6 +758,10 @@ try {
 
         var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
                 + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
+
+        if(this.isClient()){
+            CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);
+        }
         System.out.println(episodeReport);
         Printer.print(Verbosity.V, prefix, episodeReport);
         Printer.flush();
