@@ -211,6 +211,9 @@ public class CheckpointData {
     }
 
     public String getArchitecture() {
-        return architecture.get();
+        if(architecture.get() == null)
+            return "XOV";
+        else
+            return architecture.get();
     }
 }

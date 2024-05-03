@@ -114,7 +114,10 @@ public class Client extends Entity {
         report.put("last-executed-sequence", "num: " + lastExecutedSequenceNum);
         report.put("current-episode", "value: " + currentEpisodeNum.get());
         report.put("current-protocol", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol());
-
+//        report.put("current-architecture", "value: " +
+//                checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() == null ? "XOV" :
+//                checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
+        report.put("current-architecture", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
         var blockCount = benchmark.count(BenchmarkManager.BLOCK_EXECUTE);
         var timeoutCount = benchmark.count(BenchmarkManager.TIMEOUT);
         report.put("slow-path", String.format("ratio: %.2f",  (double) timeoutCount / (double) blockCount));
