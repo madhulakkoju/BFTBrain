@@ -138,61 +138,41 @@ private static final long serialVersionUID = 0L;
   private int targetsMemoizedSerializedSize = -1;
 
   public static final int REQUESTS_FIELD_NUMBER = 6;
-  private java.util.List<com.gbft.framework.data.SmallBankRequestData> requests_;
+  private java.util.List<com.gbft.framework.data.RequestData> requests_;
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   @java.lang.Override
-  public java.util.List<com.gbft.framework.data.SmallBankRequestData> getRequestsList() {
+  public java.util.List<com.gbft.framework.data.RequestData> getRequestsList() {
     return requests_;
   }
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   @java.lang.Override
-  public java.util.List<? extends com.gbft.framework.data.SmallBankRequestDataOrBuilder> 
+  public java.util.List<? extends com.gbft.framework.data.RequestDataOrBuilder> 
       getRequestsOrBuilderList() {
     return requests_;
   }
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   @java.lang.Override
   public int getRequestsCount() {
     return requests_.size();
   }
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   @java.lang.Override
-  public com.gbft.framework.data.SmallBankRequestData getRequests(int index) {
+  public com.gbft.framework.data.RequestData getRequests(int index) {
     return requests_.get(index);
   }
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   @java.lang.Override
-  public com.gbft.framework.data.SmallBankRequestDataOrBuilder getRequestsOrBuilder(
+  public com.gbft.framework.data.RequestDataOrBuilder getRequestsOrBuilder(
       int index) {
     return requests_.get(index);
   }
@@ -200,6 +180,10 @@ private static final long serialVersionUID = 0L;
   public static final int REQUEST_NUMS_FIELD_NUMBER = 7;
   private com.google.protobuf.Internal.LongList requestNums_;
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @return A list containing the requestNums.
    */
@@ -209,6 +193,10 @@ private static final long serialVersionUID = 0L;
     return requestNums_;
   }
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @return The count of requestNums.
    */
@@ -216,6 +204,10 @@ private static final long serialVersionUID = 0L;
     return requestNums_.size();
   }
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @param index The index of the element to return.
    * @return The requestNums at the given index.
@@ -1650,9 +1642,9 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 42
             case 50: {
-              com.gbft.framework.data.SmallBankRequestData m =
+              com.gbft.framework.data.RequestData m =
                   input.readMessage(
-                      com.gbft.framework.data.SmallBankRequestData.parser(),
+                      com.gbft.framework.data.RequestData.parser(),
                       extensionRegistry);
               if (requestsBuilder_ == null) {
                 ensureRequestsIsMutable();
@@ -2009,26 +2001,22 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.util.List<com.gbft.framework.data.SmallBankRequestData> requests_ =
+    private java.util.List<com.gbft.framework.data.RequestData> requests_ =
       java.util.Collections.emptyList();
     private void ensureRequestsIsMutable() {
       if (!((bitField0_ & 0x00000002) != 0)) {
-        requests_ = new java.util.ArrayList<com.gbft.framework.data.SmallBankRequestData>(requests_);
+        requests_ = new java.util.ArrayList<com.gbft.framework.data.RequestData>(requests_);
         bitField0_ |= 0x00000002;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.gbft.framework.data.SmallBankRequestData, com.gbft.framework.data.SmallBankRequestData.Builder, com.gbft.framework.data.SmallBankRequestDataOrBuilder> requestsBuilder_;
+        com.gbft.framework.data.RequestData, com.gbft.framework.data.RequestData.Builder, com.gbft.framework.data.RequestDataOrBuilder> requestsBuilder_;
 
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public java.util.List<com.gbft.framework.data.SmallBankRequestData> getRequestsList() {
+    public java.util.List<com.gbft.framework.data.RequestData> getRequestsList() {
       if (requestsBuilder_ == null) {
         return java.util.Collections.unmodifiableList(requests_);
       } else {
@@ -2036,11 +2024,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public int getRequestsCount() {
       if (requestsBuilder_ == null) {
@@ -2050,13 +2034,9 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public com.gbft.framework.data.SmallBankRequestData getRequests(int index) {
+    public com.gbft.framework.data.RequestData getRequests(int index) {
       if (requestsBuilder_ == null) {
         return requests_.get(index);
       } else {
@@ -2064,14 +2044,10 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder setRequests(
-        int index, com.gbft.framework.data.SmallBankRequestData value) {
+        int index, com.gbft.framework.data.RequestData value) {
       if (requestsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2085,14 +2061,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder setRequests(
-        int index, com.gbft.framework.data.SmallBankRequestData.Builder builderForValue) {
+        int index, com.gbft.framework.data.RequestData.Builder builderForValue) {
       if (requestsBuilder_ == null) {
         ensureRequestsIsMutable();
         requests_.set(index, builderForValue.build());
@@ -2103,13 +2075,9 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public Builder addRequests(com.gbft.framework.data.SmallBankRequestData value) {
+    public Builder addRequests(com.gbft.framework.data.RequestData value) {
       if (requestsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2123,14 +2091,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder addRequests(
-        int index, com.gbft.framework.data.SmallBankRequestData value) {
+        int index, com.gbft.framework.data.RequestData value) {
       if (requestsBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2144,14 +2108,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder addRequests(
-        com.gbft.framework.data.SmallBankRequestData.Builder builderForValue) {
+        com.gbft.framework.data.RequestData.Builder builderForValue) {
       if (requestsBuilder_ == null) {
         ensureRequestsIsMutable();
         requests_.add(builderForValue.build());
@@ -2162,14 +2122,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder addRequests(
-        int index, com.gbft.framework.data.SmallBankRequestData.Builder builderForValue) {
+        int index, com.gbft.framework.data.RequestData.Builder builderForValue) {
       if (requestsBuilder_ == null) {
         ensureRequestsIsMutable();
         requests_.add(index, builderForValue.build());
@@ -2180,14 +2136,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder addAllRequests(
-        java.lang.Iterable<? extends com.gbft.framework.data.SmallBankRequestData> values) {
+        java.lang.Iterable<? extends com.gbft.framework.data.RequestData> values) {
       if (requestsBuilder_ == null) {
         ensureRequestsIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2199,11 +2151,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder clearRequests() {
       if (requestsBuilder_ == null) {
@@ -2216,11 +2164,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
     public Builder removeRequests(int index) {
       if (requestsBuilder_ == null) {
@@ -2233,24 +2177,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public com.gbft.framework.data.SmallBankRequestData.Builder getRequestsBuilder(
+    public com.gbft.framework.data.RequestData.Builder getRequestsBuilder(
         int index) {
       return getRequestsFieldBuilder().getBuilder(index);
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public com.gbft.framework.data.SmallBankRequestDataOrBuilder getRequestsOrBuilder(
+    public com.gbft.framework.data.RequestDataOrBuilder getRequestsOrBuilder(
         int index) {
       if (requestsBuilder_ == null) {
         return requests_.get(index);  } else {
@@ -2258,13 +2194,9 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public java.util.List<? extends com.gbft.framework.data.SmallBankRequestDataOrBuilder> 
+    public java.util.List<? extends com.gbft.framework.data.RequestDataOrBuilder> 
          getRequestsOrBuilderList() {
       if (requestsBuilder_ != null) {
         return requestsBuilder_.getMessageOrBuilderList();
@@ -2273,45 +2205,33 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public com.gbft.framework.data.SmallBankRequestData.Builder addRequestsBuilder() {
+    public com.gbft.framework.data.RequestData.Builder addRequestsBuilder() {
       return getRequestsFieldBuilder().addBuilder(
-          com.gbft.framework.data.SmallBankRequestData.getDefaultInstance());
+          com.gbft.framework.data.RequestData.getDefaultInstance());
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public com.gbft.framework.data.SmallBankRequestData.Builder addRequestsBuilder(
+    public com.gbft.framework.data.RequestData.Builder addRequestsBuilder(
         int index) {
       return getRequestsFieldBuilder().addBuilder(
-          index, com.gbft.framework.data.SmallBankRequestData.getDefaultInstance());
+          index, com.gbft.framework.data.RequestData.getDefaultInstance());
     }
     /**
-     * <pre>
-     *repeated RequestData requests = 6;
-     * </pre>
-     *
-     * <code>repeated .SmallBankRequestData requests = 6;</code>
+     * <code>repeated .RequestData requests = 6;</code>
      */
-    public java.util.List<com.gbft.framework.data.SmallBankRequestData.Builder> 
+    public java.util.List<com.gbft.framework.data.RequestData.Builder> 
          getRequestsBuilderList() {
       return getRequestsFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        com.gbft.framework.data.SmallBankRequestData, com.gbft.framework.data.SmallBankRequestData.Builder, com.gbft.framework.data.SmallBankRequestDataOrBuilder> 
+        com.gbft.framework.data.RequestData, com.gbft.framework.data.RequestData.Builder, com.gbft.framework.data.RequestDataOrBuilder> 
         getRequestsFieldBuilder() {
       if (requestsBuilder_ == null) {
         requestsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            com.gbft.framework.data.SmallBankRequestData, com.gbft.framework.data.SmallBankRequestData.Builder, com.gbft.framework.data.SmallBankRequestDataOrBuilder>(
+            com.gbft.framework.data.RequestData, com.gbft.framework.data.RequestData.Builder, com.gbft.framework.data.RequestDataOrBuilder>(
                 requests_,
                 ((bitField0_ & 0x00000002) != 0),
                 getParentForChildren(),
@@ -2329,6 +2249,10 @@ private static final long serialVersionUID = 0L;
        }
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @return A list containing the requestNums.
      */
@@ -2338,6 +2262,10 @@ private static final long serialVersionUID = 0L;
                java.util.Collections.unmodifiableList(requestNums_) : requestNums_;
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @return The count of requestNums.
      */
@@ -2345,6 +2273,10 @@ private static final long serialVersionUID = 0L;
       return requestNums_.size();
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @param index The index of the element to return.
      * @return The requestNums at the given index.
@@ -2353,6 +2285,10 @@ private static final long serialVersionUID = 0L;
       return requestNums_.getLong(index);
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @param index The index to set the value at.
      * @param value The requestNums to set.
@@ -2366,6 +2302,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @param value The requestNums to add.
      * @return This builder for chaining.
@@ -2377,6 +2317,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @param values The requestNums to add.
      * @return This builder for chaining.
@@ -2390,6 +2334,10 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     *repeated SmallBankRequestData requests = 6;
+     * </pre>
+     *
      * <code>repeated int64 request_nums = 7;</code>
      * @return This builder for chaining.
      */

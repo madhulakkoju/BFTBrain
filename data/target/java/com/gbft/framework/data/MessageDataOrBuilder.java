@@ -49,60 +49,52 @@ public interface MessageDataOrBuilder extends
   int getTargets(int index);
 
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
-  java.util.List<com.gbft.framework.data.SmallBankRequestData> 
+  java.util.List<com.gbft.framework.data.RequestData> 
       getRequestsList();
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
-  com.gbft.framework.data.SmallBankRequestData getRequests(int index);
+  com.gbft.framework.data.RequestData getRequests(int index);
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
   int getRequestsCount();
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
-  java.util.List<? extends com.gbft.framework.data.SmallBankRequestDataOrBuilder> 
+  java.util.List<? extends com.gbft.framework.data.RequestDataOrBuilder> 
       getRequestsOrBuilderList();
   /**
-   * <pre>
-   *repeated RequestData requests = 6;
-   * </pre>
-   *
-   * <code>repeated .SmallBankRequestData requests = 6;</code>
+   * <code>repeated .RequestData requests = 6;</code>
    */
-  com.gbft.framework.data.SmallBankRequestDataOrBuilder getRequestsOrBuilder(
+  com.gbft.framework.data.RequestDataOrBuilder getRequestsOrBuilder(
       int index);
 
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @return A list containing the requestNums.
    */
   java.util.List<java.lang.Long> getRequestNumsList();
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @return The count of requestNums.
    */
   int getRequestNumsCount();
   /**
+   * <pre>
+   *repeated SmallBankRequestData requests = 6;
+   * </pre>
+   *
    * <code>repeated int64 request_nums = 7;</code>
    * @param index The index of the element to return.
    * @return The requestNums at the given index.

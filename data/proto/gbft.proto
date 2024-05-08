@@ -77,8 +77,8 @@ message MessageData {
     int32 source = 4;
     repeated int32 targets = 5;
 
-    //repeated RequestData requests = 6;
-    repeated SmallBankRequestData requests = 6;
+    repeated RequestData requests = 6;
+    //repeated SmallBankRequestData requests = 6;
     repeated int64 request_nums = 7;
     bool has_request_data = 8;
     bytes digest = 9;
