@@ -16,7 +16,6 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private RequestData() {
-    operation_ = 0;
     reportQuorum_ = java.util.Collections.emptyList();
     requestDummy_ = com.google.protobuf.ByteString.EMPTY;
   }
@@ -56,25 +55,13 @@ private static final long serialVersionUID = 0L;
      */
     NOP(0),
     /**
-     * <code>ADD = 1;</code>
+     * <code>TRANSACT = 1;</code>
      */
-    ADD(1),
+    TRANSACT(1),
     /**
-     * <code>SUB = 2;</code>
+     * <code>READ_ONLY = 2;</code>
      */
-    SUB(2),
-    /**
-     * <code>INC = 3;</code>
-     */
-    INC(3),
-    /**
-     * <code>DEC = 4;</code>
-     */
-    DEC(4),
-    /**
-     * <code>READ_ONLY = 5;</code>
-     */
-    READ_ONLY(5),
+    READ_ONLY(2),
     UNRECOGNIZED(-1),
     ;
 
@@ -83,25 +70,13 @@ private static final long serialVersionUID = 0L;
      */
     public static final int NOP_VALUE = 0;
     /**
-     * <code>ADD = 1;</code>
+     * <code>TRANSACT = 1;</code>
      */
-    public static final int ADD_VALUE = 1;
+    public static final int TRANSACT_VALUE = 1;
     /**
-     * <code>SUB = 2;</code>
+     * <code>READ_ONLY = 2;</code>
      */
-    public static final int SUB_VALUE = 2;
-    /**
-     * <code>INC = 3;</code>
-     */
-    public static final int INC_VALUE = 3;
-    /**
-     * <code>DEC = 4;</code>
-     */
-    public static final int DEC_VALUE = 4;
-    /**
-     * <code>READ_ONLY = 5;</code>
-     */
-    public static final int READ_ONLY_VALUE = 5;
+    public static final int READ_ONLY_VALUE = 2;
 
 
     public final int getNumber() {
@@ -129,11 +104,8 @@ private static final long serialVersionUID = 0L;
     public static Operation forNumber(int value) {
       switch (value) {
         case 0: return NOP;
-        case 1: return ADD;
-        case 2: return SUB;
-        case 3: return INC;
-        case 4: return DEC;
-        case 5: return READ_ONLY;
+        case 1: return TRANSACT;
+        case 2: return READ_ONLY;
         default: return null;
       }
     }
@@ -212,34 +184,26 @@ private static final long serialVersionUID = 0L;
     return requestNum_;
   }
 
-  public static final int RECORD_FIELD_NUMBER = 3;
-  private int record_;
+  public static final int SENDER_FIELD_NUMBER = 3;
+  private int sender_;
   /**
-   * <code>int32 record = 3;</code>
-   * @return The record.
+   * <code>int32 sender = 3;</code>
+   * @return The sender.
    */
   @java.lang.Override
-  public int getRecord() {
-    return record_;
+  public int getSender() {
+    return sender_;
   }
 
-  public static final int OPERATION_FIELD_NUMBER = 4;
-  private int operation_;
+  public static final int RECEIVER_FIELD_NUMBER = 4;
+  private int receiver_;
   /**
-   * <code>.RequestData.Operation operation = 4;</code>
-   * @return The enum numeric value on the wire for operation.
+   * <code>int32 receiver = 4;</code>
+   * @return The receiver.
    */
-  @java.lang.Override public int getOperationValue() {
-    return operation_;
-  }
-  /**
-   * <code>.RequestData.Operation operation = 4;</code>
-   * @return The operation.
-   */
-  @java.lang.Override public com.gbft.framework.data.RequestData.Operation getOperation() {
-    @SuppressWarnings("deprecation")
-    com.gbft.framework.data.RequestData.Operation result = com.gbft.framework.data.RequestData.Operation.valueOf(operation_);
-    return result == null ? com.gbft.framework.data.RequestData.Operation.UNRECOGNIZED : result;
+  @java.lang.Override
+  public int getReceiver() {
+    return receiver_;
   }
 
   public static final int VALUE_FIELD_NUMBER = 5;
@@ -405,11 +369,11 @@ private static final long serialVersionUID = 0L;
     if (requestNum_ != 0L) {
       output.writeInt64(2, requestNum_);
     }
-    if (record_ != 0) {
-      output.writeInt32(3, record_);
+    if (sender_ != 0) {
+      output.writeInt32(3, sender_);
     }
-    if (operation_ != com.gbft.framework.data.RequestData.Operation.NOP.getNumber()) {
-      output.writeEnum(4, operation_);
+    if (receiver_ != 0) {
+      output.writeInt32(4, receiver_);
     }
     if (value_ != 0) {
       output.writeInt32(5, value_);
@@ -455,13 +419,13 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(2, requestNum_);
     }
-    if (record_ != 0) {
+    if (sender_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, record_);
+        .computeInt32Size(3, sender_);
     }
-    if (operation_ != com.gbft.framework.data.RequestData.Operation.NOP.getNumber()) {
+    if (receiver_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeEnumSize(4, operation_);
+        .computeInt32Size(4, receiver_);
     }
     if (value_ != 0) {
       size += com.google.protobuf.CodedOutputStream
@@ -518,9 +482,10 @@ private static final long serialVersionUID = 0L;
         != other.getClient()) return false;
     if (getRequestNum()
         != other.getRequestNum()) return false;
-    if (getRecord()
-        != other.getRecord()) return false;
-    if (operation_ != other.operation_) return false;
+    if (getSender()
+        != other.getSender()) return false;
+    if (getReceiver()
+        != other.getReceiver()) return false;
     if (getValue()
         != other.getValue()) return false;
     if (hasTimestamp() != other.hasTimestamp()) return false;
@@ -558,10 +523,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + REQUEST_NUM_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getRequestNum());
-    hash = (37 * hash) + RECORD_FIELD_NUMBER;
-    hash = (53 * hash) + getRecord();
-    hash = (37 * hash) + OPERATION_FIELD_NUMBER;
-    hash = (53 * hash) + operation_;
+    hash = (37 * hash) + SENDER_FIELD_NUMBER;
+    hash = (53 * hash) + getSender();
+    hash = (37 * hash) + RECEIVER_FIELD_NUMBER;
+    hash = (53 * hash) + getReceiver();
     hash = (37 * hash) + VALUE_FIELD_NUMBER;
     hash = (53 * hash) + getValue();
     if (hasTimestamp()) {
@@ -718,9 +683,9 @@ private static final long serialVersionUID = 0L;
 
       requestNum_ = 0L;
 
-      record_ = 0;
+      sender_ = 0;
 
-      operation_ = 0;
+      receiver_ = 0;
 
       value_ = 0;
 
@@ -778,8 +743,8 @@ private static final long serialVersionUID = 0L;
       int from_bitField0_ = bitField0_;
       result.client_ = client_;
       result.requestNum_ = requestNum_;
-      result.record_ = record_;
-      result.operation_ = operation_;
+      result.sender_ = sender_;
+      result.receiver_ = receiver_;
       result.value_ = value_;
       if (timestampBuilder_ == null) {
         result.timestamp_ = timestamp_;
@@ -855,11 +820,11 @@ private static final long serialVersionUID = 0L;
       if (other.getRequestNum() != 0L) {
         setRequestNum(other.getRequestNum());
       }
-      if (other.getRecord() != 0) {
-        setRecord(other.getRecord());
+      if (other.getSender() != 0) {
+        setSender(other.getSender());
       }
-      if (other.operation_ != 0) {
-        setOperationValue(other.getOperationValue());
+      if (other.getReceiver() != 0) {
+        setReceiver(other.getReceiver());
       }
       if (other.getValue() != 0) {
         setValue(other.getValue());
@@ -948,12 +913,12 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 16
             case 24: {
-              record_ = input.readInt32();
+              sender_ = input.readInt32();
 
               break;
             } // case 24
             case 32: {
-              operation_ = input.readEnum();
+              receiver_ = input.readInt32();
 
               break;
             } // case 32
@@ -1091,87 +1056,64 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private int record_ ;
+    private int sender_ ;
     /**
-     * <code>int32 record = 3;</code>
-     * @return The record.
+     * <code>int32 sender = 3;</code>
+     * @return The sender.
      */
     @java.lang.Override
-    public int getRecord() {
-      return record_;
+    public int getSender() {
+      return sender_;
     }
     /**
-     * <code>int32 record = 3;</code>
-     * @param value The record to set.
+     * <code>int32 sender = 3;</code>
+     * @param value The sender to set.
      * @return This builder for chaining.
      */
-    public Builder setRecord(int value) {
+    public Builder setSender(int value) {
       
-      record_ = value;
+      sender_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>int32 record = 3;</code>
+     * <code>int32 sender = 3;</code>
      * @return This builder for chaining.
      */
-    public Builder clearRecord() {
+    public Builder clearSender() {
       
-      record_ = 0;
+      sender_ = 0;
       onChanged();
       return this;
     }
 
-    private int operation_ = 0;
+    private int receiver_ ;
     /**
-     * <code>.RequestData.Operation operation = 4;</code>
-     * @return The enum numeric value on the wire for operation.
-     */
-    @java.lang.Override public int getOperationValue() {
-      return operation_;
-    }
-    /**
-     * <code>.RequestData.Operation operation = 4;</code>
-     * @param value The enum numeric value on the wire for operation to set.
-     * @return This builder for chaining.
-     */
-    public Builder setOperationValue(int value) {
-      
-      operation_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>.RequestData.Operation operation = 4;</code>
-     * @return The operation.
+     * <code>int32 receiver = 4;</code>
+     * @return The receiver.
      */
     @java.lang.Override
-    public com.gbft.framework.data.RequestData.Operation getOperation() {
-      @SuppressWarnings("deprecation")
-      com.gbft.framework.data.RequestData.Operation result = com.gbft.framework.data.RequestData.Operation.valueOf(operation_);
-      return result == null ? com.gbft.framework.data.RequestData.Operation.UNRECOGNIZED : result;
+    public int getReceiver() {
+      return receiver_;
     }
     /**
-     * <code>.RequestData.Operation operation = 4;</code>
-     * @param value The operation to set.
+     * <code>int32 receiver = 4;</code>
+     * @param value The receiver to set.
      * @return This builder for chaining.
      */
-    public Builder setOperation(com.gbft.framework.data.RequestData.Operation value) {
-      if (value == null) {
-        throw new NullPointerException();
-      }
+    public Builder setReceiver(int value) {
       
-      operation_ = value.getNumber();
+      receiver_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>.RequestData.Operation operation = 4;</code>
+     * <code>int32 receiver = 4;</code>
      * @return This builder for chaining.
      */
-    public Builder clearOperation() {
+    public Builder clearReceiver() {
       
-      operation_ = 0;
+      receiver_ = 0;
       onChanged();
       return this;
     }

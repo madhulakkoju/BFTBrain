@@ -17,18 +17,15 @@ service AgentComm {
 message RequestData {
     enum Operation {
         NOP = 0;
-        ADD = 1;
-        SUB = 2;
-        INC = 3;
-        DEC = 4;
-		READ_ONLY = 5;
+        TRANSACT = 1;
+        READ_ONLY = 2;
     }
     
     int32 client = 1;
     int64 request_num = 2;
-    
-    int32 record = 3;
-    Operation operation = 4;
+
+    int32 sender = 3;
+    int32 receiver = 4;
     int32 value = 5;
 
     google.protobuf.Timestamp timestamp = 6;
