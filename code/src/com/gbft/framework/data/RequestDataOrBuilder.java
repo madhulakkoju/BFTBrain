@@ -38,6 +38,17 @@ public interface RequestDataOrBuilder extends
   int getValue();
 
   /**
+   * <code>.RequestData.Operation operation = 14;</code>
+   * @return The enum numeric value on the wire for operation.
+   */
+  int getOperationValue();
+  /**
+   * <code>.RequestData.Operation operation = 14;</code>
+   * @return The operation.
+   */
+  com.gbft.framework.data.RequestData.Operation getOperation();
+
+  /**
    * <code>.google.protobuf.Timestamp timestamp = 6;</code>
    * @return Whether the timestamp field is set.
    */

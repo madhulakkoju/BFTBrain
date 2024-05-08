@@ -28,6 +28,8 @@ message RequestData {
     int32 receiver = 4;
     int32 value = 5;
 
+    Operation operation = 14;
+
     google.protobuf.Timestamp timestamp = 6;
     repeated LearningData report_quorum = 7;
 

@@ -16,6 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private RequestData() {
+    operation_ = 0;
     reportQuorum_ = java.util.Collections.emptyList();
     requestDummy_ = com.google.protobuf.ByteString.EMPTY;
   }
@@ -217,6 +218,25 @@ private static final long serialVersionUID = 0L;
     return value_;
   }
 
+  public static final int OPERATION_FIELD_NUMBER = 14;
+  private int operation_;
+  /**
+   * <code>.RequestData.Operation operation = 14;</code>
+   * @return The enum numeric value on the wire for operation.
+   */
+  @java.lang.Override public int getOperationValue() {
+    return operation_;
+  }
+  /**
+   * <code>.RequestData.Operation operation = 14;</code>
+   * @return The operation.
+   */
+  @java.lang.Override public com.gbft.framework.data.RequestData.Operation getOperation() {
+    @SuppressWarnings("deprecation")
+    com.gbft.framework.data.RequestData.Operation result = com.gbft.framework.data.RequestData.Operation.valueOf(operation_);
+    return result == null ? com.gbft.framework.data.RequestData.Operation.UNRECOGNIZED : result;
+  }
+
   public static final int TIMESTAMP_FIELD_NUMBER = 6;
   private com.google.protobuf.Timestamp timestamp_;
   /**
@@ -402,6 +422,9 @@ private static final long serialVersionUID = 0L;
     if (currentVersion_ != 0L) {
       output.writeInt64(13, currentVersion_);
     }
+    if (operation_ != com.gbft.framework.data.RequestData.Operation.NOP.getNumber()) {
+      output.writeEnum(14, operation_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -463,6 +486,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(13, currentVersion_);
     }
+    if (operation_ != com.gbft.framework.data.RequestData.Operation.NOP.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(14, operation_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -488,6 +515,7 @@ private static final long serialVersionUID = 0L;
         != other.getReceiver()) return false;
     if (getValue()
         != other.getValue()) return false;
+    if (operation_ != other.operation_) return false;
     if (hasTimestamp() != other.hasTimestamp()) return false;
     if (hasTimestamp()) {
       if (!getTimestamp()
@@ -529,6 +557,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getReceiver();
     hash = (37 * hash) + VALUE_FIELD_NUMBER;
     hash = (53 * hash) + getValue();
+    hash = (37 * hash) + OPERATION_FIELD_NUMBER;
+    hash = (53 * hash) + operation_;
     if (hasTimestamp()) {
       hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
       hash = (53 * hash) + getTimestamp().hashCode();
@@ -689,6 +719,8 @@ private static final long serialVersionUID = 0L;
 
       value_ = 0;
 
+      operation_ = 0;
+
       if (timestampBuilder_ == null) {
         timestamp_ = null;
       } else {
@@ -746,6 +778,7 @@ private static final long serialVersionUID = 0L;
       result.sender_ = sender_;
       result.receiver_ = receiver_;
       result.value_ = value_;
+      result.operation_ = operation_;
       if (timestampBuilder_ == null) {
         result.timestamp_ = timestamp_;
       } else {
@@ -828,6 +861,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getValue() != 0) {
         setValue(other.getValue());
+      }
+      if (other.operation_ != 0) {
+        setOperationValue(other.getOperationValue());
       }
       if (other.hasTimestamp()) {
         mergeTimestamp(other.getTimestamp());
@@ -977,6 +1013,11 @@ private static final long serialVersionUID = 0L;
 
               break;
             } // case 104
+            case 112: {
+              operation_ = input.readEnum();
+
+              break;
+            } // case 112
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1145,6 +1186,60 @@ private static final long serialVersionUID = 0L;
     public Builder clearValue() {
       
       value_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int operation_ = 0;
+    /**
+     * <code>.RequestData.Operation operation = 14;</code>
+     * @return The enum numeric value on the wire for operation.
+     */
+    @java.lang.Override public int getOperationValue() {
+      return operation_;
+    }
+    /**
+     * <code>.RequestData.Operation operation = 14;</code>
+     * @param value The enum numeric value on the wire for operation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOperationValue(int value) {
+      
+      operation_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.RequestData.Operation operation = 14;</code>
+     * @return The operation.
+     */
+    @java.lang.Override
+    public com.gbft.framework.data.RequestData.Operation getOperation() {
+      @SuppressWarnings("deprecation")
+      com.gbft.framework.data.RequestData.Operation result = com.gbft.framework.data.RequestData.Operation.valueOf(operation_);
+      return result == null ? com.gbft.framework.data.RequestData.Operation.UNRECOGNIZED : result;
+    }
+    /**
+     * <code>.RequestData.Operation operation = 14;</code>
+     * @param value The operation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOperation(com.gbft.framework.data.RequestData.Operation value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      
+      operation_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.RequestData.Operation operation = 14;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearOperation() {
+      
+      operation_ = 0;
       onChanged();
       return this;
     }
