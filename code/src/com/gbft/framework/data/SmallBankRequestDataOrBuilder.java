@@ -38,6 +38,17 @@ public interface SmallBankRequestDataOrBuilder extends
   int getValue();
 
   /**
+   * <code>.SmallBankRequestData.Operation operation = 14;</code>
+   * @return The enum numeric value on the wire for operation.
+   */
+  int getOperationValue();
+  /**
+   * <code>.SmallBankRequestData.Operation operation = 14;</code>
+   * @return The operation.
+   */
+  com.gbft.framework.data.SmallBankRequestData.Operation getOperation();
+
+  /**
    * <code>.google.protobuf.Timestamp timestamp = 6;</code>
    * @return Whether the timestamp field is set.
    */

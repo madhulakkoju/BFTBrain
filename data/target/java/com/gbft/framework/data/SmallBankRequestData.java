@@ -16,6 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private SmallBankRequestData() {
+    operation_ = 0;
     reportQuorum_ = java.util.Collections.emptyList();
     requestDummy_ = com.google.protobuf.ByteString.EMPTY;
   }
@@ -43,6 +44,123 @@ private static final long serialVersionUID = 0L;
     return com.gbft.framework.data.Gbft.internal_static_SmallBankRequestData_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             com.gbft.framework.data.SmallBankRequestData.class, com.gbft.framework.data.SmallBankRequestData.Builder.class);
+  }
+
+  /**
+   * Protobuf enum {@code SmallBankRequestData.Operation}
+   */
+  public enum Operation
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>NOP = 0;</code>
+     */
+    NOP(0),
+    /**
+     * <code>TRANSACT = 1;</code>
+     */
+    TRANSACT(1),
+    /**
+     * <code>READ_ONLY = 2;</code>
+     */
+    READ_ONLY(2),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>NOP = 0;</code>
+     */
+    public static final int NOP_VALUE = 0;
+    /**
+     * <code>TRANSACT = 1;</code>
+     */
+    public static final int TRANSACT_VALUE = 1;
+    /**
+     * <code>READ_ONLY = 2;</code>
+     */
+    public static final int READ_ONLY_VALUE = 2;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @java.lang.Deprecated
+    public static Operation valueOf(int value) {
+      return forNumber(value);
+    }
+
+    /**
+     * @param value The numeric wire value of the corresponding enum entry.
+     * @return The enum associated with the given numeric wire value.
+     */
+    public static Operation forNumber(int value) {
+      switch (value) {
+        case 0: return NOP;
+        case 1: return TRANSACT;
+        case 2: return READ_ONLY;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<Operation>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        Operation> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<Operation>() {
+            public Operation findValueByNumber(int number) {
+              return Operation.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      if (this == UNRECOGNIZED) {
+        throw new java.lang.IllegalStateException(
+            "Can't get the descriptor of an unrecognized enum value.");
+      }
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return com.gbft.framework.data.SmallBankRequestData.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final Operation[] VALUES = values();
+
+    public static Operation valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new java.lang.IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private Operation(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:SmallBankRequestData.Operation)
   }
 
   public static final int CLIENT_FIELD_NUMBER = 1;
@@ -98,6 +216,25 @@ private static final long serialVersionUID = 0L;
   @java.lang.Override
   public int getValue() {
     return value_;
+  }
+
+  public static final int OPERATION_FIELD_NUMBER = 14;
+  private int operation_;
+  /**
+   * <code>.SmallBankRequestData.Operation operation = 14;</code>
+   * @return The enum numeric value on the wire for operation.
+   */
+  @java.lang.Override public int getOperationValue() {
+    return operation_;
+  }
+  /**
+   * <code>.SmallBankRequestData.Operation operation = 14;</code>
+   * @return The operation.
+   */
+  @java.lang.Override public com.gbft.framework.data.SmallBankRequestData.Operation getOperation() {
+    @SuppressWarnings("deprecation")
+    com.gbft.framework.data.SmallBankRequestData.Operation result = com.gbft.framework.data.SmallBankRequestData.Operation.valueOf(operation_);
+    return result == null ? com.gbft.framework.data.SmallBankRequestData.Operation.UNRECOGNIZED : result;
   }
 
   public static final int TIMESTAMP_FIELD_NUMBER = 6;
@@ -285,6 +422,9 @@ private static final long serialVersionUID = 0L;
     if (currentVersion_ != 0L) {
       output.writeInt64(13, currentVersion_);
     }
+    if (operation_ != com.gbft.framework.data.SmallBankRequestData.Operation.NOP.getNumber()) {
+      output.writeEnum(14, operation_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -346,6 +486,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(13, currentVersion_);
     }
+    if (operation_ != com.gbft.framework.data.SmallBankRequestData.Operation.NOP.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(14, operation_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -371,6 +515,7 @@ private static final long serialVersionUID = 0L;
         != other.getReceiver()) return false;
     if (getValue()
         != other.getValue()) return false;
+    if (operation_ != other.operation_) return false;
     if (hasTimestamp() != other.hasTimestamp()) return false;
     if (hasTimestamp()) {
       if (!getTimestamp()
@@ -412,6 +557,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getReceiver();
     hash = (37 * hash) + VALUE_FIELD_NUMBER;
     hash = (53 * hash) + getValue();
+    hash = (37 * hash) + OPERATION_FIELD_NUMBER;
+    hash = (53 * hash) + operation_;
     if (hasTimestamp()) {
       hash = (37 * hash) + TIMESTAMP_FIELD_NUMBER;
       hash = (53 * hash) + getTimestamp().hashCode();
@@ -572,6 +719,8 @@ private static final long serialVersionUID = 0L;
 
       value_ = 0;
 
+      operation_ = 0;
+
       if (timestampBuilder_ == null) {
         timestamp_ = null;
       } else {
@@ -629,6 +778,7 @@ private static final long serialVersionUID = 0L;
       result.sender_ = sender_;
       result.receiver_ = receiver_;
       result.value_ = value_;
+      result.operation_ = operation_;
       if (timestampBuilder_ == null) {
         result.timestamp_ = timestamp_;
       } else {
@@ -711,6 +861,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getValue() != 0) {
         setValue(other.getValue());
+      }
+      if (other.operation_ != 0) {
+        setOperationValue(other.getOperationValue());
       }
       if (other.hasTimestamp()) {
         mergeTimestamp(other.getTimestamp());
@@ -860,6 +1013,11 @@ private static final long serialVersionUID = 0L;
 
               break;
             } // case 104
+            case 112: {
+              operation_ = input.readEnum();
+
+              break;
+            } // case 112
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1028,6 +1186,60 @@ private static final long serialVersionUID = 0L;
     public Builder clearValue() {
       
       value_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int operation_ = 0;
+    /**
+     * <code>.SmallBankRequestData.Operation operation = 14;</code>
+     * @return The enum numeric value on the wire for operation.
+     */
+    @java.lang.Override public int getOperationValue() {
+      return operation_;
+    }
+    /**
+     * <code>.SmallBankRequestData.Operation operation = 14;</code>
+     * @param value The enum numeric value on the wire for operation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOperationValue(int value) {
+      
+      operation_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.SmallBankRequestData.Operation operation = 14;</code>
+     * @return The operation.
+     */
+    @java.lang.Override
+    public com.gbft.framework.data.SmallBankRequestData.Operation getOperation() {
+      @SuppressWarnings("deprecation")
+      com.gbft.framework.data.SmallBankRequestData.Operation result = com.gbft.framework.data.SmallBankRequestData.Operation.valueOf(operation_);
+      return result == null ? com.gbft.framework.data.SmallBankRequestData.Operation.UNRECOGNIZED : result;
+    }
+    /**
+     * <code>.SmallBankRequestData.Operation operation = 14;</code>
+     * @param value The operation to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOperation(com.gbft.framework.data.SmallBankRequestData.Operation value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      
+      operation_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.SmallBankRequestData.Operation operation = 14;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearOperation() {
+      
+      operation_ = 0;
       onChanged();
       return this;
     }
