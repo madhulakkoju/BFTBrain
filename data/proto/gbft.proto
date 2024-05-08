@@ -43,6 +43,27 @@ message RequestData {
     int64 current_version = 13;
 }
 
+message SmallBankRequestData {
+
+    int32 client = 1;
+    int64 request_num = 2;
+
+    int32 sender = 3;
+    int32 receiver = 4;
+    int32 value = 5;
+
+    google.protobuf.Timestamp timestamp = 6;
+    repeated LearningData report_quorum = 7;
+
+    bytes request_dummy = 8;
+    int32 compute_factor = 9;
+    int32 reply_size = 10;
+
+    int32 early_exec_result = 11;
+    bool is_tnx_valid = 12;
+    int64 current_version = 13;
+}
+
 message MessageData {
     int64 sequence_num = 1;
     int64 view_num = 2;
@@ -51,7 +72,8 @@ message MessageData {
     int32 source = 4;
     repeated int32 targets = 5;
 
-    repeated RequestData requests = 6;
+    //repeated RequestData requests = 6;
+    repeated SmallBankRequestData requests = 6;
     repeated int64 request_nums = 7;
     bool has_request_data = 8;
     bytes digest = 9;
