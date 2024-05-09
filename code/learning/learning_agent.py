@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 request_queue = queue.Queue()
 protocol_pool = ["pbft", "zyzzyva", "cheapbft", "sbft", "hotstuff", "prime"]
-
+architecture_pool = ["OX","OXII","XOV","XOV++","XOVHASH","XOV"]
 
 def reward_engineering(reward: float) -> float:
     if reward < 1000:
@@ -303,8 +303,9 @@ class MultiRF:
         best_prediction = max(predictions.values())
         best_protocols = [key for key, value in predictions.items() if value == best_prediction]
         best_protocol = random.choice(best_protocols)
+        best_architecture= random.choice(architecture_pool)
 
-        return best_protocol, training_overhead, inference_overhead
+        return best_protocol,best_architecture, training_overhead, inference_overhead
 
 class SingleRF:
 
@@ -360,6 +361,7 @@ class SingleRF:
         else:
             # choose a random protocol if there is no training data
             best_protocol = random.choice(protocol_pool)
+            best_architecture =random.choice()
 
         return best_protocol, training_overhead, inference_overhead
 
@@ -541,11 +543,11 @@ def run_agent(agent_stub):
         # discard warm up episodes
         if episode < args.discard - 1:
             # notify the entity to repeat current default protocol
-            agent_stub.send_decision(gbft_pb2.LearningData(next_protocol="repeat"))
+            agent_stub.send_decision(gbft_pb2.LearningData(next_protocol="repeat",next_architecture="XOV"))
             continue
 
         # retrain and inference
-        best_protocol, training_overhead, inference_overhead = model.retrain_and_predict(state, current_protocol)
+        best_protocol, best_architecture,training_overhead, inference_overhead = model.retrain_and_predict(state, current_protocol)
 
         # record the state and action for the next episode
         actions.append((current_protocol, best_protocol))
@@ -553,7 +555,7 @@ def run_agent(agent_stub):
         model.record_state_and_action(current_protocol, best_protocol, state)
 
         # send back decision to the entity
-        agent_stub.send_decision(gbft_pb2.LearningData(next_protocol=best_protocol))
+        agent_stub.send_decision(gbft_pb2.LearningData(next_protocol=best_protocol, next_architecture=best_architecture))
 
         data_store.flush()
         
