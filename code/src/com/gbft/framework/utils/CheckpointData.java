@@ -87,8 +87,9 @@ public class CheckpointData {
             entity.getFeatureManager().received(entity.getEpisodeNum(seqnum), seqnum);
         }
 
-        if (type == StateMachine.REPLY && !message.getSwitch().getNextProtocol().isEmpty()) {
+        if (type == StateMachine.REPLY && !message.getSwitch().getNextProtocol().isEmpty() && !message.getSwitch().getNextArchitecture().isEmpty()) {
             decisionMatching.computeIfAbsent(message.getSwitch().getNextProtocol(), p -> new LongAdder()).increment();
+            decisionMatching.computeIfAbsent(message.getSwitch().getNextArchitecture(), a -> new LongAdder()).increment();
         }
 
         // used to debug tally stack trace
@@ -104,8 +105,9 @@ public class CheckpointData {
         }
     }
 
-    public void tallyDecision(String decision) {
-        decisionMatching.computeIfAbsent(decision, p -> new LongAdder()).increment();
+    public void tallyDecision(String protocol, String architecture) {
+        decisionMatching.computeIfAbsent(protocol, p -> new LongAdder()).increment();
+        decisionMatching.computeIfAbsent(architecture, p -> new LongAdder()).increment();
     }
 
     public void addAggregationValue(MessageData message) {
@@ -126,15 +128,23 @@ public class CheckpointData {
     }
 
     //TODO: Understand if quorom is on all protocols or do we quorom
-    public String getDecision() {
+    public List<String> getDecision() {
         Optional<String> nextProtocol;
+        Optional<String> nextArchitecture;
+
         do {
             nextProtocol = decisionMatching.entrySet().parallelStream()
                     .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
                     .findAny();
         } while (!nextProtocol.isPresent());
 
-        return nextProtocol.get();
+       do{
+           nextArchitecture = decisionMatching.entrySet().parallelStream()
+                   .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
+                   .findAny();
+       } while (!nextArchitecture.isPresent());
+
+        return Arrays.asList(nextProtocol.get(), nextArchitecture.get());
     }
 
     public void addRequestBlock(long seqnum, List<RequestData> requestBlock) {

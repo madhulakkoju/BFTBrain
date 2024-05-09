@@ -141,6 +141,9 @@ public abstract class Entity {
     public final int EPISODE_SIZE;
     public AtomicInteger currentEpisodeNum;
     public List<String> protocols;
+    public List<String> architectures;
+
+
 
     // episode -> node -> feature-type -> feature-value
     protected Map<Integer, Map<Integer, Map<Integer, Float>>> reports;
@@ -772,12 +775,16 @@ try {
         if (!isClient() && !protocols.isEmpty()) {
             // static switching in debug mode
             nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
+            //
             nextArchitecture = archManager.getRandomArchString();
         } else {
             // dynamic switching via learning agent
             // or client
-            nextProtocol = checkpoint.getDecision();
-            nextArchitecture = archManager.getRandomArchString();
+            List<String> decisions= checkpoint.getDecision();
+
+            nextProtocol = decisions.get(0);
+            nextArchitecture = decisions.get(1);
+
             //TODO: Update architecture from learining agent
         }
 

@@ -77,14 +77,13 @@ message MessageData {
 message SwitchingData {
     bool switch_ready = 1;
     string next_protocol = 2;
+    string next_architecture = 3;
 }
 
 message LearningData {
     map<int32, float> report = 1;
     string next_protocol = 2;
-    string best_reorder = 3;
-    string best_early_execution = 4;
-    string best_blocksize= 5;
+    string next_architecture = 3;
 }
 
 message FetchData {
