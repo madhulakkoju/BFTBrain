@@ -216,8 +216,9 @@ class QuadraticRF:
         best_protocols = [key for key, value in predictions.items() if value == best_prediction]
         best_protocol = random.choice(best_protocols)
         self.on_hold_buckets[(prev_action, best_protocol)] = True
+        best_architecture = random.choice(architecture_pool)
 
-        return best_protocol, training_overhead, inference_overhead
+        return best_protocol, best_architecture, training_overhead, inference_overhead
 
 class MultiRF:
 
@@ -361,9 +362,10 @@ class SingleRF:
         else:
             # choose a random protocol if there is no training data
             best_protocol = random.choice(protocol_pool)
-            best_architecture =random.choice()
 
-        return best_protocol, training_overhead, inference_overhead
+        best_architecture =random.choice(architecture_pool)
+
+        return best_protocol, best_architecture,training_overhead, inference_overhead
 
 class ADAPT:
 
@@ -404,8 +406,9 @@ class ADAPT:
 
         best_protocol_index = np.random.choice(np.flatnonzero(np.isclose(prediction, prediction.max())), replace=True)
         best_protocol = protocol_pool[best_protocol_index]
+        best_architecture = random.choice(architecture_pool)
 
-        return best_protocol, 0, 0
+        return best_protocol, best_architecture, 0, 0
     
 
 class ADAPT_PLUS:
@@ -458,8 +461,9 @@ class ADAPT_PLUS:
         best_prediction = max(predictions.values())
         best_protocols = [key for key, value in predictions.items() if value == best_prediction]
         best_protocol = random.choice(best_protocols)
+        best_architecture = random.choice(architecture_pool)
 
-        return best_protocol, training_overhead, inference_overhead
+        return best_protocol, best_architecture, training_overhead, inference_overhead
 
 class Heuristic:
     # 6 * 6 models and experience buckets: (prev_action, action)
@@ -482,7 +486,9 @@ class Heuristic:
         # proposal slowness
         if state[1] > 20:
             return "prime", 0, 0
-        return "zyzzyva", 0, 0
+
+        best_architecture = random.choice(architecture_pool)
+        return "zyzzyva", best_architecture,0, 0
 
 def run_agent(agent_stub):
     # init 
