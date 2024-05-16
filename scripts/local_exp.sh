@@ -58,7 +58,7 @@ do
   echo "Killing Bedrock and learning agent on machine $i ..."
   # Kill_process_port from script : kill_process_port.sh ________ (port number)
   # tmux send-keys -t {session}:{window}.{pane}  "KEY/VAL" C -m        =====> To send keys to a specific session window
-  tmux send-keys -t cloudlab:"$i" "cd ~/IdeaProjects/BFTBrain/code && ../scripts/kill_process_port.sh $((9020+$count)) && ../scripts/kill_process_port.sh $((9020+$count+20))" C-m
+  tmux send-keys -t cloudlab:"$i" "cd ~/BFTBrain/code && ../scripts/kill_process_port.sh $((9020+$count)) && ../scripts/kill_process_port.sh $((9020+$count+20))" C-m
 done
 
 echo "Protocol $protocol : [1/6] Starting Coordination Server"
@@ -83,7 +83,7 @@ for (( i=0; i<$agent_count; i++ ))
 do
   echo "Protocol $protocol : [3/6] Starting Learning Agent for Coordination Unit $i"
   # this run.sh creates the Learning Agent unit and links / sends it to the cloudlab-learning window
-  tmux send-keys -t cloudlab-learning:"$i" "cd ~/IdeaProjects/BFTBrain/code/learning/ && python3 learning_agent.py -u $i -p $((9021+$i)) -n single" C-m
+  tmux send-keys -t cloudlab-learning:"$i" "cd ~/BFTBrain/code/learning/ && python3 learning_agent.py -u $i -p $((9021+$i)) -n single" C-m
 done
 sleep 5
 
