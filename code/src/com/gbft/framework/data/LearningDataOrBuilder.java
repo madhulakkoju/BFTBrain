@@ -54,38 +54,14 @@ public interface LearningDataOrBuilder extends
       getNextProtocolBytes();
 
   /**
-   * <code>string best_reorder = 3;</code>
-   * @return The bestReorder.
+   * <code>string next_architecture = 3;</code>
+   * @return The nextArchitecture.
    */
-  java.lang.String getBestReorder();
+  java.lang.String getNextArchitecture();
   /**
-   * <code>string best_reorder = 3;</code>
-   * @return The bytes for bestReorder.
+   * <code>string next_architecture = 3;</code>
+   * @return The bytes for nextArchitecture.
    */
   com.google.protobuf.ByteString
-      getBestReorderBytes();
-
-  /**
-   * <code>string best_early_execution = 4;</code>
-   * @return The bestEarlyExecution.
-   */
-  java.lang.String getBestEarlyExecution();
-  /**
-   * <code>string best_early_execution = 4;</code>
-   * @return The bytes for bestEarlyExecution.
-   */
-  com.google.protobuf.ByteString
-      getBestEarlyExecutionBytes();
-
-  /**
-   * <code>string best_blocksize = 5;</code>
-   * @return The bestBlocksize.
-   */
-  java.lang.String getBestBlocksize();
-  /**
-   * <code>string best_blocksize = 5;</code>
-   * @return The bytes for bestBlocksize.
-   */
-  com.google.protobuf.ByteString
-      getBestBlocksizeBytes();
+      getNextArchitectureBytes();
 }

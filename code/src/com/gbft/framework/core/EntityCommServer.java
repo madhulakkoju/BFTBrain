@@ -71,7 +71,7 @@ public class EntityCommServer {
             System.out.println("epoch: " + epoch + ", received next protocol: " + request.getNextProtocol());
 
             var checkpoint = entity.getCheckpointManager().getCheckpoint(epoch);
-            checkpoint.tallyDecision(request.getNextProtocol(),request.getNextArchitecture();
+            checkpoint.tallyDecision(request.getNextProtocol(),request.getNextArchitecture());
             
 
 

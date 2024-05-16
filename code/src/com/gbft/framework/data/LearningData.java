@@ -17,9 +17,7 @@ private static final long serialVersionUID = 0L;
   }
   private LearningData() {
     nextProtocol_ = "";
-    bestReorder_ = "";
-    bestEarlyExecution_ = "";
-    bestBlocksize_ = "";
+    nextArchitecture_ = "";
   }
 
   @java.lang.Override
@@ -178,114 +176,38 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int BEST_REORDER_FIELD_NUMBER = 3;
-  private volatile java.lang.Object bestReorder_;
+  public static final int NEXT_ARCHITECTURE_FIELD_NUMBER = 3;
+  private volatile java.lang.Object nextArchitecture_;
   /**
-   * <code>string best_reorder = 3;</code>
-   * @return The bestReorder.
+   * <code>string next_architecture = 3;</code>
+   * @return The nextArchitecture.
    */
   @java.lang.Override
-  public java.lang.String getBestReorder() {
-    java.lang.Object ref = bestReorder_;
+  public java.lang.String getNextArchitecture() {
+    java.lang.Object ref = nextArchitecture_;
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
-      bestReorder_ = s;
+      nextArchitecture_ = s;
       return s;
     }
   }
   /**
-   * <code>string best_reorder = 3;</code>
-   * @return The bytes for bestReorder.
+   * <code>string next_architecture = 3;</code>
+   * @return The bytes for nextArchitecture.
    */
   @java.lang.Override
   public com.google.protobuf.ByteString
-      getBestReorderBytes() {
-    java.lang.Object ref = bestReorder_;
+      getNextArchitectureBytes() {
+    java.lang.Object ref = nextArchitecture_;
     if (ref instanceof java.lang.String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
-      bestReorder_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int BEST_EARLY_EXECUTION_FIELD_NUMBER = 4;
-  private volatile java.lang.Object bestEarlyExecution_;
-  /**
-   * <code>string best_early_execution = 4;</code>
-   * @return The bestEarlyExecution.
-   */
-  @java.lang.Override
-  public java.lang.String getBestEarlyExecution() {
-    java.lang.Object ref = bestEarlyExecution_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      bestEarlyExecution_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string best_early_execution = 4;</code>
-   * @return The bytes for bestEarlyExecution.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getBestEarlyExecutionBytes() {
-    java.lang.Object ref = bestEarlyExecution_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      bestEarlyExecution_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
-  public static final int BEST_BLOCKSIZE_FIELD_NUMBER = 5;
-  private volatile java.lang.Object bestBlocksize_;
-  /**
-   * <code>string best_blocksize = 5;</code>
-   * @return The bestBlocksize.
-   */
-  @java.lang.Override
-  public java.lang.String getBestBlocksize() {
-    java.lang.Object ref = bestBlocksize_;
-    if (ref instanceof java.lang.String) {
-      return (java.lang.String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      java.lang.String s = bs.toStringUtf8();
-      bestBlocksize_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string best_blocksize = 5;</code>
-   * @return The bytes for bestBlocksize.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getBestBlocksizeBytes() {
-    java.lang.Object ref = bestBlocksize_;
-    if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (java.lang.String) ref);
-      bestBlocksize_ = b;
+      nextArchitecture_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -315,14 +237,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextProtocol_)) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nextProtocol_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestReorder_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, bestReorder_);
-    }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestEarlyExecution_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, bestEarlyExecution_);
-    }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestBlocksize_)) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, bestBlocksize_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextArchitecture_)) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, nextArchitecture_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -346,14 +262,8 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextProtocol_)) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nextProtocol_);
     }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestReorder_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, bestReorder_);
-    }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestEarlyExecution_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, bestEarlyExecution_);
-    }
-    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(bestBlocksize_)) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, bestBlocksize_);
+    if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(nextArchitecture_)) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, nextArchitecture_);
     }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
@@ -374,12 +284,8 @@ private static final long serialVersionUID = 0L;
         other.internalGetReport())) return false;
     if (!getNextProtocol()
         .equals(other.getNextProtocol())) return false;
-    if (!getBestReorder()
-        .equals(other.getBestReorder())) return false;
-    if (!getBestEarlyExecution()
-        .equals(other.getBestEarlyExecution())) return false;
-    if (!getBestBlocksize()
-        .equals(other.getBestBlocksize())) return false;
+    if (!getNextArchitecture()
+        .equals(other.getNextArchitecture())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -397,12 +303,8 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + NEXT_PROTOCOL_FIELD_NUMBER;
     hash = (53 * hash) + getNextProtocol().hashCode();
-    hash = (37 * hash) + BEST_REORDER_FIELD_NUMBER;
-    hash = (53 * hash) + getBestReorder().hashCode();
-    hash = (37 * hash) + BEST_EARLY_EXECUTION_FIELD_NUMBER;
-    hash = (53 * hash) + getBestEarlyExecution().hashCode();
-    hash = (37 * hash) + BEST_BLOCKSIZE_FIELD_NUMBER;
-    hash = (53 * hash) + getBestBlocksize().hashCode();
+    hash = (37 * hash) + NEXT_ARCHITECTURE_FIELD_NUMBER;
+    hash = (53 * hash) + getNextArchitecture().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -556,11 +458,7 @@ private static final long serialVersionUID = 0L;
       internalGetMutableReport().clear();
       nextProtocol_ = "";
 
-      bestReorder_ = "";
-
-      bestEarlyExecution_ = "";
-
-      bestBlocksize_ = "";
+      nextArchitecture_ = "";
 
       return this;
     }
@@ -592,9 +490,7 @@ private static final long serialVersionUID = 0L;
       result.report_ = internalGetReport();
       result.report_.makeImmutable();
       result.nextProtocol_ = nextProtocol_;
-      result.bestReorder_ = bestReorder_;
-      result.bestEarlyExecution_ = bestEarlyExecution_;
-      result.bestBlocksize_ = bestBlocksize_;
+      result.nextArchitecture_ = nextArchitecture_;
       onBuilt();
       return result;
     }
@@ -649,16 +545,8 @@ private static final long serialVersionUID = 0L;
         nextProtocol_ = other.nextProtocol_;
         onChanged();
       }
-      if (!other.getBestReorder().isEmpty()) {
-        bestReorder_ = other.bestReorder_;
-        onChanged();
-      }
-      if (!other.getBestEarlyExecution().isEmpty()) {
-        bestEarlyExecution_ = other.bestEarlyExecution_;
-        onChanged();
-      }
-      if (!other.getBestBlocksize().isEmpty()) {
-        bestBlocksize_ = other.bestBlocksize_;
+      if (!other.getNextArchitecture().isEmpty()) {
+        nextArchitecture_ = other.nextArchitecture_;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -701,20 +589,10 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 26: {
-              bestReorder_ = input.readStringRequireUtf8();
+              nextArchitecture_ = input.readStringRequireUtf8();
 
               break;
             } // case 26
-            case 34: {
-              bestEarlyExecution_ = input.readStringRequireUtf8();
-
-              break;
-            } // case 34
-            case 42: {
-              bestBlocksize_ = input.readStringRequireUtf8();
-
-              break;
-            } // case 42
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -936,230 +814,78 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private java.lang.Object bestReorder_ = "";
+    private java.lang.Object nextArchitecture_ = "";
     /**
-     * <code>string best_reorder = 3;</code>
-     * @return The bestReorder.
+     * <code>string next_architecture = 3;</code>
+     * @return The nextArchitecture.
      */
-    public java.lang.String getBestReorder() {
-      java.lang.Object ref = bestReorder_;
+    public java.lang.String getNextArchitecture() {
+      java.lang.Object ref = nextArchitecture_;
       if (!(ref instanceof java.lang.String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         java.lang.String s = bs.toStringUtf8();
-        bestReorder_ = s;
+        nextArchitecture_ = s;
         return s;
       } else {
         return (java.lang.String) ref;
       }
     }
     /**
-     * <code>string best_reorder = 3;</code>
-     * @return The bytes for bestReorder.
+     * <code>string next_architecture = 3;</code>
+     * @return The bytes for nextArchitecture.
      */
     public com.google.protobuf.ByteString
-        getBestReorderBytes() {
-      java.lang.Object ref = bestReorder_;
+        getNextArchitectureBytes() {
+      java.lang.Object ref = nextArchitecture_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
-        bestReorder_ = b;
+        nextArchitecture_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string best_reorder = 3;</code>
-     * @param value The bestReorder to set.
+     * <code>string next_architecture = 3;</code>
+     * @param value The nextArchitecture to set.
      * @return This builder for chaining.
      */
-    public Builder setBestReorder(
+    public Builder setNextArchitecture(
         java.lang.String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      bestReorder_ = value;
+      nextArchitecture_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string best_reorder = 3;</code>
+     * <code>string next_architecture = 3;</code>
      * @return This builder for chaining.
      */
-    public Builder clearBestReorder() {
+    public Builder clearNextArchitecture() {
       
-      bestReorder_ = getDefaultInstance().getBestReorder();
+      nextArchitecture_ = getDefaultInstance().getNextArchitecture();
       onChanged();
       return this;
     }
     /**
-     * <code>string best_reorder = 3;</code>
-     * @param value The bytes for bestReorder to set.
+     * <code>string next_architecture = 3;</code>
+     * @param value The bytes for nextArchitecture to set.
      * @return This builder for chaining.
      */
-    public Builder setBestReorderBytes(
+    public Builder setNextArchitectureBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      bestReorder_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object bestEarlyExecution_ = "";
-    /**
-     * <code>string best_early_execution = 4;</code>
-     * @return The bestEarlyExecution.
-     */
-    public java.lang.String getBestEarlyExecution() {
-      java.lang.Object ref = bestEarlyExecution_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        bestEarlyExecution_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string best_early_execution = 4;</code>
-     * @return The bytes for bestEarlyExecution.
-     */
-    public com.google.protobuf.ByteString
-        getBestEarlyExecutionBytes() {
-      java.lang.Object ref = bestEarlyExecution_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        bestEarlyExecution_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string best_early_execution = 4;</code>
-     * @param value The bestEarlyExecution to set.
-     * @return This builder for chaining.
-     */
-    public Builder setBestEarlyExecution(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      bestEarlyExecution_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string best_early_execution = 4;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearBestEarlyExecution() {
-      
-      bestEarlyExecution_ = getDefaultInstance().getBestEarlyExecution();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string best_early_execution = 4;</code>
-     * @param value The bytes for bestEarlyExecution to set.
-     * @return This builder for chaining.
-     */
-    public Builder setBestEarlyExecutionBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      bestEarlyExecution_ = value;
-      onChanged();
-      return this;
-    }
-
-    private java.lang.Object bestBlocksize_ = "";
-    /**
-     * <code>string best_blocksize = 5;</code>
-     * @return The bestBlocksize.
-     */
-    public java.lang.String getBestBlocksize() {
-      java.lang.Object ref = bestBlocksize_;
-      if (!(ref instanceof java.lang.String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        bestBlocksize_ = s;
-        return s;
-      } else {
-        return (java.lang.String) ref;
-      }
-    }
-    /**
-     * <code>string best_blocksize = 5;</code>
-     * @return The bytes for bestBlocksize.
-     */
-    public com.google.protobuf.ByteString
-        getBestBlocksizeBytes() {
-      java.lang.Object ref = bestBlocksize_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        bestBlocksize_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string best_blocksize = 5;</code>
-     * @param value The bestBlocksize to set.
-     * @return This builder for chaining.
-     */
-    public Builder setBestBlocksize(
-        java.lang.String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      bestBlocksize_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string best_blocksize = 5;</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearBestBlocksize() {
-      
-      bestBlocksize_ = getDefaultInstance().getBestBlocksize();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string best_blocksize = 5;</code>
-     * @param value The bytes for bestBlocksize to set.
-     * @return This builder for chaining.
-     */
-    public Builder setBestBlocksizeBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      bestBlocksize_ = value;
+      nextArchitecture_ = value;
       onChanged();
       return this;
     }
