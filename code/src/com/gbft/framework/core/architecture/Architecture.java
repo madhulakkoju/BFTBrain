@@ -127,7 +127,7 @@ public class Architecture {
         //Check if the request is valid
         //Update this with the actual logic
 
-        if(this.entity.getDataset().getRecordCurrentVersion().get(request.getRecord()) != request.getCurrentVersion()){
+        if(this.entity.getDataset().getRecordCurrentVersion().get(request.getSender()) != request.getCurrentVersion()){
             request = request.toBuilder().setIsTnxValid(false).build();
             return false;
         }

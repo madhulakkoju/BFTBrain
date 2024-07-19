@@ -16,19 +16,27 @@ service AgentComm {
 
 message RequestData {
     enum Operation {
-        NOP = 0;
-        ADD = 1;
-        SUB = 2;
-        INC = 3;
-        DEC = 4;
-		READ_ONLY = 5;
+        READ_ONLY = 0;
+        TRANSACT = 1;
+        NOP = 2;
+        BONUS = 3;
+
+//        INC = 3; //deprecated
+//        DEC = 4; //deprecated
+//        ADD = 5; //deprecated
+//        SUB = 6; //deprecated
+
     }
     
     int32 client = 1;
     int64 request_num = 2;
-    
-    int32 record = 3;
+
+
+//    int32 record = 3; //deprecated
     Operation operation = 4;
+
+    int32 sender = 14;
+    int32 receiver = 15;
     int32 value = 5;
 
     google.protobuf.Timestamp timestamp = 6;
@@ -71,7 +79,10 @@ message MessageData {
 
     bool is_endorsement_request = 20;
 
-    int32 xov_state = 21; // 0: DO_ENDORSE -> all nodes, 1: ENDORSED -> client .........OX........ 3: Validate on all nodes
+    int32 xov_state = 21;
+    // 0: DO_ENDORSE -> all nodes,
+    // 1: ENDORSED -> client .........OX........
+    // 3: Validate on all nodes
 }
 
 message SwitchingData {

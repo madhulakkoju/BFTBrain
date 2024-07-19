@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+import com.gbft.framework.utils.LogUtils;
 import lombok.Getter;
 
 import java.io.IOException;
@@ -54,8 +55,11 @@ public class Dataset {
     }
 
     public int execute(RequestData request) {
-        var op = request.getOperation();
-        var record = request.getRecord();
+
+        RequestData.Operation op = request.getOperation();
+
+        var sender = request.getSender();
+        var receiver = request.getReceiver();
 
         // dummy computation
         if (request.getComputeFactor() > 0) {
@@ -72,60 +76,56 @@ public class Dataset {
         int value = 0;
 
         switch (op) {
-        case ADD:
-            value = records.get(record).addAndGet(request.getValue());
-            break;
-        case SUB:
-            value = records.get(record).addAndGet(-request.getValue());
-            break;
-        case INC:
-            value = records.get(record).incrementAndGet();
-            break;
-        case DEC:
-            value = records.get(record).decrementAndGet();
-            break;
-        case READ_ONLY:
-            value = records.get(record).get();
-        default:
-            value = records.get(record).get();
+            case TRANSACT:
+                value = records.get(receiver).addAndGet(request.getValue());
+                records.get(sender).addAndGet(-request.getValue());
+                break;
+            case BONUS:
+                value = records.get(sender).addAndGet(request.getValue());
+                records.get(receiver).addAndGet(request.getValue());
+                break;
+            case READ_ONLY:
+                value = records.get(sender).get();
+            default:
+                value = records.get(sender).get();
         }
 
         return value;
     }
 
     public void update(RequestData request, int value) {
-        var record = request.getRecord();
-        records.get(record).set(value);
+        var sender = request.getSender();
+        var receiver = request.getReceiver();
+        records.get(sender).addAndGet(-value);
+        records.get(receiver).addAndGet(value);
 
-        this.recordCurrentVersion.put(record, recordCurrentVersion.getOrDefault(record, 0L) + 1);
+        this.recordCurrentVersion.put(sender, recordCurrentVersion.getOrDefault(sender, 0L) + 1);
+        this.recordCurrentVersion.put(receiver, recordCurrentVersion.getOrDefault(receiver, 0L) + 1);
+
+        LogUtils.LogCommon("Update Sender: " + sender + " , Receiver: " + receiver
+                + "versions: sender - "+recordCurrentVersion.get(sender) + " receiver: " +
+                recordCurrentVersion.get(receiver));
     }
 
     public RequestData executeAhead(RequestData request) {
         var op = request.getOperation();
-        var record = request.getRecord();
+        var sender = request.getSender();
+        var receiver = request.getReceiver();
 
         int value = 0;
 
         switch (op) {
-            case ADD:
-                value = records.get(record).get() + request.getValue();
+            case TRANSACT:
+                value = records.get(sender).get() - request.getValue();
                 break;
-            case SUB:
-                value = records.get(record).get() - request.getValue();
+            case BONUS:
+                value = records.get(sender).get() + request.getValue();
                 break;
-            case INC:
-                value = records.get(record).get() + 1;
-                break;
-            case DEC:
-                value = records.get(record).get() - 1;
-                break;
-            case READ_ONLY:
-                value = records.get(record).get();
             default:
-                value = records.get(record).get();
+                value = records.get(sender).get();
         }
         return request.toBuilder().setEarlyExecResult(value)
-                .setCurrentVersion(recordCurrentVersion.getOrDefault(record, 0L))
+                .setCurrentVersion(recordCurrentVersion.getOrDefault(sender, 0L))
                 .build();
     }
 

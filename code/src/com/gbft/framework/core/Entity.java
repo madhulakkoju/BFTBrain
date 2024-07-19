@@ -1,38 +1,15 @@
 package com.gbft.framework.core;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.core.architecture.ArchManager;
 import com.gbft.framework.core.architecture.Architecture;
-import com.gbft.framework.data.AgentCommGrpc;
-import com.gbft.framework.data.LearningData;
-import com.gbft.framework.data.MessageData;
-import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.SwitchingData;
+import com.gbft.framework.data.*;
 import com.gbft.framework.data.AgentCommGrpc.AgentCommBlockingStub;
-import com.gbft.framework.data.RequestData.Operation;
 import com.gbft.framework.fault.InDarkFault;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.fault.SlowProposalFault;
 import com.gbft.framework.fault.TimeoutFault;
-import com.gbft.framework.plugins.MessagePlugin;
-import com.gbft.framework.plugins.PipelinePlugin;
-import com.gbft.framework.plugins.PluginManager;
-import com.gbft.framework.plugins.RolePlugin;
-import com.gbft.framework.plugins.TransitionPlugin;
+import com.gbft.framework.plugins.*;
 import com.gbft.framework.statemachine.Condition;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition;
@@ -43,13 +20,20 @@ import com.gbft.framework.utils.Printer.Verbosity;
 import com.gbft.plugin.role.BasicPrimaryPlugin;
 import com.gbft.plugin.role.PrimaryPassivePlugin;
 import com.google.protobuf.ByteString;
-import com.gbft.framework.utils.*;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+
+@Data
 public abstract class Entity {
 
     // Config

@@ -141,12 +141,15 @@ public class Printer {
         if (Printer.verbosity > Verbosity.VV) {
             var op = request.getOperation();
             sb.append(" [").append(op).append(' ');
-            if (op == Operation.ADD) {
-                sb.append(request.getValue()).append(" to ");
-            } else if (op == Operation.SUB) {
-                sb.append(request.getValue()).append(" from ");
+            if (op == Operation.TRANSACT) {
+                sb.append("Val: ").append(request.getValue())
+                        .append(" from ").append(request.getSender())
+                        .append(" to ").append(request.getReceiver()).append("]");
+            } else if (op == Operation.BONUS) {
+                sb.append("Val: ").append(request.getValue())
+                        .append(" BONUS to ").append(request.getSender()).append(" and ")
+                        .append(" BONUS to ").append(request.getReceiver()).append("]");
             }
-            sb.append(request.getRecord()).append(']');
         }
 
         sb.append('\n');

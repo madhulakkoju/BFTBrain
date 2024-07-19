@@ -125,7 +125,7 @@ public class DataUtils {
     private static final int WORKLOAD_40 = 2;
     private static final int WORKLOAD_44 = 3;
 
-    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId) {
+    public static RequestData createRequest(long reqnum, int sender, int receiver, Operation operation, int value, int clientId) {
         var probabilities = Config.doubleList("workload.distribution");
 
         var r = random.nextDouble();
@@ -163,20 +163,22 @@ public class DataUtils {
 
         try {
             builder.setRequestNum(reqnum)
-                   .setClient(clientId)
-                   .setRecord(record)
-                   .setOperation(operation)
-                   .setValue(value)
-                   .setReplySize(replySize)
-                   .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
-                   .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
-                   .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+                    .setClient(clientId)
+                    .setSender(sender)
+                    .setReceiver(receiver)
+                    .setOperation(operation)
+                    .setValue(value)
+                    .setReplySize(replySize)
+                    .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
+                    .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
+                    .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return builder.build();
     }
+
 
     public static ByteString getDigest(List<RequestData> requestBlock) {
         var stream = new ByteArrayOutputStream();

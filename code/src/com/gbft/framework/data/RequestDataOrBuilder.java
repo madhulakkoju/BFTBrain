@@ -20,21 +20,35 @@ public interface RequestDataOrBuilder extends
   long getRequestNum();
 
   /**
-   * <code>int32 record = 3;</code>
-   * @return The record.
-   */
-  int getRecord();
-
-  /**
+   * <pre>
+   *    int32 record = 3; //deprecated
+   * </pre>
+   *
    * <code>.RequestData.Operation operation = 4;</code>
    * @return The enum numeric value on the wire for operation.
    */
   int getOperationValue();
   /**
+   * <pre>
+   *    int32 record = 3; //deprecated
+   * </pre>
+   *
    * <code>.RequestData.Operation operation = 4;</code>
    * @return The operation.
    */
   com.gbft.framework.data.RequestData.Operation getOperation();
+
+  /**
+   * <code>int32 sender = 14;</code>
+   * @return The sender.
+   */
+  int getSender();
+
+  /**
+   * <code>int32 receiver = 15;</code>
+   * @return The receiver.
+   */
+  int getReceiver();
 
   /**
    * <code>int32 value = 5;</code>

@@ -159,16 +159,8 @@ public class Client extends Entity {
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
 
-
                     // from here sending generated request to leader
                     sendRequest(request);
-
-
-
-
-
-
-
 
                     while (System.nanoTime() < next) {
                         LockSupport.parkNanos(intervalns / 3);
