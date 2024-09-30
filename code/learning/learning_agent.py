@@ -154,7 +154,7 @@ class QuadraticRF:
             for action in protocol_pool:
                 self.experiences_X[prev_action][action] = []
                 self.experiences_y[prev_action][action] = []
-                self.models[prev_action][action] = RandomForestRegressor(max_depth=5)
+                self.models[prev_action][action] = RandomForestRegressor(max_depth=10)
         self.last_updated_bucket = None
         self.on_hold_buckets = {}
         # init experience buffer
@@ -228,7 +228,7 @@ class MultiRF:
         for protocol in protocol_pool:
             self.experiences_X[protocol] = []
             self.experiences_y[protocol] = []
-            self.models[protocol] = RandomForestRegressor(max_depth=5)
+            self.models[protocol] = RandomForestRegressor(max_depth=10)
         self.last_updated_bucket = None
         # init experience buffer
         init_multi_experience_buffer(self.experiences_X, self.experiences_y)
@@ -311,11 +311,11 @@ class SingleRF:
     def __init__(self):
         self.experiences_X = []
         self.experiences_y = []
-        self.model = RandomForestRegressor(max_depth=5)
+        self.model = RandomForestRegressor(max_depth=10)
         # TODO: featurize action space instead of using one-hot encoding
         actions_matrix = np.eye(len(protocol_pool))
         # (state, action) --> reward
-        self.enumeration_matrix = np.hstack((np.zeros((actions_matrix.shape[0], 6)), actions_matrix))
+        self.enumeration_matrix = np.hstack((np.zeros((actions_matrix.shape[0], 10)), actions_matrix))
         # init experience buffer
         init_single_experience_buffer(self.experiences_X, self.experiences_y, actions_matrix)
         # init model
@@ -331,7 +331,7 @@ class SingleRF:
         self.experiences_X.append(self.enumeration_matrix[best_protocol_index, :])
 
     def get_prev_state(self, prev_prev_action, prev_action):
-        return self.experiences_X[len(self.experiences_y) - 1][:6].tolist()
+        return self.experiences_X[len(self.experiences_y) - 1][:10].tolist()
 
     def train(self):
         replay_length = get_replay_buffer_length(self.experiences_y)
@@ -343,7 +343,7 @@ class SingleRF:
     def retrain_and_predict(self, state, prev_action):
         training_overhead = 0
         inference_overhead = 0
-        self.enumeration_matrix[:, 0:6] = state
+        self.enumeration_matrix[:, 0:10] = state
         if len(self.experiences_y):
             training_start = time.time()
             # retrain the model if there is any training data
@@ -368,7 +368,7 @@ class ADAPT:
     def __init__(self):
         self.experiences_X = []
         self.experiences_y = []
-        self.model = RandomForestRegressor(max_depth=5)
+        self.model = RandomForestRegressor(max_depth=10)
         # TODO: featurize action space instead of using one-hot encoding
         actions_matrix = np.eye(len(protocol_pool))
         # (state, action) --> reward
@@ -416,7 +416,7 @@ class ADAPT_PLUS:
             for action in protocol_pool:
                 self.experiences_X[prev_action][action] = []
                 self.experiences_y[prev_action][action] = []
-                self.models[prev_action][action] = RandomForestRegressor(max_depth=5)
+                self.models[prev_action][action] = RandomForestRegressor(max_depth=10)
         # init experience buffer
         init_quadratic_experience_buffer(self.experiences_X, self.experiences_y)
         # init models
@@ -514,7 +514,7 @@ def run_agent(agent_stub):
     data_store = open(folder_name + timestamp + " u" + str(args.unit) + ".csv", 'w')
     csv_writer = csv.writer(data_store)
     csv_writer.writerow(
-        ['FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE', 'MESSAGE_PER_SLOT', 'HAS_FAST_PATH', 'HAS_LEADER_ROTATION', 
+        ['FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE', 'MESSAGE_PER_SLOT', 'HAS_FAST_PATH', 'HAS_LEADER_ROTATION', 'WRITE_RATIO', 'HOT_KEY_RATIO' , 'TRANS_ARRIVAL_RATE' , 'EXECUTION_DELAY' ,
          'previous_action', 'action', 'throughput',
          'training_overhead(s)', 'inference_overhead(s)'])
     logging.info('learning agent has been initialized.')
@@ -524,7 +524,7 @@ def run_agent(agent_stub):
         request = request_queue.get()
         data = request.report
         state = np.array([data[FAST_PATH_FREQUENCY], data[SLOWNESS_OF_PROPOSAL], data[REQUEST_SIZE], data[RECEIVED_MESSAGE_PER_SLOT], 
-                          data[HAS_FAST_PATH], data[HAS_LEADER_ROTATION]])
+                          data[HAS_FAST_PATH], data[HAS_LEADER_ROTATION], data[WRITE_RATIO], data[HOT_KEY_RATIO],data[TRANS_ARRIVAL_RATE],data[EXECUTION_DELAY]])
         current_protocol = request.next_protocol # NOTE: reuse this proto field just for convenience
         logging.info('episode %d: received learning request from bedrock entity, state=%s, current_protocol=%s', episode, state, current_protocol)
 
