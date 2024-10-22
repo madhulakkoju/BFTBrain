@@ -30,29 +30,53 @@ public class Node extends Entity {
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
+
+
         if (checkpoint.getReplies(seqnum) == null) {
+
             var replies = new HashMap<Long, Integer>();
-            for (var request : requestBlock) {
 
-//                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
-//                    if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
-//
-//                        //TODO: something seems odd in this type of validation and updation
-//                        logger.write("Node:: Request is validated amd updated with "+ request.getEarlyExecResult());
-//                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
-//                        logger.write("Node:: Dataset is updated with value "+ request.getEarlyExecResult());
-//                        //update value on node dataset
-//                        dataset.update(request, request.getEarlyExecResult());
-//                    }
-//                }
-//                else{
-//                      replies.put(request.getRequestNum(), dataset.execute(request));
-//                }
+            // To identify Parallel runnig architectures and route themto appropriate places for execution
+            switch(this.getArchManager().getCurrentArchitectureKey()){
+
+                case "OXII":
+
+                    OXIIUtils oxiiUtils = new OXIIUtils( seqnum , dataset, replies );
+                    oxiiUtils.constructGraph(requestBlock);
+                    oxiiUtils.executeTransactionsInParallel();
+                    break;
 
 
-                replies.put(request.getRequestNum(), dataset.execute(request));
+                case "XOV++":
+
+                    XOVppDependencyGraph xovDependencyGraph = new XOVppDependencyGraph(requestBlock, seqnum);
+
+                    if(xovDependencyGraph.success){
+                        System.out.println("Ordering Successful with XOV++. \n Initiating Serial Execute");
+                    }
+                    else{
+                        System.out.println("Ordering Failed with XOV++. \n Initiating XOV - Execute");
+                    }
+
+
+                    // TODO: a Quorom has to happen here to agree upon ordered blocks
+
+                    this.serialExecute( xovDependencyGraph.getOrderedBlock() , replies);
+
+
+
+                    default: //OX all others
+                        this.serialExecute( xovDependencyGraph.getOrderedBlock(), replies );
+
+                    break;
+
 
             }
+
+
+
+
+
             checkpoint.addReplies(seqnum, replies);
         }
 
@@ -176,6 +200,42 @@ public class Node extends Entity {
             }
         }
     }
+
+
+
+
+
+
+    private void serialExecute( List<RequestData> requestBlock, HashMap<Long, Integer> replies){
+        for (var request : requestBlock) {
+
+            if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
+                if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
+
+                    //TODO: something seems odd in this type of validation and updation
+                    logger.write("Node:: Request is validated amd updated with "+ request.getEarlyExecResult());
+                    replies.put(request.getRequestNum(), request.getEarlyExecResult());
+                    logger.write("Node:: Dataset is updated with value "+ request.getEarlyExecResult());
+                    //update value on node dataset
+                    dataset.update(request, request.getEarlyExecResult());
+                }
+            } else{
+                replies.put(request.getRequestNum(), dataset.execute(request));
+            }
+
+
+            replies.put(request.getRequestNum(), dataset.execute(request));
+
+        }
+
+
+    }
+
+
+
+
+
+
 
     @Override
     public boolean isClient() {

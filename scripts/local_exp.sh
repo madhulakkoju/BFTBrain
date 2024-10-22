@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Usage: ./local_exp.sh [protocol] [learning (optional)]
 # Examples:
 #        ./local_exp.sh pbft # run pbft without learning agents
@@ -37,6 +39,7 @@ if [ $agent_count -gt 0 ]; then
 fi
 
 # create one window for each server
+# shellcheck disable=SC2004
 for (( i=0; i<$count-1; i++ ))
 do
   tmux new-window -t cloudlab # create a new window for each server / node
@@ -96,7 +99,8 @@ sleep 5
 
 # coordination server start
 # by sending empty key to Coordination server at cloudlab[0]
-tmux send-keys -t cloudlab:0 C-m
+tmux send-keys -t cloudlab:0 C-msudo apt-get autoclean
+
 
 echo "Protocol $protocol : [6/6] Executing ..."
 

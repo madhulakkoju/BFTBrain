@@ -335,42 +335,46 @@ public abstract class Entity {
 //            logger.write("IS Endorsement Req: " + message.getIsEndorsementRequest());
 //            logger.write("XOV State: " + message.getXovState());
 
-            if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
-                //Here, it is an endorsement. so execute ahead and send back to client
-                //logger.write("Endorsement Request received to Node");
-                var aheadExecutedReqs = this.getArchManager().getCurrentArchitecture().executeRequestsAhead(message.getRequestsList());
-                var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message, aheadExecutedReqs);
-                //logger.write("Endorsement Response sending to client");
-                sendMessage(messageToClient);
-                //logger.write("Endorsement Response sent to client + " + messageToClient.toString());
-                return;
-            }
 
-            if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
-                //Endorsement Policy: atleast 1 endorsed response needed to pass on
+            if(this.getArchManager().getCurrentArchitectureKey().contains("XOV") ) {
 
-                //Endorsement Response
-                for (var req : message.getRequestsList()) {
-                    if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+                if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
+                    //Here, it is an endorsement. so execute ahead and send back to client
+                    //logger.write("Endorsement Request received to Node");
+                    var aheadExecutedReqs = this.getArchManager().getCurrentArchitecture().executeRequestsAhead(message.getRequestsList());
+                    var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message, aheadExecutedReqs);
+                    //logger.write("Endorsement Response sending to client");
+                    sendMessage(messageToClient);
+                    //logger.write("Endorsement Response sent to client + " + messageToClient.toString());
+                    return;
+                }
 
-                        this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
-                            //Remove the request from the queue
-                            this.getEndorsementQueue().remove(req.getRequestNum());
-                            this.getEndorsementCounts().remove(req.getRequestNum());
+                if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
+                    //Endorsement Policy: atleast 1 endorsed response needed to pass on
 
-                            // Send message to state 3 to Leader
-                            if (requestGenerator != null) {
-                                //Send the request to the client
-                                requestGenerator.sendRequest(req);
+                    //Endorsement Response
+                    for (var req : message.getRequestsList()) {
+                        if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+
+                            this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
+                            if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
+                                //Remove the request from the queue
+                                this.getEndorsementQueue().remove(req.getRequestNum());
+                                this.getEndorsementCounts().remove(req.getRequestNum());
+
+                                // Send message to state 3 to Leader
+                                if (requestGenerator != null) {
+                                    //Send the request to the client
+                                    requestGenerator.sendRequest(req);
+                                }
                             }
                         }
                     }
+                    return;
                 }
-                return;
+
             }
 
-        // old code rom here
 
         var type = message.getMessageType();
         if (type == StateMachine.REQUEST) {

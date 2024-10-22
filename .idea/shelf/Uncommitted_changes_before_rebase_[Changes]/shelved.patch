@@ -1,0 +1,623 @@
+Index: scripts/local_exp.sh
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Usage: ./local_exp.sh [protocol] [learning (optional)]\n# Examples:\n#        ./local_exp.sh pbft # run pbft without learning agents\n#        ./local_exp.sh pbft # run bedrock with learning agents, using pbft as the default protocol\n# [protocol]: protocol name to run\n# [learning]: if *learning* provided, each bedrock entity will be paired with a local learning agent\n\nprotocol=$1\n\n#Counts of coordination units: ( 1 Coordination server + 4 coordination units + 1 client )\ncount=6 # 3f+3 # Count of servers without learning agent\nagent_count=0 # Count of servers with learning agent\n# if learning, agent_count=count-2\n# $# is num of args in cmd line..... -gt : greater than\nif [ $# -gt 1 ]; then\n  if [ \"$2\" == \"learning\" ]; then\n    agent_count=$((count-2))\n  fi\nfi\n\n# check if session exists\nif tmux has-session -t cloudlab 2>/dev/null; then\n  # session exists - kill it\n  tmux kill-session -t cloudlab\nfi\nif tmux has-session -t cloudlab-learning 2>/dev/null; then\n  # session exists - kill it\n  tmux kill-session -t cloudlab-learning\nfi\n\n# create new session for cloudlab / server without learning node\ntmux new-session -d -s cloudlab\n\n# create new session when learning is enabled by checking the argument 2 while executing this file\nif [ $agent_count -gt 0 ]; then\n  tmux new-session -d -s cloudlab-learning\nfi\n\n# create one window for each server\nfor (( i=0; i<$count-1; i++ ))\ndo\n  tmux new-window -t cloudlab # create a new window for each server / node\ndone\nfor (( i=0; i<$agent_count-1; i++ ))\ndo\n  tmux new-window -t cloudlab-learning # create a new window for each learning node\ndone\n\n\nsleep 5\n\necho \"\\033[4;34mStart running $protocol with $count servers\\033[m\"\n\necho \"Protocol $protocol : [0/6] Killing previous processes if needed ...\"\n# Kill all processes if active\nfor (( i=0; i<$count; i++ ))\ndo\n  echo \"Killing Bedrock and learning agent on machine $i ...\"\n  # Kill_process_port from script : kill_process_port.sh ________ (port number)\n  # tmux send-keys -t {session}:{window}.{pane}  \"KEY/VAL\" C -m        =====> To send keys to a specific session window\n  tmux send-keys -t cloudlab:\"$i\" \"cd ~/IdeaProjects/BFTBrain/code && ../scripts/kill_process_port.sh $((9020+$count)) && ../scripts/kill_process_port.sh $((9020+$count+20))\" C-m\ndone\n\necho \"Protocol $protocol : [1/6] Starting Coordination Server\"\n# start server on the first server - Cordination Server & send the output to the created coordination server session\n# this run.sh runs the actual protocols and log all the server logs\ntmux send-keys -t cloudlab:0 \"./run.sh CoordinatorServer -p 9020 -r $protocol\" C-m\n\necho \"Protocol $protocol : [2/6] Waiting for 10 seconds for coordination server to set up ...\"\nsleep 5\n\n# start units\nfor (( i=1; i<$count-1; i++ ))\ndo\n  echo \"Protocol $protocol : [3/6] Starting Coordination Unit $(($i-1))\"\n  # this run.sh creates the Coordinator unit and links / sends it to the cloudlab window\n  tmux send-keys -t cloudlab:\"$i\" \"./run.sh CoordinatorUnit -u $(($i-1)) -p $((9020+$i)) -n 1 -s 127.0.0.1:9020\" C-m\n  sleep 1\ndone\n\n# start learning agents\nfor (( i=0; i<$agent_count; i++ ))\ndo\n  echo \"Protocol $protocol : [3/6] Starting Learning Agent for Coordination Unit $i\"\n  # this run.sh creates the Learning Agent unit and links / sends it to the cloudlab-learning window\n  tmux send-keys -t cloudlab-learning:\"$i\" \"cd ~/IdeaProjects/BFTBrain/code/learning/ && python3 learning_agent.py -u $i -p $((9021+$i)) -n single\" C-m\ndone\nsleep 5\n\necho \"Protocol $protocol : [4/6] Starting Client\"\n# start client y calling run.sh as Coordinator Unit also sending inputs: u: count of agents ; p: port number ; -c    ; -s   C -m\ntmux send-keys -t cloudlab:\"$(($count-1))\" \"./run.sh CoordinatorUnit -u $(($count-2)) -p $((9020+$count-1)) -c 1 -s 127.0.0.1:9020\" C-m\n\necho \"Protocol $protocol : [5/6] Waiting for 10 seconds for connection to set up ...\"\nsleep 5\n\n# coordination server start\n# by sending empty key to Coordination server at cloudlab[0]\ntmux send-keys -t cloudlab:0 C-m\n\necho \"Protocol $protocol : [6/6] Executing ...\"\n\necho \"WAITING FOR INPUT TO KILL THE INSTANCE\"\ncat\n# this cat command is just to stall the terminal.\n# the actual execution os already running behind the scenes on other sessions: cloudlab & cloudlab-learning.\n\nfor (( i=0; i<$count; i++ ))\ndo\n  echo \"Stopping Bedrock on machine $i ...\"\n  tmux send-keys -t cloudlab:\"$i\" C-c\ndone\nfor (( i=0; i<$agent_count; i++ ))\ndo\n  tmux send-keys -t cloudlab-learning:\"$i\" C-c\ndone\n\necho \"Protocol $protocol : [Finish]\"\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/scripts/local_exp.sh b/scripts/local_exp.sh
+--- a/scripts/local_exp.sh	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/scripts/local_exp.sh	(date 1729576193758)
+@@ -1,3 +1,5 @@
++#!/bin/bash
++
+ # Usage: ./local_exp.sh [protocol] [learning (optional)]
+ # Examples:
+ #        ./local_exp.sh pbft # run pbft without learning agents
+@@ -37,6 +39,7 @@
+ fi
+ 
+ # create one window for each server
++# shellcheck disable=SC2004
+ for (( i=0; i<$count-1; i++ ))
+ do
+   tmux new-window -t cloudlab # create a new window for each server / node
+@@ -96,7 +99,8 @@
+ 
+ # coordination server start
+ # by sending empty key to Coordination server at cloudlab[0]
+-tmux send-keys -t cloudlab:0 C-m
++tmux send-keys -t cloudlab:0 C-msudo apt-get autoclean
++
+ 
+ echo "Protocol $protocol : [6/6] Executing ..."
+ 
+Index: code/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>gbft</groupId>\n  <artifactId>gbft</artifactId>\n  <version>0.0.1</version>\n  <name>GBFT</name>\n  <build>\n    <sourceDirectory>src</sourceDirectory>\n    <plugins>\n      <plugin>\n        <artifactId>maven-compiler-plugin</artifactId>\n        <version>3.8.1</version>\n        <configuration>\n          <release>17</release>\n            <compilerArgs>\n              <arg>--enable-preview</arg>\n            </compilerArgs>\n        </configuration>\n      </plugin>\n    </plugins>\n  </build>\n  <dependencies>\n    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->\n    <dependency>\n      <groupId>org.apache.commons</groupId>\n      <artifactId>commons-lang3</artifactId>\n      <version>3.12.0</version>\n    </dependency>\n    <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->\n    <dependency>\n      <groupId>commons-cli</groupId>\n      <artifactId>commons-cli</artifactId>\n      <version>1.5.0</version>\n    </dependency>\n    <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->\n    <dependency>\n      <groupId>com.google.protobuf</groupId>\n      <artifactId>protobuf-java</artifactId>\n      <version>3.21.12</version>\n    </dependency>\n    <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util -->\n    <dependency>\n      <groupId>com.google.protobuf</groupId>\n      <artifactId>protobuf-java-util</artifactId>\n      <version>3.21.12</version>\n    </dependency>\n    <!-- https://mvnrepository.com/artifact/com.amihaiemil.web/eo-yaml -->\n    <dependency>\n      <groupId>com.amihaiemil.web</groupId>\n      <artifactId>eo-yaml</artifactId>\n      <version>7.0.1</version>\n    </dependency>\n    <dependency>\n      <groupId>io.grpc</groupId>\n      <artifactId>grpc-netty-shaded</artifactId>\n      <version>1.54.1</version>\n      <scope>runtime</scope>\n    </dependency>\n    <dependency>\n      <groupId>io.grpc</groupId>\n      <artifactId>grpc-protobuf</artifactId>\n      <version>1.54.1</version>\n    </dependency>\n    <dependency>\n      <groupId>io.grpc</groupId>\n      <artifactId>grpc-stub</artifactId>\n      <version>1.54.1</version>\n    </dependency>\n    <dependency>\n      <groupId>io.grpc</groupId>\n      <artifactId>protoc-gen-grpc-java</artifactId>\n      <version>1.63.0</version>\n      <type>pom</type>\n    </dependency>\n    <dependency> <!-- necessary for Java 9+ -->\n      <groupId>org.apache.tomcat</groupId>\n      <artifactId>annotations-api</artifactId>\n      <version>6.0.53</version>\n      <scope>provided</scope>\n    </dependency>\n    <dependency>\n      <groupId>org.projectlombok</groupId>\n      <artifactId>lombok</artifactId>\n      <version>1.18.32</version>\n      <scope>provided</scope>\n    </dependency>\n  </dependencies>\n</project>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code/pom.xml b/code/pom.xml
+--- a/code/pom.xml	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/code/pom.xml	(date 1729571819699)
+@@ -11,7 +11,7 @@
+         <artifactId>maven-compiler-plugin</artifactId>
+         <version>3.8.1</version>
+         <configuration>
+-          <release>17</release>
++          <release>21</release>
+             <compilerArgs>
+               <arg>--enable-preview</arg>
+             </compilerArgs>
+Index: code/learning/gbft_pb2_grpc.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Generated by the gRPC Python protocol compiler plugin. DO NOT EDIT!\n\"\"\"Client and server classes corresponding to protobuf-defined services.\"\"\"\nimport grpc\n\nimport gbft_pb2 as gbft__pb2\nfrom google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2\n\n\nclass EntityCommStub(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    def __init__(self, channel):\n        \"\"\"Constructor.\n\n        Args:\n            channel: A grpc.Channel.\n        \"\"\"\n        self.send_decision = channel.unary_unary(\n                '/EntityComm/send_decision',\n                request_serializer=gbft__pb2.LearningData.SerializeToString,\n                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,\n                )\n\n\nclass EntityCommServicer(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    def send_decision(self, request, context):\n        \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n        context.set_code(grpc.StatusCode.UNIMPLEMENTED)\n        context.set_details('Method not implemented!')\n        raise NotImplementedError('Method not implemented!')\n\n\ndef add_EntityCommServicer_to_server(servicer, server):\n    rpc_method_handlers = {\n            'send_decision': grpc.unary_unary_rpc_method_handler(\n                    servicer.send_decision,\n                    request_deserializer=gbft__pb2.LearningData.FromString,\n                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,\n            ),\n    }\n    generic_handler = grpc.method_handlers_generic_handler(\n            'EntityComm', rpc_method_handlers)\n    server.add_generic_rpc_handlers((generic_handler,))\n\n\n # This class is part of an EXPERIMENTAL API.\nclass EntityComm(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    @staticmethod\n    def send_decision(request,\n            target,\n            options=(),\n            channel_credentials=None,\n            call_credentials=None,\n            insecure=False,\n            compression=None,\n            wait_for_ready=None,\n            timeout=None,\n            metadata=None):\n        return grpc.experimental.unary_unary(request, target, '/EntityComm/send_decision',\n            gbft__pb2.LearningData.SerializeToString,\n            google_dot_protobuf_dot_empty__pb2.Empty.FromString,\n            options, channel_credentials,\n            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)\n\n\nclass AgentCommStub(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    def __init__(self, channel):\n        \"\"\"Constructor.\n\n        Args:\n            channel: A grpc.Channel.\n        \"\"\"\n        self.send_data = channel.unary_unary(\n                '/AgentComm/send_data',\n                request_serializer=gbft__pb2.LearningData.SerializeToString,\n                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,\n                )\n\n\nclass AgentCommServicer(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    def send_data(self, request, context):\n        \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n        context.set_code(grpc.StatusCode.UNIMPLEMENTED)\n        context.set_details('Method not implemented!')\n        raise NotImplementedError('Method not implemented!')\n\n\ndef add_AgentCommServicer_to_server(servicer, server):\n    rpc_method_handlers = {\n            'send_data': grpc.unary_unary_rpc_method_handler(\n                    servicer.send_data,\n                    request_deserializer=gbft__pb2.LearningData.FromString,\n                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,\n            ),\n    }\n    generic_handler = grpc.method_handlers_generic_handler(\n            'AgentComm', rpc_method_handlers)\n    server.add_generic_rpc_handlers((generic_handler,))\n\n\n # This class is part of an EXPERIMENTAL API.\nclass AgentComm(object):\n    \"\"\"Missing associated documentation comment in .proto file.\"\"\"\n\n    @staticmethod\n    def send_data(request,\n            target,\n            options=(),\n            channel_credentials=None,\n            call_credentials=None,\n            insecure=False,\n            compression=None,\n            wait_for_ready=None,\n            timeout=None,\n            metadata=None):\n        return grpc.experimental.unary_unary(request, target, '/AgentComm/send_data',\n            gbft__pb2.LearningData.SerializeToString,\n            google_dot_protobuf_dot_empty__pb2.Empty.FromString,\n            options, channel_credentials,\n            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code/learning/gbft_pb2_grpc.py b/code/learning/gbft_pb2_grpc.py
+--- a/code/learning/gbft_pb2_grpc.py	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/code/learning/gbft_pb2_grpc.py	(date 1729571768761)
+@@ -1,10 +1,30 @@
+ # Generated by the gRPC Python protocol compiler plugin. DO NOT EDIT!
+ """Client and server classes corresponding to protobuf-defined services."""
+ import grpc
++import warnings
+ 
+ import gbft_pb2 as gbft__pb2
+ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+ 
++GRPC_GENERATED_VERSION = '1.67.0'
++GRPC_VERSION = grpc.__version__
++_version_not_supported = False
++
++try:
++    from grpc._utilities import first_version_is_lower
++    _version_not_supported = first_version_is_lower(GRPC_VERSION, GRPC_GENERATED_VERSION)
++except ImportError:
++    _version_not_supported = True
++
++if _version_not_supported:
++    raise RuntimeError(
++        f'The grpc package installed is at version {GRPC_VERSION},'
++        + f' but the generated code in gbft_pb2_grpc.py depends on'
++        + f' grpcio>={GRPC_GENERATED_VERSION}.'
++        + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
++        + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
++    )
++
+ 
+ class EntityCommStub(object):
+     """Missing associated documentation comment in .proto file."""
+@@ -19,7 +39,7 @@
+                 '/EntityComm/send_decision',
+                 request_serializer=gbft__pb2.LearningData.SerializeToString,
+                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+-                )
++                _registered_method=True)
+ 
+ 
+ class EntityCommServicer(object):
+@@ -43,6 +63,7 @@
+     generic_handler = grpc.method_handlers_generic_handler(
+             'EntityComm', rpc_method_handlers)
+     server.add_generic_rpc_handlers((generic_handler,))
++    server.add_registered_method_handlers('EntityComm', rpc_method_handlers)
+ 
+ 
+  # This class is part of an EXPERIMENTAL API.
+@@ -60,11 +81,21 @@
+             wait_for_ready=None,
+             timeout=None,
+             metadata=None):
+-        return grpc.experimental.unary_unary(request, target, '/EntityComm/send_decision',
++        return grpc.experimental.unary_unary(
++            request,
++            target,
++            '/EntityComm/send_decision',
+             gbft__pb2.LearningData.SerializeToString,
+             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+-            options, channel_credentials,
+-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
++            options,
++            channel_credentials,
++            insecure,
++            call_credentials,
++            compression,
++            wait_for_ready,
++            timeout,
++            metadata,
++            _registered_method=True)
+ 
+ 
+ class AgentCommStub(object):
+@@ -80,7 +111,7 @@
+                 '/AgentComm/send_data',
+                 request_serializer=gbft__pb2.LearningData.SerializeToString,
+                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+-                )
++                _registered_method=True)
+ 
+ 
+ class AgentCommServicer(object):
+@@ -104,6 +135,7 @@
+     generic_handler = grpc.method_handlers_generic_handler(
+             'AgentComm', rpc_method_handlers)
+     server.add_generic_rpc_handlers((generic_handler,))
++    server.add_registered_method_handlers('AgentComm', rpc_method_handlers)
+ 
+ 
+  # This class is part of an EXPERIMENTAL API.
+@@ -121,8 +153,18 @@
+             wait_for_ready=None,
+             timeout=None,
+             metadata=None):
+-        return grpc.experimental.unary_unary(request, target, '/AgentComm/send_data',
++        return grpc.experimental.unary_unary(
++            request,
++            target,
++            '/AgentComm/send_data',
+             gbft__pb2.LearningData.SerializeToString,
+             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+-            options, channel_credentials,
+-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
++            options,
++            channel_credentials,
++            insecure,
++            call_credentials,
++            compression,
++            wait_for_ready,
++            timeout,
++            metadata,
++            _registered_method=True)
+Index: code/learning/gbft_pb2.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># -*- coding: utf-8 -*-\n# Generated by the protocol buffer compiler.  DO NOT EDIT!\n# source: gbft.proto\n# Protobuf Python Version: 4.25.1\n\"\"\"Generated protocol buffer code.\"\"\"\nfrom google.protobuf import descriptor as _descriptor\nfrom google.protobuf import descriptor_pool as _descriptor_pool\nfrom google.protobuf import symbol_database as _symbol_database\nfrom google.protobuf.internal import builder as _builder\n# @@protoc_insertion_point(imports)\n\n_sym_db = _symbol_database.Default()\n\n\nfrom google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2\nfrom google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2\n\n\nDESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\\n\\ngbft.proto\\x1a\\x1fgoogle/protobuf/timestamp.proto\\x1a\\x1bgoogle/protobuf/empty.proto\\\"\\xa7\\x03\\n\\x0bRequestData\\x12\\x0e\\n\\x06\\x63lient\\x18\\x01 \\x01(\\x05\\x12\\x13\\n\\x0brequest_num\\x18\\x02 \\x01(\\x03\\x12\\x0e\\n\\x06record\\x18\\x03 \\x01(\\x05\\x12)\\n\\toperation\\x18\\x04 \\x01(\\x0e\\x32\\x16.RequestData.Operation\\x12\\r\\n\\x05value\\x18\\x05 \\x01(\\x05\\x12-\\n\\ttimestamp\\x18\\x06 \\x01(\\x0b\\x32\\x1a.google.protobuf.Timestamp\\x12$\\n\\rreport_quorum\\x18\\x07 \\x03(\\x0b\\x32\\r.LearningData\\x12\\x15\\n\\rrequest_dummy\\x18\\x08 \\x01(\\x0c\\x12\\x16\\n\\x0e\\x63ompute_factor\\x18\\t \\x01(\\x05\\x12\\x12\\n\\nreply_size\\x18\\n \\x01(\\x05\\x12\\x19\\n\\x11\\x65\\x61rly_exec_result\\x18\\x0b \\x01(\\x05\\x12\\x14\\n\\x0cis_tnx_valid\\x18\\x0c \\x01(\\x08\\x12\\x17\\n\\x0f\\x63urrent_version\\x18\\r \\x01(\\x03\\\"G\\n\\tOperation\\x12\\x07\\n\\x03NOP\\x10\\x00\\x12\\x07\\n\\x03\\x41\\x44\\x44\\x10\\x01\\x12\\x07\\n\\x03SUB\\x10\\x02\\x12\\x07\\n\\x03INC\\x10\\x03\\x12\\x07\\n\\x03\\x44\\x45\\x43\\x10\\x04\\x12\\r\\n\\tREAD_ONLY\\x10\\x05\\\"\\xfd\\x05\\n\\x0bMessageData\\x12\\x14\\n\\x0csequence_num\\x18\\x01 \\x01(\\x03\\x12\\x10\\n\\x08view_num\\x18\\x02 \\x01(\\x03\\x12\\x14\\n\\x0cmessage_type\\x18\\x03 \\x01(\\x05\\x12\\x0e\\n\\x06source\\x18\\x04 \\x01(\\x05\\x12\\x0f\\n\\x07targets\\x18\\x05 \\x03(\\x05\\x12\\x1e\\n\\x08requests\\x18\\x06 \\x03(\\x0b\\x32\\x0c.RequestData\\x12\\x14\\n\\x0crequest_nums\\x18\\x07 \\x03(\\x03\\x12\\x18\\n\\x10has_request_data\\x18\\x08 \\x01(\\x08\\x12\\x0e\\n\\x06\\x64igest\\x18\\t \\x01(\\x0c\\x12\\r\\n\\x05\\x66lags\\x18\\n \\x03(\\x05\\x12/\\n\\nreply_data\\x18\\x0b \\x03(\\x0b\\x32\\x1b.MessageData.ReplyDataEntry\\x12\\x33\\n\\x0c\\x65xtra_values\\x18\\x0c \\x03(\\x0b\\x32\\x1d.MessageData.ExtraValuesEntry\\x12/\\n\\nextra_data\\x18\\r \\x03(\\x0b\\x32\\x1b.MessageData.ExtraDataEntry\\x12-\\n\\ttimestamp\\x18\\x0e \\x01(\\x0b\\x32\\x1a.google.protobuf.Timestamp\\x12\\x19\\n\\x05\\x66\\x61ult\\x18\\x0f \\x01(\\x0b\\x32\\n.FaultData\\x12\\x19\\n\\x05\\x66\\x65tch\\x18\\x10 \\x01(\\x0b\\x32\\n.FetchData\\x12\\x1d\\n\\x06report\\x18\\x11 \\x01(\\x0b\\x32\\r.LearningData\\x12\\x1e\\n\\x06switch\\x18\\x12 \\x01(\\x0b\\x32\\x0e.SwitchingData\\x12\\x1a\\n\\x12\\x61ggregation_values\\x18\\x13 \\x03(\\x03\\x12\\x1e\\n\\x16is_endorsement_request\\x18\\x14 \\x01(\\x08\\x12\\x11\\n\\txov_state\\x18\\x15 \\x01(\\x05\\x1a\\x30\\n\\x0eReplyDataEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\x03\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\x05:\\x02\\x38\\x01\\x1a\\x32\\n\\x10\\x45xtraValuesEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\x05\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\x03:\\x02\\x38\\x01\\x1a\\x30\\n\\x0e\\x45xtraDataEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\x05\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\x0c:\\x02\\x38\\x01\\\"<\\n\\rSwitchingData\\x12\\x14\\n\\x0cswitch_ready\\x18\\x01 \\x01(\\x08\\x12\\x15\\n\\rnext_protocol\\x18\\x02 \\x01(\\t\\\"\\x7f\\n\\x0cLearningData\\x12)\\n\\x06report\\x18\\x01 \\x03(\\x0b\\x32\\x19.LearningData.ReportEntry\\x12\\x15\\n\\rnext_protocol\\x18\\x02 \\x01(\\t\\x1a-\\n\\x0bReportEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\x05\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\x02:\\x02\\x38\\x01\\\"\\x89\\x01\\n\\tFetchData\\x12\\x12\\n\\nis_request\\x18\\x01 \\x01(\\x08\\x12\\x33\\n\\rservice_state\\x18\\x02 \\x03(\\x0b\\x32\\x1c.FetchData.ServiceStateEntry\\x1a\\x33\\n\\x11ServiceStateEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\x05\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\x05:\\x02\\x38\\x01\\\"L\\n\\tFaultData\\x12\\x17\\n\\x0f\\x62locked_targets\\x18\\x01 \\x03(\\x05\\x12\\x17\\n\\x0f\\x64\\x65layed_targets\\x18\\x02 \\x03(\\x05\\x12\\r\\n\\x05\\x64\\x65lay\\x18\\x03 \\x01(\\x03\\\"2\\n\\x0cMessageBlock\\x12\\\"\\n\\x0cmessage_data\\x18\\x06 \\x03(\\x0b\\x32\\x0c.MessageData\\\"\\xb3\\x03\\n\\x05\\x45vent\\x12$\\n\\nevent_type\\x18\\x01 \\x01(\\x0e\\x32\\x10.Event.EventType\\x12\\x1e\\n\\tunit_data\\x18\\x02 \\x01(\\x0b\\x32\\t.UnitDataH\\x00\\x12\\\"\\n\\x0b\\x63onfig_data\\x18\\x03 \\x01(\\x0b\\x32\\x0b.ConfigDataH\\x00\\x12\\\"\\n\\x0bplugin_data\\x18\\x04 \\x01(\\x0b\\x32\\x0b.PluginDataH\\x00\\x12\\\"\\n\\x0breport_data\\x18\\x05 \\x01(\\x0b\\x32\\x0b.ReportDataH\\x00\\x12&\\n\\rmessage_block\\x18\\x06 \\x01(\\x0b\\x32\\r.MessageBlockH\\x00\\x12\\x10\\n\\x06target\\x18\\x07 \\x01(\\x05H\\x00\\\"\\xaf\\x01\\n\\tEventType\\x12\\x08\\n\\x04INIT\\x10\\x00\\x12\\n\\n\\x06\\x43ONFIG\\x10\\x01\\x12\\t\\n\\x05READY\\x10\\x02\\x12\\x0f\\n\\x0bPLUGIN_INIT\\x10\\x03\\x12\\t\\n\\x05START\\x10\\x04\\x12\\t\\n\\x05\\x42LOCK\\x10\\x05\\x12\\x08\\n\\x04STOP\\x10\\x06\\x12\\x08\\n\\x04\\x45XIT\\x10\\x07\\x12\\x13\\n\\x0f\\x42\\x45NCHMARK_START\\x10\\x08\\x12\\x14\\n\\x10\\x42\\x45NCHMARK_REPORT\\x10\\t\\x12\\x0b\\n\\x07MESSAGE\\x10\\n\\x12\\x0e\\n\\nCONNECTION\\x10\\x0b\\x42\\x0c\\n\\nevent_data\\\"B\\n\\x08UnitData\\x12\\x0c\\n\\x04unit\\x18\\x01 \\x01(\\x05\\x12\\x12\\n\\nnode_count\\x18\\x02 \\x01(\\x05\\x12\\x14\\n\\x0c\\x63lient_count\\x18\\x03 \\x01(\\x05\\\"\\x91\\x01\\n\\nConfigData\\x12#\\n\\x04\\x64\\x61ta\\x18\\x01 \\x03(\\x0b\\x32\\x15.ConfigData.DataEntry\\x12\\x17\\n\\x0f\\x64\\x65\\x66\\x61ultProtocol\\x18\\x02 \\x01(\\t\\x12\\x18\\n\\x05units\\x18\\x03 \\x03(\\x0b\\x32\\t.UnitData\\x1a+\\n\\tDataEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\t\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\t:\\x02\\x38\\x01\\\"f\\n\\nPluginData\\x12\\x13\\n\\x0bplugin_name\\x18\\x01 \\x01(\\t\\x12\\x14\\n\\x0cmessage_type\\x18\\x02 \\x01(\\x05\\x12\\x0c\\n\\x04\\x64\\x61ta\\x18\\x03 \\x01(\\x0c\\x12\\x0e\\n\\x06source\\x18\\x04 \\x01(\\x05\\x12\\x0f\\n\\x07targets\\x18\\x05 \\x03(\\x05\\\"\\x81\\x02\\n\\nReportData\\x12\\x30\\n\\x0breport_data\\x18\\x01 \\x03(\\x0b\\x32\\x1b.ReportData.ReportDataEntry\\x1aI\\n\\x0fReportDataEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\t\\x12%\\n\\x05value\\x18\\x02 \\x01(\\x0b\\x32\\x16.ReportData.ReportItem:\\x02\\x38\\x01\\x1av\\n\\nReportItem\\x12\\x37\\n\\titem_data\\x18\\x02 \\x03(\\x0b\\x32$.ReportData.ReportItem.ItemDataEntry\\x1a/\\n\\rItemDataEntry\\x12\\x0b\\n\\x03key\\x18\\x01 \\x01(\\t\\x12\\r\\n\\x05value\\x18\\x02 \\x01(\\t:\\x02\\x38\\x01\\x32\\x46\\n\\nEntityComm\\x12\\x38\\n\\rsend_decision\\x12\\r.LearningData\\x1a\\x16.google.protobuf.Empty\\\"\\x00\\x32\\x41\\n\\tAgentComm\\x12\\x34\\n\\tsend_data\\x12\\r.LearningData\\x1a\\x16.google.protobuf.Empty\\\"\\x00\\x42\\x1b\\n\\x17\\x63om.gbft.framework.dataP\\x01\\x62\\x06proto3')\n\n_globals = globals()\n_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)\n_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'gbft_pb2', _globals)\nif _descriptor._USE_C_DESCRIPTORS == False:\n  _globals['DESCRIPTOR']._options = None\n  _globals['DESCRIPTOR']._serialized_options = b'\\n\\027com.gbft.framework.dataP\\001'\n  _globals['_MESSAGEDATA_REPLYDATAENTRY']._options = None\n  _globals['_MESSAGEDATA_REPLYDATAENTRY']._serialized_options = b'8\\001'\n  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._options = None\n  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._serialized_options = b'8\\001'\n  _globals['_MESSAGEDATA_EXTRADATAENTRY']._options = None\n  _globals['_MESSAGEDATA_EXTRADATAENTRY']._serialized_options = b'8\\001'\n  _globals['_LEARNINGDATA_REPORTENTRY']._options = None\n  _globals['_LEARNINGDATA_REPORTENTRY']._serialized_options = b'8\\001'\n  _globals['_FETCHDATA_SERVICESTATEENTRY']._options = None\n  _globals['_FETCHDATA_SERVICESTATEENTRY']._serialized_options = b'8\\001'\n  _globals['_CONFIGDATA_DATAENTRY']._options = None\n  _globals['_CONFIGDATA_DATAENTRY']._serialized_options = b'8\\001'\n  _globals['_REPORTDATA_REPORTDATAENTRY']._options = None\n  _globals['_REPORTDATA_REPORTDATAENTRY']._serialized_options = b'8\\001'\n  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._options = None\n  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._serialized_options = b'8\\001'\n  _globals['_REQUESTDATA']._serialized_start=77\n  _globals['_REQUESTDATA']._serialized_end=500\n  _globals['_REQUESTDATA_OPERATION']._serialized_start=429\n  _globals['_REQUESTDATA_OPERATION']._serialized_end=500\n  _globals['_MESSAGEDATA']._serialized_start=503\n  _globals['_MESSAGEDATA']._serialized_end=1268\n  _globals['_MESSAGEDATA_REPLYDATAENTRY']._serialized_start=1118\n  _globals['_MESSAGEDATA_REPLYDATAENTRY']._serialized_end=1166\n  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._serialized_start=1168\n  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._serialized_end=1218\n  _globals['_MESSAGEDATA_EXTRADATAENTRY']._serialized_start=1220\n  _globals['_MESSAGEDATA_EXTRADATAENTRY']._serialized_end=1268\n  _globals['_SWITCHINGDATA']._serialized_start=1270\n  _globals['_SWITCHINGDATA']._serialized_end=1330\n  _globals['_LEARNINGDATA']._serialized_start=1332\n  _globals['_LEARNINGDATA']._serialized_end=1459\n  _globals['_LEARNINGDATA_REPORTENTRY']._serialized_start=1414\n  _globals['_LEARNINGDATA_REPORTENTRY']._serialized_end=1459\n  _globals['_FETCHDATA']._serialized_start=1462\n  _globals['_FETCHDATA']._serialized_end=1599\n  _globals['_FETCHDATA_SERVICESTATEENTRY']._serialized_start=1548\n  _globals['_FETCHDATA_SERVICESTATEENTRY']._serialized_end=1599\n  _globals['_FAULTDATA']._serialized_start=1601\n  _globals['_FAULTDATA']._serialized_end=1677\n  _globals['_MESSAGEBLOCK']._serialized_start=1679\n  _globals['_MESSAGEBLOCK']._serialized_end=1729\n  _globals['_EVENT']._serialized_start=1732\n  _globals['_EVENT']._serialized_end=2167\n  _globals['_EVENT_EVENTTYPE']._serialized_start=1978\n  _globals['_EVENT_EVENTTYPE']._serialized_end=2153\n  _globals['_UNITDATA']._serialized_start=2169\n  _globals['_UNITDATA']._serialized_end=2235\n  _globals['_CONFIGDATA']._serialized_start=2238\n  _globals['_CONFIGDATA']._serialized_end=2383\n  _globals['_CONFIGDATA_DATAENTRY']._serialized_start=2340\n  _globals['_CONFIGDATA_DATAENTRY']._serialized_end=2383\n  _globals['_PLUGINDATA']._serialized_start=2385\n  _globals['_PLUGINDATA']._serialized_end=2487\n  _globals['_REPORTDATA']._serialized_start=2490\n  _globals['_REPORTDATA']._serialized_end=2747\n  _globals['_REPORTDATA_REPORTDATAENTRY']._serialized_start=2554\n  _globals['_REPORTDATA_REPORTDATAENTRY']._serialized_end=2627\n  _globals['_REPORTDATA_REPORTITEM']._serialized_start=2629\n  _globals['_REPORTDATA_REPORTITEM']._serialized_end=2747\n  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._serialized_start=2700\n  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._serialized_end=2747\n  _globals['_ENTITYCOMM']._serialized_start=2749\n  _globals['_ENTITYCOMM']._serialized_end=2819\n  _globals['_AGENTCOMM']._serialized_start=2821\n  _globals['_AGENTCOMM']._serialized_end=2886\n# @@protoc_insertion_point(module_scope)\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code/learning/gbft_pb2.py b/code/learning/gbft_pb2.py
+--- a/code/learning/gbft_pb2.py	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/code/learning/gbft_pb2.py	(date 1729571768760)
+@@ -1,12 +1,22 @@
+ # -*- coding: utf-8 -*-
+ # Generated by the protocol buffer compiler.  DO NOT EDIT!
++# NO CHECKED-IN PROTOBUF GENCODE
+ # source: gbft.proto
+-# Protobuf Python Version: 4.25.1
++# Protobuf Python Version: 5.27.2
+ """Generated protocol buffer code."""
+ from google.protobuf import descriptor as _descriptor
+ from google.protobuf import descriptor_pool as _descriptor_pool
++from google.protobuf import runtime_version as _runtime_version
+ from google.protobuf import symbol_database as _symbol_database
+ from google.protobuf.internal import builder as _builder
++_runtime_version.ValidateProtobufRuntimeVersion(
++    _runtime_version.Domain.PUBLIC,
++    5,
++    27,
++    2,
++    '',
++    'gbft.proto'
++)
+ # @@protoc_insertion_point(imports)
+ 
+ _sym_db = _symbol_database.Default()
+@@ -21,24 +31,24 @@
+ _globals = globals()
+ _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
+ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'gbft_pb2', _globals)
+-if _descriptor._USE_C_DESCRIPTORS == False:
+-  _globals['DESCRIPTOR']._options = None
++if not _descriptor._USE_C_DESCRIPTORS:
++  _globals['DESCRIPTOR']._loaded_options = None
+   _globals['DESCRIPTOR']._serialized_options = b'\n\027com.gbft.framework.dataP\001'
+-  _globals['_MESSAGEDATA_REPLYDATAENTRY']._options = None
++  _globals['_MESSAGEDATA_REPLYDATAENTRY']._loaded_options = None
+   _globals['_MESSAGEDATA_REPLYDATAENTRY']._serialized_options = b'8\001'
+-  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._options = None
++  _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._loaded_options = None
+   _globals['_MESSAGEDATA_EXTRAVALUESENTRY']._serialized_options = b'8\001'
+-  _globals['_MESSAGEDATA_EXTRADATAENTRY']._options = None
++  _globals['_MESSAGEDATA_EXTRADATAENTRY']._loaded_options = None
+   _globals['_MESSAGEDATA_EXTRADATAENTRY']._serialized_options = b'8\001'
+-  _globals['_LEARNINGDATA_REPORTENTRY']._options = None
++  _globals['_LEARNINGDATA_REPORTENTRY']._loaded_options = None
+   _globals['_LEARNINGDATA_REPORTENTRY']._serialized_options = b'8\001'
+-  _globals['_FETCHDATA_SERVICESTATEENTRY']._options = None
++  _globals['_FETCHDATA_SERVICESTATEENTRY']._loaded_options = None
+   _globals['_FETCHDATA_SERVICESTATEENTRY']._serialized_options = b'8\001'
+-  _globals['_CONFIGDATA_DATAENTRY']._options = None
++  _globals['_CONFIGDATA_DATAENTRY']._loaded_options = None
+   _globals['_CONFIGDATA_DATAENTRY']._serialized_options = b'8\001'
+-  _globals['_REPORTDATA_REPORTDATAENTRY']._options = None
++  _globals['_REPORTDATA_REPORTDATAENTRY']._loaded_options = None
+   _globals['_REPORTDATA_REPORTDATAENTRY']._serialized_options = b'8\001'
+-  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._options = None
++  _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._loaded_options = None
+   _globals['_REPORTDATA_REPORTITEM_ITEMDATAENTRY']._serialized_options = b'8\001'
+   _globals['_REQUESTDATA']._serialized_start=77
+   _globals['_REQUESTDATA']._serialized_end=500
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"00cc9e73-3637-40d1-a1fe-6c2b4d342501\" name=\"Changes\" comment=\"added parallel execute ahead requests\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"CodeInsightWorkspaceSettings\">\n    <option name=\"optimizeImportsOnTheFly\" value=\"true\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Enum\" />\n        <option value=\"Class\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n    <option name=\"UPDATE_TYPE\" value=\"REBASE\" />\n  </component>\n  <component name=\"GitHubPullRequestSearchHistory\">{\n  &quot;lastFilter&quot;: {\n    &quot;state&quot;: &quot;OPEN&quot;,\n    &quot;assignee&quot;: &quot;madhulakkoju&quot;\n  }\n}</component>\n  <component name=\"GithubPullRequestsUISettings\">\n    <option name=\"selectedUrlAndAccountId\">\n      <UrlAndAccount>\n        <option name=\"accountId\" value=\"666a2e22-48c1-4b7a-ba9a-426c74873699\" />\n        <option name=\"url\" value=\"https://github.com/madhulakkoju/BFTBrain.git\" />\n      </UrlAndAccount>\n    </option>\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectColorInfo\">{\n  &quot;associatedIndex&quot;: 6\n}</component>\n  <component name=\"ProjectId\" id=\"2cw6gzYFUfzaluQHzLiczdFbzWR\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\n  </component>\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\"><![CDATA[{\n  \"keyToString\": {\n    \"Downloaded.Files.Path.Enabled\": \"false\",\n    \"Repository.Attach.Annotations\": \"false\",\n    \"Repository.Attach.JavaDocs\": \"false\",\n    \"Repository.Attach.Sources\": \"false\",\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\n    \"Shell Script.local_exp.sh.executor\": \"Run\",\n    \"git-widget-placeholder\": \"working__check__here\",\n    \"kotlin-language-version-configured\": \"true\",\n    \"last_opened_file_path\": \"/home/msiddhu/IdeaProjects/BFTBrain\",\n    \"project.structure.last.edited\": \"Modules\",\n    \"project.structure.proportion\": \"0.15\",\n    \"project.structure.side.proportion\": \"0.2\",\n    \"settings.editor.selected.configurable\": \"preferences.pluginManager\"\n  }\n}]]></component>\n  <component name=\"RecentsManager\">\n    <key name=\"CreateClassDialog.RecentsKey\">\n      <recent name=\"com.gbft.framework.core.architecture\" />\n      <recent name=\"com.gbft.framework.core.architecture.impls\" />\n    </key>\n  </component>\n  <component name=\"SharedIndexes\">\n    <attachedChunks>\n      <set>\n        <option value=\"jdk-17.0.10-corretto-17.0.10-f644763e9732-f00315f9\" />\n      </set>\n    </attachedChunks>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"00cc9e73-3637-40d1-a1fe-6c2b4d342501\" name=\"Changes\" comment=\"\" />\n      <created>1709010408859</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1709010408859</updated>\n    </task>\n    <task id=\"LOCAL-00001\" summary=\"Base code for Architecture implementations\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1713831019119</created>\n      <option name=\"number\" value=\"00001\" />\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1713831019119</updated>\n    </task>\n    <task id=\"LOCAL-00002\" summary=\"included base code for ordering and fixed all old codebase to removbe common orderer and validator\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1713854313442</created>\n      <option name=\"number\" value=\"00002\" />\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1713854313442</updated>\n    </task>\n    <task id=\"LOCAL-00003\" summary=\"include execute intiations and added block retrieve using seq num\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1713904639035</created>\n      <option name=\"number\" value=\"00003\" />\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1713904639035</updated>\n    </task>\n    <task id=\"LOCAL-00004\" summary=\"added parallel execute ahead requests\">\n      <option name=\"closed\" value=\"true\" />\n      <created>1714166787677</created>\n      <option name=\"number\" value=\"00004\" />\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\n      <option name=\"project\" value=\"LOCAL\" />\n      <updated>1714166787677</updated>\n    </task>\n    <option name=\"localTasksCounter\" value=\"5\" />\n    <servers />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State />\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"VcsManagerConfiguration\">\n    <MESSAGE value=\"Base code for Architecture implementations\" />\n    <MESSAGE value=\"included base code for ordering and fixed all old codebase to removbe common orderer and validator\" />\n    <MESSAGE value=\"include execute intiations and added block retrieve using seq num\" />\n    <MESSAGE value=\"added parallel execute ahead requests\" />\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"added parallel execute ahead requests\" />\n  </component>\n  <component name=\"XDebuggerManager\">\n    <breakpoint-manager>\n      <breakpoints>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java</url>\n          <line>75</line>\n          <option name=\"timeStamp\" value=\"4\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>\n          <line>29</line>\n          <option name=\"timeStamp\" value=\"6\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>\n          <line>79</line>\n          <option name=\"timeStamp\" value=\"7\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>\n          <line>697</line>\n          <option name=\"timeStamp\" value=\"8\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>\n          <line>715</line>\n          <option name=\"timeStamp\" value=\"9\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>\n          <line>708</line>\n          <option name=\"timeStamp\" value=\"10\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>\n          <line>706</line>\n          <option name=\"timeStamp\" value=\"11\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>\n          <line>579</line>\n          <option name=\"timeStamp\" value=\"12\" />\n        </line-breakpoint>\n        <line-breakpoint enabled=\"true\" type=\"java-method\">\n          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java</url>\n          <line>46</line>\n          <properties class=\"com.gbft.framework.utils.LogUtils\" method=\"CoreIntialize\">\n            <option name=\"EMULATED\" value=\"true\" />\n            <option name=\"WATCH_EXIT\" value=\"false\" />\n          </properties>\n          <option name=\"timeStamp\" value=\"15\" />\n        </line-breakpoint>\n      </breakpoints>\n    </breakpoint-manager>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/.idea/workspace.xml	(date 1729576172905)
+@@ -6,8 +6,12 @@
+   <component name="ChangeListManager">
+     <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="added parallel execute ahead requests">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -16,6 +20,13 @@
+   </component>
+   <component name="CodeInsightWorkspaceSettings">
+     <option name="optimizeImportsOnTheFly" value="true" />
++  </component>
++  <component name="ExternalProjectsManager">
++    <system id="GRADLE">
++      <state>
++        <projects_view />
++      </state>
++    </system>
+   </component>
+   <component name="FileTemplateManagerImpl">
+     <option name="RECENT_TEMPLATES">
+@@ -35,14 +46,12 @@
+     &quot;assignee&quot;: &quot;madhulakkoju&quot;
+   }
+ }</component>
+-  <component name="GithubPullRequestsUISettings">
+-    <option name="selectedUrlAndAccountId">
+-      <UrlAndAccount>
+-        <option name="accountId" value="666a2e22-48c1-4b7a-ba9a-426c74873699" />
+-        <option name="url" value="https://github.com/madhulakkoju/BFTBrain.git" />
+-      </UrlAndAccount>
+-    </option>
+-  </component>
++  <component name="GithubPullRequestsUISettings">{
++  &quot;selectedUrlAndAccountId&quot;: {
++    &quot;url&quot;: &quot;https://github.com/madhulakkoju/BFTBrain.git&quot;,
++    &quot;accountId&quot;: &quot;666a2e22-48c1-4b7a-ba9a-426c74873699&quot;
++  }
++}</component>
+   <component name="MarkdownSettingsMigration">
+     <option name="stateVersion" value="1" />
+   </component>
+@@ -57,24 +66,30 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Downloaded.Files.Path.Enabled": "false",
+-    "Repository.Attach.Annotations": "false",
+-    "Repository.Attach.JavaDocs": "false",
+-    "Repository.Attach.Sources": "false",
+-    "RunOnceActivity.OpenProjectViewOnStart": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "Shell Script.local_exp.sh.executor": "Run",
+-    "git-widget-placeholder": "working__check__here",
+-    "kotlin-language-version-configured": "true",
+-    "last_opened_file_path": "/home/msiddhu/IdeaProjects/BFTBrain",
+-    "project.structure.last.edited": "Modules",
+-    "project.structure.proportion": "0.15",
+-    "project.structure.side.proportion": "0.2",
+-    "settings.editor.selected.configurable": "preferences.pluginManager"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
++    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
++    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
++    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
++    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;Shell Script.local_exp.sh.executor&quot;: &quot;Run&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;v1&quot;,
++    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;/home/msiddhu/IdeaProjects/BFTBrain&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
++    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
++    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RecentsManager">
+     <key name="CreateClassDialog.RecentsKey">
+       <recent name="com.gbft.framework.core.architecture" />
+@@ -84,7 +99,8 @@
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>
+-        <option value="jdk-17.0.10-corretto-17.0.10-f644763e9732-f00315f9" />
++        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
++        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
+       </set>
+     </attachedChunks>
+   </component>
+@@ -96,6 +112,10 @@
+       <option name="number" value="Default" />
+       <option name="presentableId" value="Default" />
+       <updated>1709010408859</updated>
++      <workItem from="1729571706297" duration="565000" />
++      <workItem from="1729573456474" duration="1028000" />
++      <workItem from="1729574537362" duration="379000" />
++      <workItem from="1729575781925" duration="391000" />
+     </task>
+     <task id="LOCAL-00001" summary="Base code for Architecture implementations">
+       <option name="closed" value="true" />
+@@ -131,6 +151,9 @@
+     </task>
+     <option name="localTasksCounter" value="5" />
+     <servers />
++  </component>
++  <component name="TypeScriptGeneratedFilesManager">
++    <option name="version" value="3" />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+     <option name="TAB_STATES">
+Index: code/src/com/gbft/framework/data/EntityCommGrpc.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.gbft.framework.data;\n\nimport static io.grpc.MethodDescriptor.generateFullMethodName;\n\n/**\n */\n@javax.annotation.Generated(\n    value = \"by gRPC proto compiler (version 1.55.1)\",\n    comments = \"Source: gbft.proto\")\n@io.grpc.stub.annotations.GrpcGenerated\npublic final class EntityCommGrpc {\n\n  private EntityCommGrpc() {}\n\n  public static final String SERVICE_NAME = \"EntityComm\";\n\n  // Static method descriptors that strictly reflect the proto.\n  private static volatile io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData,\n      com.google.protobuf.Empty> getSendDecisionMethod;\n\n  @io.grpc.stub.annotations.RpcMethod(\n      fullMethodName = SERVICE_NAME + '/' + \"send_decision\",\n      requestType = com.gbft.framework.data.LearningData.class,\n      responseType = com.google.protobuf.Empty.class,\n      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)\n  public static io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData,\n      com.google.protobuf.Empty> getSendDecisionMethod() {\n    io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData, com.google.protobuf.Empty> getSendDecisionMethod;\n    if ((getSendDecisionMethod = EntityCommGrpc.getSendDecisionMethod) == null) {\n      synchronized (EntityCommGrpc.class) {\n        if ((getSendDecisionMethod = EntityCommGrpc.getSendDecisionMethod) == null) {\n          EntityCommGrpc.getSendDecisionMethod = getSendDecisionMethod =\n              io.grpc.MethodDescriptor.<com.gbft.framework.data.LearningData, com.google.protobuf.Empty>newBuilder()\n              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)\n              .setFullMethodName(generateFullMethodName(SERVICE_NAME, \"send_decision\"))\n              .setSampledToLocalTracing(true)\n              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(\n                  com.gbft.framework.data.LearningData.getDefaultInstance()))\n              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(\n                  com.google.protobuf.Empty.getDefaultInstance()))\n              .setSchemaDescriptor(new EntityCommMethodDescriptorSupplier(\"send_decision\"))\n              .build();\n        }\n      }\n    }\n    return getSendDecisionMethod;\n  }\n\n  /**\n   * Creates a new async stub that supports all call types for the service\n   */\n  public static EntityCommStub newStub(io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<EntityCommStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<EntityCommStub>() {\n        @java.lang.Override\n        public EntityCommStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new EntityCommStub(channel, callOptions);\n        }\n      };\n    return EntityCommStub.newStub(factory, channel);\n  }\n\n  /**\n   * Creates a new blocking-style stub that supports unary and streaming output calls on the service\n   */\n  public static EntityCommBlockingStub newBlockingStub(\n      io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<EntityCommBlockingStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<EntityCommBlockingStub>() {\n        @java.lang.Override\n        public EntityCommBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new EntityCommBlockingStub(channel, callOptions);\n        }\n      };\n    return EntityCommBlockingStub.newStub(factory, channel);\n  }\n\n  /**\n   * Creates a new ListenableFuture-style stub that supports unary calls on the service\n   */\n  public static EntityCommFutureStub newFutureStub(\n      io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<EntityCommFutureStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<EntityCommFutureStub>() {\n        @java.lang.Override\n        public EntityCommFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new EntityCommFutureStub(channel, callOptions);\n        }\n      };\n    return EntityCommFutureStub.newStub(factory, channel);\n  }\n\n  /**\n   */\n  public interface AsyncService {\n\n    /**\n     */\n    default void sendDecision(com.gbft.framework.data.LearningData request,\n        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {\n      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendDecisionMethod(), responseObserver);\n    }\n  }\n\n  /**\n   * Base class for the server implementation of the service EntityComm.\n   */\n  public static abstract class EntityCommImplBase\n      implements io.grpc.BindableService, AsyncService {\n\n    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {\n      return EntityCommGrpc.bindService(this);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do asynchronous rpc calls to service EntityComm.\n   */\n  public static final class EntityCommStub\n      extends io.grpc.stub.AbstractAsyncStub<EntityCommStub> {\n    private EntityCommStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected EntityCommStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new EntityCommStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public void sendDecision(com.gbft.framework.data.LearningData request,\n        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {\n      io.grpc.stub.ClientCalls.asyncUnaryCall(\n          getChannel().newCall(getSendDecisionMethod(), getCallOptions()), request, responseObserver);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do synchronous rpc calls to service EntityComm.\n   */\n  public static final class EntityCommBlockingStub\n      extends io.grpc.stub.AbstractBlockingStub<EntityCommBlockingStub> {\n    private EntityCommBlockingStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected EntityCommBlockingStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new EntityCommBlockingStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public com.google.protobuf.Empty sendDecision(com.gbft.framework.data.LearningData request) {\n      return io.grpc.stub.ClientCalls.blockingUnaryCall(\n          getChannel(), getSendDecisionMethod(), getCallOptions(), request);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do ListenableFuture-style rpc calls to service EntityComm.\n   */\n  public static final class EntityCommFutureStub\n      extends io.grpc.stub.AbstractFutureStub<EntityCommFutureStub> {\n    private EntityCommFutureStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected EntityCommFutureStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new EntityCommFutureStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> sendDecision(\n        com.gbft.framework.data.LearningData request) {\n      return io.grpc.stub.ClientCalls.futureUnaryCall(\n          getChannel().newCall(getSendDecisionMethod(), getCallOptions()), request);\n    }\n  }\n\n  private static final int METHODID_SEND_DECISION = 0;\n\n  private static final class MethodHandlers<Req, Resp> implements\n      io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {\n    private final AsyncService serviceImpl;\n    private final int methodId;\n\n    MethodHandlers(AsyncService serviceImpl, int methodId) {\n      this.serviceImpl = serviceImpl;\n      this.methodId = methodId;\n    }\n\n    @java.lang.Override\n    @java.lang.SuppressWarnings(\"unchecked\")\n    public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {\n      switch (methodId) {\n        case METHODID_SEND_DECISION:\n          serviceImpl.sendDecision((com.gbft.framework.data.LearningData) request,\n              (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);\n          break;\n        default:\n          throw new AssertionError();\n      }\n    }\n\n    @java.lang.Override\n    @java.lang.SuppressWarnings(\"unchecked\")\n    public io.grpc.stub.StreamObserver<Req> invoke(\n        io.grpc.stub.StreamObserver<Resp> responseObserver) {\n      switch (methodId) {\n        default:\n          throw new AssertionError();\n      }\n    }\n  }\n\n  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {\n    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())\n        .addMethod(\n          getSendDecisionMethod(),\n          io.grpc.stub.ServerCalls.asyncUnaryCall(\n            new MethodHandlers<\n              com.gbft.framework.data.LearningData,\n              com.google.protobuf.Empty>(\n                service, METHODID_SEND_DECISION)))\n        .build();\n  }\n\n  private static abstract class EntityCommBaseDescriptorSupplier\n      implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {\n    EntityCommBaseDescriptorSupplier() {}\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {\n      return com.gbft.framework.data.Gbft.getDescriptor();\n    }\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {\n      return getFileDescriptor().findServiceByName(\"EntityComm\");\n    }\n  }\n\n  private static final class EntityCommFileDescriptorSupplier\n      extends EntityCommBaseDescriptorSupplier {\n    EntityCommFileDescriptorSupplier() {}\n  }\n\n  private static final class EntityCommMethodDescriptorSupplier\n      extends EntityCommBaseDescriptorSupplier\n      implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {\n    private final String methodName;\n\n    EntityCommMethodDescriptorSupplier(String methodName) {\n      this.methodName = methodName;\n    }\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {\n      return getServiceDescriptor().findMethodByName(methodName);\n    }\n  }\n\n  private static volatile io.grpc.ServiceDescriptor serviceDescriptor;\n\n  public static io.grpc.ServiceDescriptor getServiceDescriptor() {\n    io.grpc.ServiceDescriptor result = serviceDescriptor;\n    if (result == null) {\n      synchronized (EntityCommGrpc.class) {\n        result = serviceDescriptor;\n        if (result == null) {\n          serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)\n              .setSchemaDescriptor(new EntityCommFileDescriptorSupplier())\n              .addMethod(getSendDecisionMethod())\n              .build();\n        }\n      }\n    }\n    return result;\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code/src/com/gbft/framework/data/EntityCommGrpc.java b/code/src/com/gbft/framework/data/EntityCommGrpc.java
+--- a/code/src/com/gbft/framework/data/EntityCommGrpc.java	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/code/src/com/gbft/framework/data/EntityCommGrpc.java	(date 1729571787119)
+@@ -5,7 +5,7 @@
+ /**
+  */
+ @javax.annotation.Generated(
+-    value = "by gRPC proto compiler (version 1.55.1)",
++    value = "by gRPC proto compiler (version 1.53.0)",
+     comments = "Source: gbft.proto")
+ @io.grpc.stub.annotations.GrpcGenerated
+ public final class EntityCommGrpc {
+@@ -92,32 +92,31 @@
+ 
+   /**
+    */
+-  public interface AsyncService {
++  public static abstract class EntityCommImplBase implements io.grpc.BindableService {
+ 
+     /**
+      */
+-    default void sendDecision(com.gbft.framework.data.LearningData request,
++    public void sendDecision(com.gbft.framework.data.LearningData request,
+         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendDecisionMethod(), responseObserver);
+     }
+-  }
+-
+-  /**
+-   * Base class for the server implementation of the service EntityComm.
+-   */
+-  public static abstract class EntityCommImplBase
+-      implements io.grpc.BindableService, AsyncService {
+ 
+     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+-      return EntityCommGrpc.bindService(this);
++      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
++          .addMethod(
++            getSendDecisionMethod(),
++            io.grpc.stub.ServerCalls.asyncUnaryCall(
++              new MethodHandlers<
++                com.gbft.framework.data.LearningData,
++                com.google.protobuf.Empty>(
++                  this, METHODID_SEND_DECISION)))
++          .build();
+     }
+   }
+ 
+   /**
+-   * A stub to allow clients to do asynchronous rpc calls to service EntityComm.
+    */
+-  public static final class EntityCommStub
+-      extends io.grpc.stub.AbstractAsyncStub<EntityCommStub> {
++  public static final class EntityCommStub extends io.grpc.stub.AbstractAsyncStub<EntityCommStub> {
+     private EntityCommStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -139,10 +138,8 @@
+   }
+ 
+   /**
+-   * A stub to allow clients to do synchronous rpc calls to service EntityComm.
+    */
+-  public static final class EntityCommBlockingStub
+-      extends io.grpc.stub.AbstractBlockingStub<EntityCommBlockingStub> {
++  public static final class EntityCommBlockingStub extends io.grpc.stub.AbstractBlockingStub<EntityCommBlockingStub> {
+     private EntityCommBlockingStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -163,10 +160,8 @@
+   }
+ 
+   /**
+-   * A stub to allow clients to do ListenableFuture-style rpc calls to service EntityComm.
+    */
+-  public static final class EntityCommFutureStub
+-      extends io.grpc.stub.AbstractFutureStub<EntityCommFutureStub> {
++  public static final class EntityCommFutureStub extends io.grpc.stub.AbstractFutureStub<EntityCommFutureStub> {
+     private EntityCommFutureStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -194,10 +189,10 @@
+       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
+       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
+       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
+-    private final AsyncService serviceImpl;
++    private final EntityCommImplBase serviceImpl;
+     private final int methodId;
+ 
+-    MethodHandlers(AsyncService serviceImpl, int methodId) {
++    MethodHandlers(EntityCommImplBase serviceImpl, int methodId) {
+       this.serviceImpl = serviceImpl;
+       this.methodId = methodId;
+     }
+@@ -226,18 +221,6 @@
+     }
+   }
+ 
+-  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+-    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+-        .addMethod(
+-          getSendDecisionMethod(),
+-          io.grpc.stub.ServerCalls.asyncUnaryCall(
+-            new MethodHandlers<
+-              com.gbft.framework.data.LearningData,
+-              com.google.protobuf.Empty>(
+-                service, METHODID_SEND_DECISION)))
+-        .build();
+-  }
+-
+   private static abstract class EntityCommBaseDescriptorSupplier
+       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
+     EntityCommBaseDescriptorSupplier() {}
+Index: code/src/com/gbft/framework/data/AgentCommGrpc.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.gbft.framework.data;\n\nimport static io.grpc.MethodDescriptor.generateFullMethodName;\n\n/**\n */\n@javax.annotation.Generated(\n    value = \"by gRPC proto compiler (version 1.55.1)\",\n    comments = \"Source: gbft.proto\")\n@io.grpc.stub.annotations.GrpcGenerated\npublic final class AgentCommGrpc {\n\n  private AgentCommGrpc() {}\n\n  public static final String SERVICE_NAME = \"AgentComm\";\n\n  // Static method descriptors that strictly reflect the proto.\n  private static volatile io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData,\n      com.google.protobuf.Empty> getSendDataMethod;\n\n  @io.grpc.stub.annotations.RpcMethod(\n      fullMethodName = SERVICE_NAME + '/' + \"send_data\",\n      requestType = com.gbft.framework.data.LearningData.class,\n      responseType = com.google.protobuf.Empty.class,\n      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)\n  public static io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData,\n      com.google.protobuf.Empty> getSendDataMethod() {\n    io.grpc.MethodDescriptor<com.gbft.framework.data.LearningData, com.google.protobuf.Empty> getSendDataMethod;\n    if ((getSendDataMethod = AgentCommGrpc.getSendDataMethod) == null) {\n      synchronized (AgentCommGrpc.class) {\n        if ((getSendDataMethod = AgentCommGrpc.getSendDataMethod) == null) {\n          AgentCommGrpc.getSendDataMethod = getSendDataMethod =\n              io.grpc.MethodDescriptor.<com.gbft.framework.data.LearningData, com.google.protobuf.Empty>newBuilder()\n              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)\n              .setFullMethodName(generateFullMethodName(SERVICE_NAME, \"send_data\"))\n              .setSampledToLocalTracing(true)\n              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(\n                  com.gbft.framework.data.LearningData.getDefaultInstance()))\n              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(\n                  com.google.protobuf.Empty.getDefaultInstance()))\n              .setSchemaDescriptor(new AgentCommMethodDescriptorSupplier(\"send_data\"))\n              .build();\n        }\n      }\n    }\n    return getSendDataMethod;\n  }\n\n  /**\n   * Creates a new async stub that supports all call types for the service\n   */\n  public static AgentCommStub newStub(io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<AgentCommStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<AgentCommStub>() {\n        @java.lang.Override\n        public AgentCommStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new AgentCommStub(channel, callOptions);\n        }\n      };\n    return AgentCommStub.newStub(factory, channel);\n  }\n\n  /**\n   * Creates a new blocking-style stub that supports unary and streaming output calls on the service\n   */\n  public static AgentCommBlockingStub newBlockingStub(\n      io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<AgentCommBlockingStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<AgentCommBlockingStub>() {\n        @java.lang.Override\n        public AgentCommBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new AgentCommBlockingStub(channel, callOptions);\n        }\n      };\n    return AgentCommBlockingStub.newStub(factory, channel);\n  }\n\n  /**\n   * Creates a new ListenableFuture-style stub that supports unary calls on the service\n   */\n  public static AgentCommFutureStub newFutureStub(\n      io.grpc.Channel channel) {\n    io.grpc.stub.AbstractStub.StubFactory<AgentCommFutureStub> factory =\n      new io.grpc.stub.AbstractStub.StubFactory<AgentCommFutureStub>() {\n        @java.lang.Override\n        public AgentCommFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n          return new AgentCommFutureStub(channel, callOptions);\n        }\n      };\n    return AgentCommFutureStub.newStub(factory, channel);\n  }\n\n  /**\n   */\n  public interface AsyncService {\n\n    /**\n     */\n    default void sendData(com.gbft.framework.data.LearningData request,\n        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {\n      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendDataMethod(), responseObserver);\n    }\n  }\n\n  /**\n   * Base class for the server implementation of the service AgentComm.\n   */\n  public static abstract class AgentCommImplBase\n      implements io.grpc.BindableService, AsyncService {\n\n    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {\n      return AgentCommGrpc.bindService(this);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do asynchronous rpc calls to service AgentComm.\n   */\n  public static final class AgentCommStub\n      extends io.grpc.stub.AbstractAsyncStub<AgentCommStub> {\n    private AgentCommStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected AgentCommStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new AgentCommStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public void sendData(com.gbft.framework.data.LearningData request,\n        io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {\n      io.grpc.stub.ClientCalls.asyncUnaryCall(\n          getChannel().newCall(getSendDataMethod(), getCallOptions()), request, responseObserver);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do synchronous rpc calls to service AgentComm.\n   */\n  public static final class AgentCommBlockingStub\n      extends io.grpc.stub.AbstractBlockingStub<AgentCommBlockingStub> {\n    private AgentCommBlockingStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected AgentCommBlockingStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new AgentCommBlockingStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public com.google.protobuf.Empty sendData(com.gbft.framework.data.LearningData request) {\n      return io.grpc.stub.ClientCalls.blockingUnaryCall(\n          getChannel(), getSendDataMethod(), getCallOptions(), request);\n    }\n  }\n\n  /**\n   * A stub to allow clients to do ListenableFuture-style rpc calls to service AgentComm.\n   */\n  public static final class AgentCommFutureStub\n      extends io.grpc.stub.AbstractFutureStub<AgentCommFutureStub> {\n    private AgentCommFutureStub(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      super(channel, callOptions);\n    }\n\n    @java.lang.Override\n    protected AgentCommFutureStub build(\n        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {\n      return new AgentCommFutureStub(channel, callOptions);\n    }\n\n    /**\n     */\n    public com.google.common.util.concurrent.ListenableFuture<com.google.protobuf.Empty> sendData(\n        com.gbft.framework.data.LearningData request) {\n      return io.grpc.stub.ClientCalls.futureUnaryCall(\n          getChannel().newCall(getSendDataMethod(), getCallOptions()), request);\n    }\n  }\n\n  private static final int METHODID_SEND_DATA = 0;\n\n  private static final class MethodHandlers<Req, Resp> implements\n      io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,\n      io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {\n    private final AsyncService serviceImpl;\n    private final int methodId;\n\n    MethodHandlers(AsyncService serviceImpl, int methodId) {\n      this.serviceImpl = serviceImpl;\n      this.methodId = methodId;\n    }\n\n    @java.lang.Override\n    @java.lang.SuppressWarnings(\"unchecked\")\n    public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {\n      switch (methodId) {\n        case METHODID_SEND_DATA:\n          serviceImpl.sendData((com.gbft.framework.data.LearningData) request,\n              (io.grpc.stub.StreamObserver<com.google.protobuf.Empty>) responseObserver);\n          break;\n        default:\n          throw new AssertionError();\n      }\n    }\n\n    @java.lang.Override\n    @java.lang.SuppressWarnings(\"unchecked\")\n    public io.grpc.stub.StreamObserver<Req> invoke(\n        io.grpc.stub.StreamObserver<Resp> responseObserver) {\n      switch (methodId) {\n        default:\n          throw new AssertionError();\n      }\n    }\n  }\n\n  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {\n    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())\n        .addMethod(\n          getSendDataMethod(),\n          io.grpc.stub.ServerCalls.asyncUnaryCall(\n            new MethodHandlers<\n              com.gbft.framework.data.LearningData,\n              com.google.protobuf.Empty>(\n                service, METHODID_SEND_DATA)))\n        .build();\n  }\n\n  private static abstract class AgentCommBaseDescriptorSupplier\n      implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {\n    AgentCommBaseDescriptorSupplier() {}\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {\n      return com.gbft.framework.data.Gbft.getDescriptor();\n    }\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {\n      return getFileDescriptor().findServiceByName(\"AgentComm\");\n    }\n  }\n\n  private static final class AgentCommFileDescriptorSupplier\n      extends AgentCommBaseDescriptorSupplier {\n    AgentCommFileDescriptorSupplier() {}\n  }\n\n  private static final class AgentCommMethodDescriptorSupplier\n      extends AgentCommBaseDescriptorSupplier\n      implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {\n    private final String methodName;\n\n    AgentCommMethodDescriptorSupplier(String methodName) {\n      this.methodName = methodName;\n    }\n\n    @java.lang.Override\n    public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {\n      return getServiceDescriptor().findMethodByName(methodName);\n    }\n  }\n\n  private static volatile io.grpc.ServiceDescriptor serviceDescriptor;\n\n  public static io.grpc.ServiceDescriptor getServiceDescriptor() {\n    io.grpc.ServiceDescriptor result = serviceDescriptor;\n    if (result == null) {\n      synchronized (AgentCommGrpc.class) {\n        result = serviceDescriptor;\n        if (result == null) {\n          serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)\n              .setSchemaDescriptor(new AgentCommFileDescriptorSupplier())\n              .addMethod(getSendDataMethod())\n              .build();\n        }\n      }\n    }\n    return result;\n  }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/code/src/com/gbft/framework/data/AgentCommGrpc.java b/code/src/com/gbft/framework/data/AgentCommGrpc.java
+--- a/code/src/com/gbft/framework/data/AgentCommGrpc.java	(revision c4d3539aa9a349989452dae673b7aa806042ebd9)
++++ b/code/src/com/gbft/framework/data/AgentCommGrpc.java	(date 1729571787118)
+@@ -5,7 +5,7 @@
+ /**
+  */
+ @javax.annotation.Generated(
+-    value = "by gRPC proto compiler (version 1.55.1)",
++    value = "by gRPC proto compiler (version 1.53.0)",
+     comments = "Source: gbft.proto")
+ @io.grpc.stub.annotations.GrpcGenerated
+ public final class AgentCommGrpc {
+@@ -92,32 +92,31 @@
+ 
+   /**
+    */
+-  public interface AsyncService {
++  public static abstract class AgentCommImplBase implements io.grpc.BindableService {
+ 
+     /**
+      */
+-    default void sendData(com.gbft.framework.data.LearningData request,
++    public void sendData(com.gbft.framework.data.LearningData request,
+         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
+       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendDataMethod(), responseObserver);
+     }
+-  }
+-
+-  /**
+-   * Base class for the server implementation of the service AgentComm.
+-   */
+-  public static abstract class AgentCommImplBase
+-      implements io.grpc.BindableService, AsyncService {
+ 
+     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+-      return AgentCommGrpc.bindService(this);
++      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
++          .addMethod(
++            getSendDataMethod(),
++            io.grpc.stub.ServerCalls.asyncUnaryCall(
++              new MethodHandlers<
++                com.gbft.framework.data.LearningData,
++                com.google.protobuf.Empty>(
++                  this, METHODID_SEND_DATA)))
++          .build();
+     }
+   }
+ 
+   /**
+-   * A stub to allow clients to do asynchronous rpc calls to service AgentComm.
+    */
+-  public static final class AgentCommStub
+-      extends io.grpc.stub.AbstractAsyncStub<AgentCommStub> {
++  public static final class AgentCommStub extends io.grpc.stub.AbstractAsyncStub<AgentCommStub> {
+     private AgentCommStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -139,10 +138,8 @@
+   }
+ 
+   /**
+-   * A stub to allow clients to do synchronous rpc calls to service AgentComm.
+    */
+-  public static final class AgentCommBlockingStub
+-      extends io.grpc.stub.AbstractBlockingStub<AgentCommBlockingStub> {
++  public static final class AgentCommBlockingStub extends io.grpc.stub.AbstractBlockingStub<AgentCommBlockingStub> {
+     private AgentCommBlockingStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -163,10 +160,8 @@
+   }
+ 
+   /**
+-   * A stub to allow clients to do ListenableFuture-style rpc calls to service AgentComm.
+    */
+-  public static final class AgentCommFutureStub
+-      extends io.grpc.stub.AbstractFutureStub<AgentCommFutureStub> {
++  public static final class AgentCommFutureStub extends io.grpc.stub.AbstractFutureStub<AgentCommFutureStub> {
+     private AgentCommFutureStub(
+         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+       super(channel, callOptions);
+@@ -194,10 +189,10 @@
+       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
+       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
+       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
+-    private final AsyncService serviceImpl;
++    private final AgentCommImplBase serviceImpl;
+     private final int methodId;
+ 
+-    MethodHandlers(AsyncService serviceImpl, int methodId) {
++    MethodHandlers(AgentCommImplBase serviceImpl, int methodId) {
+       this.serviceImpl = serviceImpl;
+       this.methodId = methodId;
+     }
+@@ -226,18 +221,6 @@
+     }
+   }
+ 
+-  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+-    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+-        .addMethod(
+-          getSendDataMethod(),
+-          io.grpc.stub.ServerCalls.asyncUnaryCall(
+-            new MethodHandlers<
+-              com.gbft.framework.data.LearningData,
+-              com.google.protobuf.Empty>(
+-                service, METHODID_SEND_DATA)))
+-        .build();
+-  }
+-
+   private static abstract class AgentCommBaseDescriptorSupplier
+       implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
+     AgentCommBaseDescriptorSupplier() {}

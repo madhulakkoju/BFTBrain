@@ -5,9 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="added parallel execute ahead requests">
+      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/util/OXIIUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/util/XOVppDependencyGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/impls/util/XOVppDependencyGraph.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +24,13 @@
   </component>
   <component name="CodeInsightWorkspaceSettings">
     <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view />
+      </state>
+    </system>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -35,14 +50,12 @@
     &quot;assignee&quot;: &quot;madhulakkoju&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">
-    <option name="selectedUrlAndAccountId">
-      <UrlAndAccount>
-        <option name="accountId" value="666a2e22-48c1-4b7a-ba9a-426c74873699" />
-        <option name="url" value="https://github.com/madhulakkoju/BFTBrain.git" />
-      </UrlAndAccount>
-    </option>
-  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/madhulakkoju/BFTBrain.git&quot;,
+    &quot;accountId&quot;: &quot;666a2e22-48c1-4b7a-ba9a-426c74873699&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -66,13 +79,19 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Shell Script.local_exp.sh.executor": "Run",
-    "git-widget-placeholder": "working__check__here",
+    "git-widget-placeholder": "inc__small__bank",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/home/msiddhu/IdeaProjects/BFTBrain",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -84,7 +103,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-17.0.10-corretto-17.0.10-f644763e9732-f00315f9" />
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
       </set>
     </attachedChunks>
   </component>
@@ -96,6 +116,11 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1709010408859</updated>
+      <workItem from="1729571706297" duration="565000" />
+      <workItem from="1729573456474" duration="1028000" />
+      <workItem from="1729574537362" duration="379000" />
+      <workItem from="1729575781925" duration="391000" />
+      <workItem from="1729613694685" duration="4986000" />
     </task>
     <task id="LOCAL-00001" summary="Base code for Architecture implementations">
       <option name="closed" value="true" />
@@ -132,12 +157,23 @@
     <option name="localTasksCounter" value="5" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ID_WIDTH">
+                <map>
+                  <entry key="Table.Default.Author.ColumnIdWidth" value="42" />
+                  <entry key="Table.Default.Date.ColumnIdWidth" value="74" />
+                  <entry key="Table.GitHub.CommitStatus.ColumnIdWidth" value="74" />
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -155,7 +191,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java</url>
-          <line>75</line>
+          <line>79</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
@@ -165,32 +201,32 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
-          <line>79</line>
+          <line>103</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>697</line>
+          <line>685</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>715</line>
+          <line>703</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>708</line>
+          <line>696</line>
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>706</line>
+          <line>694</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>579</line>
+          <line>567</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-method">

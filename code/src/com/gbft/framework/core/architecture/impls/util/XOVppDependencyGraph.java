@@ -12,7 +12,12 @@ public class XOVppDependencyGraph{
     public List<RequestData> orderedBlock = null;
     public boolean success = true;
 
-    public XOVppDependencyGraph(List<RequestData> block) {
+    public long seqnum;
+
+    public XOVppDependencyGraph(List<RequestData> block, long seqnum) {
+
+        this.seqnum = seqnum;
+
         try{
 
             for (RequestData t : block) {
