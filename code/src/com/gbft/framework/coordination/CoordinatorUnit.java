@@ -108,7 +108,8 @@ public class CoordinatorUnit extends CoordinatorBase {
             sendEvent(SERVER, allReadyEvent);
 
             println("Unit configured.");
-        } else if (coordinationType == EventType.PLUGIN_INIT) {
+        }
+        else if (coordinationType == EventType.PLUGIN_INIT) {
             var data = event.getPluginData();
             var targets = data.getTargetsCount() == 0 ? entities.keySet() : data.getTargetsList();
             for (var id : targets) {
@@ -134,7 +135,8 @@ public class CoordinatorUnit extends CoordinatorBase {
                 var readyEvent = DataUtils.createEvent(EventType.READY);
                 superSendEvent(SERVER, readyEvent);
             }
-        } else if (coordinationType == EventType.CONNECTION) {
+        }
+        else if (coordinationType == EventType.CONNECTION) {
             if (event.getTarget() == SERVER) {
                 println("Received connection event from server.");
                 for (var connection : connections.values()) {
@@ -160,14 +162,16 @@ public class CoordinatorUnit extends CoordinatorBase {
                 connections.get(event.getTarget()).createSocket(socket);
                 connected_units.incrementAndGet();
             }
-        } else if (coordinationType == EventType.START) {
+        }
+        else if (coordinationType == EventType.START) {
             for (var entity : entities.values()) {
                 entity.start();
             }
             benchmarkManager.start();
 
             println("Benchmark started.");
-        } else if (coordinationType == EventType.BENCHMARK_REPORT) {
+        }
+        else if (coordinationType == EventType.BENCHMARK_REPORT) {
 
             println("Sending benchmark results to server.");
 
@@ -187,7 +191,8 @@ public class CoordinatorUnit extends CoordinatorBase {
             sendEvent(SERVER, reportEvent);
 
             println(Printer.convertToString(reportEvent.getReportData()));
-        } else if (coordinationType == EventType.STOP) {
+        }
+        else if (coordinationType == EventType.STOP) {
             for (var entity : entities.values()) {
                 entity.stop();
             }
@@ -199,7 +204,8 @@ public class CoordinatorUnit extends CoordinatorBase {
             stop();
             receiveFromInQueueClient.interrupt();
             receiveFromInQueueReplica.interrupt();
-        } else if (event.getEventType() == EventType.MESSAGE) {
+        }
+        else if (event.getEventType() == EventType.MESSAGE) {
             var messages = event.getMessageBlock().getMessageDataList();
 
             // TODO: More parallel.

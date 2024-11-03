@@ -114,7 +114,7 @@ public class ReadOnlyMessagePlugin implements MessagePlugin {
             }
 
             var targets = List.copyOf(block.stream().map(r -> r.getClient()).collect(Collectors.toSet()));
-            var sendBlockMessage = DataUtils.createMessage(null, 0, StateMachine.REPLY, entity.getId(), targets, null, block, replies, DataUtils.getDigest(block));
+            var sendBlockMessage = DataUtils.createMessage(null, 0, StateMachine.REPLY, entity.getId(), targets, null, block, replies, DataUtils.getDigest(block), null);
 
             entity.sendMessage(entity.processMessage(sendBlockMessage));
 

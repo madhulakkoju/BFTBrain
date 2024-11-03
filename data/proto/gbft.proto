@@ -14,6 +14,10 @@ service AgentComm {
     rpc send_data (LearningData) returns (google.protobuf.Empty) {}
 }
 
+message RequestDataList{
+    repeated RequestData reqDataList = 1;
+}
+
 message RequestData {
     enum Operation {
         NOP = 0;
@@ -41,6 +45,7 @@ message RequestData {
     int32 early_exec_result = 11;
     bool is_tnx_valid = 12;
     int64 current_version = 13;
+    repeated RequestDataList reqLists = 14;
 }
 
 message MessageData {
@@ -71,7 +76,9 @@ message MessageData {
 
     bool is_endorsement_request = 20;
 
-    int32 xov_state = 21; // 0: DO_ENDORSE -> all nodes, 1: ENDORSED -> client .........OX........ 3: Validate on all nodes
+    int32 xov_state = 21;// 0: DO_ENDORSE -> all nodes, 1: ENDORSED -> client .........OX........ 3: Validate on all nodes
+    repeated RequestDataList reqLists = 22;
+    int32 oxii_state = 23;
 }
 
 message SwitchingData {

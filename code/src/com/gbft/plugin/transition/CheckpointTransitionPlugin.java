@@ -56,7 +56,7 @@ public class CheckpointTransitionPlugin implements TransitionPlugin {
             var digest = getCheckpointDigest(lowMark);
             var targets = entity.getRolePlugin().getRoleEntities(0, 0, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             var message = DataUtils.createMessage(lowMark, 0L, CHECKPOINT, entity.getId(), targets, List.of(),
-                    entity.EMPTY_BLOCK, null, digest);
+                    entity.EMPTY_BLOCK, null, digest, null);
             entity.sendMessage(message);
         }
 

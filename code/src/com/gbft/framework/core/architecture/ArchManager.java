@@ -26,7 +26,7 @@ public class ArchManager {
 //        architectures.put("XOV#", new XOVSerialArchitecture(entity));
 //        architectures.put("SXOV", new StreamXOVArchitecture(entity));
 
-        currentArchitectureKey = "XOV";
+        currentArchitectureKey = "OX";
         this.entity = entity;
     }
 

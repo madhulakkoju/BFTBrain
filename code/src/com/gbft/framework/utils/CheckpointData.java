@@ -4,6 +4,7 @@ import com.gbft.framework.core.Dataset;
 import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
+import com.gbft.framework.data.RequestDataList;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.Printer.Verbosity;
 
@@ -43,6 +44,8 @@ public class CheckpointData {
     public float throughput;
 
     protected Map<Long, Map<Long, Integer>> replies;
+
+    public Map<Long,List<RequestDataList>> dependencyGraphMap = new HashMap<>();
 
     public CheckpointData(long num, Entity entity) {
         this.num = num;
@@ -211,9 +214,18 @@ public class CheckpointData {
     }
 
     public String getArchitecture() {
-        if(architecture.get() == null)
-            return "XOV";
-        else
-            return architecture.get();
+        return this.entity.archManager.currentArchitectureKey;
+//        if(architecture.get() == null)
+//            return "XOV";
+//        else
+//            return architecture.get();
+    }
+
+    public void setDependencyGraph(Long seqnum,List<RequestDataList> dependencyGraph){
+        dependencyGraphMap.put(seqnum,dependencyGraph);
+    }
+
+    public List<RequestDataList> getDependencyGraph(Long seqnum){
+        return dependencyGraphMap.get(seqnum);
     }
 }

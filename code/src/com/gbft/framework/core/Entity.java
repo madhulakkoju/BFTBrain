@@ -17,11 +17,8 @@ import java.util.stream.Collectors;
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.core.architecture.ArchManager;
 import com.gbft.framework.core.architecture.Architecture;
-import com.gbft.framework.data.AgentCommGrpc;
-import com.gbft.framework.data.LearningData;
-import com.gbft.framework.data.MessageData;
-import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.SwitchingData;
+import com.gbft.framework.core.architecture.DependencyGraph;
+import com.gbft.framework.data.*;
 import com.gbft.framework.data.AgentCommGrpc.AgentCommBlockingStub;
 import com.gbft.framework.data.RequestData.Operation;
 import com.gbft.framework.fault.InDarkFault;
@@ -151,6 +148,7 @@ public abstract class Entity {
     protected AgentCommBlockingStub agentStub;
 
     LogUtils logger = new LogUtils();
+    DependencyGraph dg = new DependencyGraph(this);
 
     public Entity(int id, CoordinatorUnit coordinator) {
         this.id = id;
@@ -386,55 +384,68 @@ public abstract class Entity {
                 return;
             }
 
-        // old code rom here
+            if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+                var a = message.getReqListsList();
+                logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
+                if(!message.getReqListsList().isEmpty()){
+                    Long seqnum = message.getSequenceNum();
+                    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+                    checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
+                }
+            }else{
+                logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum());
+            }
 
-        var type = message.getMessageType();
-        if (type == StateMachine.REQUEST) {
-            var request = message.getRequestsList().get(0);
-            var seqnum = getRequestSequence(request.getRequestNum());
-            if (seqnum == null) {
-                // slow proposal
-                if (slowProposalFault.getPerRequestDelay(this.id) > 0) {
-                    // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] add slow proposal: reqnum=" + request.getRequestNum());
-                    addSlowProposal(request);
-                } else {
-                    // clean up if switch back to fault free
-                    if (slowProposalRequests.size() > 0) {
-                        synchronized (slowProposalRequests) {
-                            while (slowProposalRequests.size() > 0) {
-                                pendingRequests.offer(slowProposalRequests.remove(0));
+
+            // old code rom here
+
+            var type = message.getMessageType();
+            if (type == StateMachine.REQUEST) {
+                var request = message.getRequestsList().get(0);
+                var seqnum = getRequestSequence(request.getRequestNum());
+                if (seqnum == null) {
+                    // slow proposal
+                    if (slowProposalFault.getPerRequestDelay(this.id) > 0) {
+                        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] add slow proposal: reqnum=" + request.getRequestNum());
+                        addSlowProposal(request);
+                    } else {
+                        // clean up if switch back to fault free
+                        if (slowProposalRequests.size() > 0) {
+                            synchronized (slowProposalRequests) {
+                                while (slowProposalRequests.size() > 0) {
+                                    pendingRequests.offer(slowProposalRequests.remove(0));
+                                }
                             }
                         }
+                        // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] received request: reqnum=" + request.getRequestNum());
+                        pendingRequests.offer(request);
+                        stateUpdateLoop(nextSequence);
                     }
-                    // Printer.print(Verbosity.V, prefix, "[time-since-start=" + Printer.timeFormat(System.nanoTime() - systemStartTime, true) + "] received request: reqnum=" + request.getRequestNum());
-                    pendingRequests.offer(request);
-                    stateUpdateLoop(nextSequence);
                 }
+            } else {
+                Long seqnum = message.getSequenceNum();
+                if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
+                    return;
+                }
+
+                if (!isValidMessage(message)) {
+                    return;
+                }
+
+                var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+                checkpoint.tally(message);
+                checkpoint.addAggregationValue(message);
+                timekeeper.messageReceived(seqnum, currentViewNum, checkpoint.getState(seqnum), message);
+
+                if (Printer.verbosity >= Verbosity.VVV) {
+                    Printer.print(Verbosity.VVV, prefix, "Tally message ", message);
+                }
+
+                stateUpdateLoop(seqnum);
             }
-        } else {
-            Long seqnum = message.getSequenceNum();
-            if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
-                return;
-            }
 
-            if (!isValidMessage(message)) {
-                return;
-            }
-
-            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-            checkpoint.tally(message);
-            checkpoint.addAggregationValue(message);
-            timekeeper.messageReceived(seqnum, currentViewNum, checkpoint.getState(seqnum), message);
-
-            if (Printer.verbosity >= Verbosity.VVV) {
-                Printer.print(Verbosity.VVV, prefix, "Tally message ", message);
-            }
-
-            stateUpdateLoop(seqnum);
-        }
-
-        var start = DataUtils.toLong(message.getTimestamp());
-        benchmarkManager.messageProcessed(start, System.nanoTime());
+            var start = DataUtils.toLong(message.getTimestamp());
+            benchmarkManager.messageProcessed(start, System.nanoTime());
         }
         catch (Exception e){
             logger.errors("Error in handling message: " + e.getMessage());
@@ -564,12 +575,30 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
+                                        logger.write("creating block");
+                                        if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+
+                                            List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                            dg.setDependencyGraph(dependencyList);
+                                            checkpoint.setDependencyGraph(seqnum,dependencyList);
+                                        }
                                     }
                                 }
-
+//                                logger.write("arch "+this.getArchManager().getCurrentArchitectureKey());
+//                                if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+//                                    DependencyGraph dg = new DependencyGraph(this);
+//                                    List<RequestDataList> dependencyList = dg.CreateGraph(block);
+//                                    var message = createMessage(seqnum, currentViewNum, block, StateMachine.REQUEST, id,
+//                                            List.of(id),dependencyList);
+//                                    logger.write("depen list "+dependencyList);
+//                                    checkpoint.tally(message);
+//                                }
                                 var message = createMessage(seqnum, currentViewNum, block, StateMachine.REQUEST, id,
                                         List.of(id));
                                 checkpoint.tally(message);
+
+
+
                                 benchmarkManager.add(BenchmarkManager.CREATE_REQUEST_BLOCK, 0, System.nanoTime());
                                 
                                 proposedRequests += 1;
@@ -1020,8 +1049,68 @@ catch (Exception e){
         pipelinePlugin.sendMessage(message, this.id);
     }
 
+//    ToDo call convert this to message data builder as intermediatery function call
     public MessageData createMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
             List<Integer> targets) {
+
+        List<RequestDataList> dependencyList = new ArrayList<>();
+        if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+            dependencyList = dg.getDependencyGraph();
+        }
+        ByteString digest = null;
+        Map<Long, Integer> replies = null;
+        MessageData message;
+        Set<Long> aggregationValues = null;
+
+        if (seqnum != null) {
+            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+
+            if (block == null) {
+                block = checkpoint.getRequestBlock(seqnum);
+            }
+
+            digest = checkpoint.getMessageTally().getQuorumDigest(seqnum, viewNum);
+            if (digest == null) {
+                digest = DataUtils.getDigest(block);
+            }
+
+            if (type == StateMachine.REPLY) {
+                replies = checkpoint.getReplies(seqnum);
+            }
+
+            if (!checkpoint.getAggregationValues(seqnum).isEmpty()) {
+                aggregationValues = checkpoint.getAggregationValues(seqnum);
+            }
+        }
+
+        var hasblock = StateMachine.messages.get(type).hasRequestBlock;
+        if (hasblock) {
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest,dependencyList);
+        } else {
+            var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest,dependencyList);
+        }
+
+        // carry aggregation values if exist
+        if (aggregationValues != null) {
+            message = message.toBuilder().addAllAggregationValues(aggregationValues).build();
+        }
+
+        // notify client about the next protocol inside REPLY message
+        if (seqnum != null && seqnum == getEndOfEpisode(seqnum) && type == StateMachine.REPLY) {
+            var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
+            var protocol = checkpointNew.getProtocol();
+
+            var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
+            message = message.toBuilder().setSwitch(switchingDataBuilder).build();        
+            // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");  
+        }
+
+        return processMessage(message);
+    }
+
+    public MessageData createMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
+                                     List<Integer> targets,List<RequestDataList> dependencyList) {
 
         ByteString digest = null;
         Map<Long, Integer> replies = null;
@@ -1051,10 +1140,10 @@ catch (Exception e){
 
         var hasblock = StateMachine.messages.get(type).hasRequestBlock;
         if (hasblock) {
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest,dependencyList);
         } else {
             var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest,dependencyList);
         }
 
         // carry aggregation values if exist
@@ -1068,8 +1157,8 @@ catch (Exception e){
             var protocol = checkpointNew.getProtocol();
 
             var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
-            message = message.toBuilder().setSwitch(switchingDataBuilder).build();        
-            // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");  
+            message = message.toBuilder().setSwitch(switchingDataBuilder).build();
+            // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");
         }
 
         return processMessage(message);

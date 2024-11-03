@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.RequestDataList;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.AdvanceConfig;
@@ -11,26 +12,99 @@ import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.beans.Expression;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+
+
+
+
+
 public class Node extends Entity {
+
+
+
 
 
     public Node(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
     }
 
+//    public void executeParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph) {
+//        // Define the number of threads you want to use
+////        ExecutorService executor = Executors.newFixedThreadPool(dependencyGraph.size());
+//
+//            try {
+//                // Submit each task to the executor for parallel execution
+//                List<Thread> threads = new ArrayList<>();
+//                for (RequestDataList requestDataList : dependencyGraph) {
+////                    executor.submit(() -> this.executeTransaction(replies, requestDataList));
+//                    executeTransaction(replies, requestDataList);
+////                    Thread thread = new Thread(() -> this.executeTransaction(replies, requestDataList));
+////                    thread.start();
+////                    threads.add(thread);
+//                }
+////                for (Thread thread : threads) {
+////                    try {
+////                        thread.join(); // Join each thread to ensure it completes
+////                    } catch (InterruptedException e) {
+////                        e.printStackTrace(); // Handle interruption
+////                    }
+////                }
+//
+//            }
+//            catch (Exception e){
+//                logger.write("Exception "+ e);
+//            }
+////            finally {
+////                // Gracefully shut down the executor
+////                //executor.shutdown();
+////            }
+//    }
+
+    public void executeParallel(ConcurrentHashMap<Long, Integer> replies, List<RequestDataList> dependencyGraph) {
+        ExecutorService executor = Executors.newFixedThreadPool(dependencyGraph.size());
+
+        try {
+            for (RequestDataList requestDataList : dependencyGraph) {
+                executor.submit(() -> this.executeTransaction(replies, requestDataList));
+            }
+        } catch (Exception e) {
+            logger.write("Exception " + e);
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+            }
+        }
+    }
+
+    public void executeTransaction(ConcurrentHashMap<Long, Integer> replies, RequestDataList requestDataList) {
+        var requestData = requestDataList.getReqDataListList();
+        for (var request : requestData) {
+            replies.put(request.getRequestNum(), dataset.execute(request));
+        }
+        // Log the collected record string for this transaction
+    }
+
+
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
+        logger.write("execute seqnum "+seqnum);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
-        if (checkpoint.getReplies(seqnum) == null) {
+        if (checkpoint.getReplies(seqnum) == null && !this.getArchManager().getCurrentArchitectureKey().contains("OX")) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
 
@@ -49,10 +123,38 @@ public class Node extends Entity {
 //                      replies.put(request.getRequestNum(), dataset.execute(request));
 //                }
 
-
                 replies.put(request.getRequestNum(), dataset.execute(request));
 
             }
+            if(checkpoint.getRequestBlock(seqnum) == null){
+                logger.write("block is null");
+                logger.write("replies "+replies);
+            }
+
+            checkpoint.addReplies(seqnum, replies);
+        }
+
+        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().contains("OX")) { // make true for oxii
+            var replies = new ConcurrentHashMap<Long, Integer>();
+            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+            if(checkpoint.getDependencyGraph(seqnum) == null) {
+                if(checkpoint.getRequestBlock(seqnum) == null){
+                    logger.write("block is null");
+                    for (var request : requestBlock) {
+                        replies.put(request.getRequestNum(), dataset.execute(request));
+                    }
+                }
+                else{
+                    logger.write("null block " + checkpoint.getRequestBlock(seqnum));
+                }
+
+            }else{
+                logger.write("node dag"+checkpoint.getDependencyGraph(seqnum).size() +" seq num "+ seqnum + " protocol "+ checkpoint.getProtocol());
+                executeParallel(replies,dependencyGraph);
+            }
+
+
+//            logger.write("replies"+ replies);
             checkpoint.addReplies(seqnum, replies);
         }
 
@@ -195,3 +297,24 @@ public class Node extends Entity {
         }
     }
 }
+
+
+//class OXPPWorkerThread extends Thread{
+//    public RequestDataList requestDataList;
+//    public Node node;
+//    public HashMap<Long, Integer> replies;
+//
+//    public OXPPWorkerThread( RequestDataList requestDataList, HashMap<Long, Integer> replies, Node node ){
+//        this.requestDataList = requestDataList;
+//        this.node = node;
+//        this.replies = replies;
+//    }
+//
+//    @Override
+//    public void run(){
+//        node.executeTransaction(replies, requestDataList);
+//    }
+//
+//}
+
+

@@ -158,7 +158,7 @@ public class CheckpointMessagePlugin implements MessagePlugin {
                     var targets = tally.getQuorumNodes(checkpointNum, 0, new QuorumId(CHECKPOINT, quorum));
                     var target = targets.iterator().next();
                     var message = DataUtils.createMessage(checkpointNum, 0L, FETCH, entity.getId(), List.of(target),
-                            List.of(), entity.EMPTY_BLOCK, null, null);
+                            List.of(), entity.EMPTY_BLOCK, null, null, null);
 
                     var fetchDataBuilder = FetchData.newBuilder().setIsRequest(true);
                     message = message.toBuilder().setFetch(fetchDataBuilder).build();
