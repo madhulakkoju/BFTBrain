@@ -6,3 +6,16 @@ REQUEST_SIZE = 2
 HAS_FAST_PATH = 3
 HAS_LEADER_ROTATION = 4
 RECEIVED_MESSAGE_PER_SLOT = 5
+WRITE_RATIO=6
+HOT_KEY_RATIO=7
+TRANS_ARRIVAL_RATE=8
+EXECUTION_DELAY=9
+
+
+
+    public static final int FAST_PATH_FREQUENCY = 0;
+    public static final int SLOWNESS_OF_PROPOSAL = 1;
+    public static final int REQUEST_SIZE = 2;
+    public static final int HAS_FAST_PATH = 3;
+    public static final int HAS_LEADER_ROTATION = 4;
+    public static final int RECEIVED_MESSAGE_PER_SLOT = 5;

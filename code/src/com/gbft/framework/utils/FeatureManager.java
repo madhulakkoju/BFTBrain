@@ -22,6 +22,10 @@ public class FeatureManager {
     public static final int HAS_FAST_PATH = 3;
     public static final int HAS_LEADER_ROTATION = 4;
     public static final int RECEIVED_MESSAGE_PER_SLOT = 5;
+    public static final int WRITE_RATIO=6;
+    public static final int HOT_KEY_RATIO=7;
+    public static final int TRANS_ARRIVAL_RATE=8;
+    public static final int EXECUTION_DELAY=9;
 
     public static final int FAST = 1;
     public static final int SLOW = 2;
