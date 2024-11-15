@@ -5,6 +5,7 @@ import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.MiscUtils;
+import com.gbft.framework.utils.RequestUtils;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -127,7 +128,7 @@ public class Architecture {
         //Check if the request is valid
         //Update this with the actual logic
 
-        if(this.entity.getDataset().getRecordCurrentVersion().get(request.getRecord()) != request.getCurrentVersion()){
+        if(this.entity.getDataset().getRecordCurrentVersion().get(RequestUtils.getRecord(request)) != request.getCurrentVersion()){
             request = request.toBuilder().setIsTnxValid(false).build();
             return false;
         }

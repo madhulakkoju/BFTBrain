@@ -1,5 +1,15 @@
 package com.gbft.plugin.message;
 
+import com.gbft.framework.core.Entity;
+import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.RequestData;
+import com.gbft.framework.data.Operation;
+import com.gbft.framework.plugins.MessagePlugin;
+import com.gbft.framework.statemachine.StateMachine;
+import com.gbft.framework.utils.Config;
+import com.gbft.framework.utils.DataUtils;
+import com.gbft.framework.utils.RequestUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,15 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
-
-import com.gbft.framework.core.Entity;
-import com.gbft.framework.data.MessageData;
-import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.RequestData.Operation;
-import com.gbft.framework.plugins.MessagePlugin;
-import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.Config;
-import com.gbft.framework.utils.DataUtils;
 
 public class ReadOnlyMessagePlugin implements MessagePlugin {
 
@@ -45,7 +46,7 @@ public class ReadOnlyMessagePlugin implements MessagePlugin {
             // client side.
             // since server's read only replies are blocked
             // they must be always read-only or not read-only
-            var read_only = message.getRequestsList().stream().allMatch(req -> req.getOperationValue() == Operation.READ_ONLY_VALUE);
+            var read_only = message.getRequestsList().stream().allMatch(req -> RequestUtils.getOperation(req).getNumber() == Operation.READ_ONLY_VALUE);
             if (!read_only) return message;
             // update server response
             for (var reply : message.getReplyDataMap().entrySet()) {
@@ -84,7 +85,7 @@ public class ReadOnlyMessagePlugin implements MessagePlugin {
             // server side.
             // client will only send one by one, 
             // thus all requests must be always read-only or always not read-only
-            var read_only = message.getRequestsList().stream().allMatch(req -> req.getOperationValue() == Operation.READ_ONLY_VALUE);
+            var read_only = message.getRequestsList().stream().allMatch(req -> RequestUtils.getOperation(req).getNumber() == Operation.READ_ONLY_VALUE);
             if (!read_only) return message;
             // instant execution
             for (var request : message.getRequestsList()) {
@@ -126,7 +127,7 @@ public class ReadOnlyMessagePlugin implements MessagePlugin {
     public MessageData processOutgoingMessage(MessageData message) {
         if (entity.isClient()) {
             for (var request : message.getRequestsList()) {
-                if (request.getOperationValue() == Operation.READ_ONLY_VALUE) {
+                if (RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
                     readOnlyMatchings.put(request.getRequestNum(), new ConcurrentHashMap<>());
                 }
             }

@@ -4,13 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="added parallel execute ahead requests">
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="modified Request Data.. for further changes to Parallel Implementations">
+      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Operation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/OperationSet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/OperationSetOrBuilder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/RequestUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Operation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/OperationSet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/OperationSetOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/BFTBrain.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/BFTBrain.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2_grpc.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/DependencyGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/DependencyGraph.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
@@ -33,19 +44,46 @@
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataList.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataListOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataListOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/CheckpointData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/CheckpointData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/CheckpointMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/CheckpointMessagePlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Printer.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Printer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/ReadOnlyMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/ReadOnlyMessagePlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/transition/CheckpointTransitionPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/transition/CheckpointTransitionPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.framework.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.framework.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EntityCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EntityCommGrpc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Event.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EventOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EventOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlock.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlockOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlockOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataList.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataListOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataListOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,6 +94,13 @@
   <component name="CodeInsightWorkspaceSettings">
     <option name="optimizeImportsOnTheFly" value="true" />
   </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view />
+      </state>
+    </system>
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -65,6 +110,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="v1-oxii" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
@@ -77,7 +127,7 @@
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/madhulakkoju/BFTBrain.git",
-    "accountId": "f533e4c2-f16d-4d44-9801-7a6090de2dfd"
+    "accountId": "666a2e22-48c1-4b7a-ba9a-426c74873699"
   }
 }]]></component>
   <component name="MarkdownSettingsMigration">
@@ -103,9 +153,13 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Shell Script.local_exp.sh.executor": "Run",
-    "git-widget-placeholder": "v1",
+    "git-widget-placeholder": "new-requestdata-type",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/sai/Desktop/AP2/BFTBrain",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
@@ -118,6 +172,14 @@
       <recent name="com.gbft.framework.core.architecture.impls" />
     </key>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23726.103" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23726.103" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -126,6 +188,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1709010408859</updated>
+      <workItem from="1731608285265" duration="6901000" />
     </task>
     <task id="LOCAL-00001" summary="Base code for Architecture implementations">
       <option name="closed" value="true" />
@@ -162,12 +225,27 @@
     <option name="localTasksCounter" value="5" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="v1-oxii" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
@@ -178,16 +256,12 @@
     <MESSAGE value="included base code for ordering and fixed all old codebase to removbe common orderer and validator" />
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
     <MESSAGE value="added parallel execute ahead requests" />
-    <option name="LAST_COMMIT_MESSAGE" value="added parallel execute ahead requests" />
+    <MESSAGE value="modified Request Data.. for further changes to Parallel Implementations" />
+    <option name="LAST_COMMIT_MESSAGE" value="modified Request Data.. for further changes to Parallel Implementations" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java</url>
-          <line>75</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
           <line>29</line>
@@ -226,7 +300,7 @@
         <line-breakpoint enabled="true" type="java-method">
           <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java</url>
           <line>46</line>
-          <properties class="com.gbft.framework.utils.LogUtils" method="CoreIntialize">
+          <properties class="com.gbft.framework.utils.LogUtils">
             <option name="EMULATED" value="true" />
             <option name="WATCH_EXIT" value="false" />
           </properties>

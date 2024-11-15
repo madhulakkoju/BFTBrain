@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 import com.gbft.framework.data.*;
 import com.gbft.framework.data.Event.EventType;
-import com.gbft.framework.data.RequestData.Operation;
+import com.gbft.framework.data.Operation;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
@@ -197,15 +197,27 @@ public class DataUtils {
         var builder = RequestData.newBuilder();
 
         try {
+
+            OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
+
+            if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
+                builder.setReadSet(0, opset);
+            }
+            else{
+                builder.setWriteSet(0, opset);
+            }
+
+
             builder.setRequestNum(reqnum)
                    .setClient(clientId)
-                   .setRecord(record)
-                   .setOperation(operation)
                    .setValue(value)
                    .setReplySize(replySize)
                    .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
                    .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
                    .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }

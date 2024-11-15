@@ -2,20 +2,18 @@ package com.gbft.framework.core;
 
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.Operation;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition.UpdateMode;
-import com.gbft.framework.utils.AdvanceConfig;
-import com.gbft.framework.utils.BenchmarkManager;
-import com.gbft.framework.utils.Config;
+import com.gbft.framework.utils.*;
 import com.gbft.framework.utils.MessageTally.QuorumId;
-import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
@@ -207,7 +205,7 @@ public class Client extends Entity {
 
             var targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, requestTargetRole);
 
-            if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
+            if (RequestUtils.getOperation(request).getNumber()  == Operation.READ_ONLY_VALUE) {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
 
@@ -275,7 +273,7 @@ public class Client extends Entity {
             }
 
 
-            if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
+            if ( RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
 
@@ -343,7 +341,7 @@ public class Client extends Entity {
                             var reqnum = nextRequestNum.getAndIncrement();
                             var request = dataset.createRequest(reqnum);
 
-                            if (request.getOperationValue() == RequestData.Operation.READ_ONLY_VALUE) {
+                            if (  RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
                                 read_only_buf ++;
                             }
 

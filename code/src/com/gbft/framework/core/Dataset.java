@@ -1,5 +1,6 @@
 package com.gbft.framework.core;
 
+import com.gbft.framework.data.OperationSet;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
@@ -7,9 +8,7 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Dataset {
@@ -54,8 +53,6 @@ public class Dataset {
     }
 
     public int execute(RequestData request) {
-        var op = request.getOperation();
-        var record = request.getRecord();
 
         // dummy computation
         if (request.getComputeFactor() > 0) {
@@ -69,65 +66,69 @@ public class Dataset {
             } catch (IOException e) {}
         }
 
-        int value = 0;
+        List<Integer> values = new ArrayList<>();
 
-        switch (op) {
-        case ADD:
-            value = records.get(record).addAndGet(request.getValue());
-            break;
-        case SUB:
-            value = records.get(record).addAndGet(-request.getValue());
-            break;
-        case INC:
-            value = records.get(record).incrementAndGet();
-            break;
-        case DEC:
-            value = records.get(record).decrementAndGet();
-            break;
-        case READ_ONLY:
-            value = records.get(record).get();
-        default:
-            value = records.get(record).get();
+        for (var op: request.getWriteSetList()){
+            values.add( processRequest(op) );
         }
 
-        return value;
+        for (var op: request.getReadSetList()){
+            values.add( processRequest(op));
+        }
+
+        return values.getFirst();
+    }
+
+
+    public int processRequest(OperationSet operation){
+        return switch (operation.getOp()) {
+            case ADD -> records.get(operation.getRecord()).addAndGet(operation.getValue());
+            case SUB -> records.get(operation.getRecord()).addAndGet(-operation.getValue());
+            case INC -> records.get(operation.getRecord()).incrementAndGet();
+            case DEC -> records.get(operation.getRecord()).decrementAndGet();
+            default -> records.get(operation.getRecord()).get();
+        };
     }
 
     public void update(RequestData request, int value) {
-        var record = request.getRecord();
+
+        if(request.getWriteSetList().isEmpty()) return;
+
+        var record = request.getWriteSetList().getFirst().getRecord();
         records.get(record).set(value);
 
         this.recordCurrentVersion.put(record, recordCurrentVersion.getOrDefault(record, 0L) + 1);
     }
 
     public RequestData executeAhead(RequestData request) {
-        var op = request.getOperation();
-        var record = request.getRecord();
 
-        int value = 0;
+        List<Integer> values = new ArrayList<>();
 
-        switch (op) {
-            case ADD:
-                value = records.get(record).get() + request.getValue();
-                break;
-            case SUB:
-                value = records.get(record).get() - request.getValue();
-                break;
-            case INC:
-                value = records.get(record).get() + 1;
-                break;
-            case DEC:
-                value = records.get(record).get() - 1;
-                break;
-            case READ_ONLY:
-                value = records.get(record).get();
-            default:
-                value = records.get(record).get();
+        for (var op: request.getWriteSetList()){
+            values.add( processRequest(op) );
         }
-        return request.toBuilder().setEarlyExecResult(value)
-                .setCurrentVersion(recordCurrentVersion.getOrDefault(record, 0L))
+
+        for (var op: request.getReadSetList()){
+            values.add( processRequest(op));
+        }
+
+        return request.toBuilder().setEarlyExecResult(values.getFirst())
+                .setCurrentVersion(recordCurrentVersion.getOrDefault(
+                        !request.getWriteSetList().isEmpty() ?
+                                request.getWriteSetList().getFirst() :
+                                (!request.getReadSetList().isEmpty() ? request.getReadSetList().getFirst() : null )
+                        , 0L))
                 .build();
     }
 
+    public int processRequestAhead(OperationSet operation){
+        return switch (operation.getOp()) {
+            case ADD -> records.get(operation.getRecord()).get()+ operation.getValue();
+            case SUB -> records.get(operation.getRecord()).get()-operation.getValue();
+            case INC -> records.get(operation.getRecord()).get()+1;
+            case DEC -> records.get(operation.getRecord()).get() - 1;
+            default -> records.get(operation.getRecord()).get();
+        };
+    }
 
 }

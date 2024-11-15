@@ -1,10 +1,11 @@
 package com.gbft.framework.core;
 
 import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.RequestData.Operation;
+import com.gbft.framework.data.Operation;
 import com.gbft.framework.utils.AdvanceConfig;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
+import com.gbft.framework.utils.RequestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +34,10 @@ public class ClientDataset extends Dataset {
     public void update(RequestData request, int value) {
         super.update(request, value);
 
-        var record = request.getRecord();
-        var op = request.getOperation();
+        var record = RequestUtils.getRecord(request);
+
+        var op = RequestUtils.getOperation(request);
+
 
         switch (op) {
         case INC:

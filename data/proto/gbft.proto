@@ -18,22 +18,36 @@ message RequestDataList{
     repeated RequestData reqDataList = 1;
 }
 
+
+
+enum Operation {
+    NOP = 0;
+    ADD = 1;
+    SUB = 2;
+    INC = 3;
+    DEC = 4;
+    READ_ONLY = 5;
+}
+
+message OperationSet{
+    int32 record = 1;
+    Operation op = 2;
+    int32 value = 3;
+}
+
 message RequestData {
-    enum Operation {
-        NOP = 0;
-        ADD = 1;
-        SUB = 2;
-        INC = 3;
-        DEC = 4;
-		READ_ONLY = 5;
-    }
-    
+
+
+
     int32 client = 1;
     int64 request_num = 2;
-    
-    int32 record = 3;
-    Operation operation = 4;
+
+//    int32 record = 3;
+//    Operation operation = 4;
     int32 value = 5;
+
+    repeated OperationSet read_set = 15;
+    repeated OperationSet write_set = 16;
 
     google.protobuf.Timestamp timestamp = 6;
     repeated LearningData report_quorum = 7;
@@ -47,7 +61,6 @@ message RequestData {
     int64 current_version = 13;
     repeated RequestDataList reqLists = 14;
 }
-
 message MessageData {
     int64 sequence_num = 1;
     int64 view_num = 2;

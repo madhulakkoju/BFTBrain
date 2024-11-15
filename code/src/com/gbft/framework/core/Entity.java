@@ -20,7 +20,7 @@ import com.gbft.framework.core.architecture.Architecture;
 import com.gbft.framework.core.architecture.DependencyGraph;
 import com.gbft.framework.data.*;
 import com.gbft.framework.data.AgentCommGrpc.AgentCommBlockingStub;
-import com.gbft.framework.data.RequestData.Operation;
+import com.gbft.framework.data.Operation;
 import com.gbft.framework.fault.InDarkFault;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.fault.SlowProposalFault;

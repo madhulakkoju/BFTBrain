@@ -1,23 +1,15 @@
 package com.gbft.framework.utils;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.TreeSet;
-
 import com.gbft.framework.coordination.CoordinatorUnit;
-import com.gbft.framework.data.Event;
-import com.gbft.framework.data.MessageData;
-import com.gbft.framework.data.ReportData;
-import com.gbft.framework.data.RequestData;
-import com.gbft.framework.data.RequestData.Operation;
+import com.gbft.framework.data.*;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.statemachine.Transition;
 import com.google.protobuf.ByteString;
+
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.TreeSet;
 
 public class Printer {
 
@@ -139,14 +131,30 @@ public class Printer {
         sb.append(" by client").append(request.getClient());
 
         if (Printer.verbosity > Verbosity.VV) {
-            var op = request.getOperation();
-            sb.append(" [").append(op).append(' ');
-            if (op == Operation.ADD) {
-                sb.append(request.getValue()).append(" to ");
-            } else if (op == Operation.SUB) {
-                sb.append(request.getValue()).append(" from ");
+
+            sb.append("{[ ReadSet: ");//.append("").append("]");
+
+            for (OperationSet opset : request.getReadSetList()){
+                sb.append(opset.getOp()).append(" ").append(opset.getRecord());
             }
-            sb.append(request.getRecord()).append(']');
+            sb.append("]");
+
+            sb.append("[ WriteSet: ");//.append("").append("]");
+
+            for (OperationSet opset : request.getWriteSetList()){
+                sb.append(opset.getOp()).append(" ").append(opset.getRecord());
+            }
+            sb.append("]}");
+
+
+//            var op = request.getOperation();
+//            sb.append(" [").append(op).append(' ');
+//            if (op == Operation.ADD) {
+//                sb.append(request.getValue()).append(" to ");
+//            } else if (op == Operation.SUB) {
+//                sb.append(request.getValue()).append(" from ");
+//            }
+//            sb.append(request.getRecord()).append(']');
         }
 
         sb.append('\n');
