@@ -1,4 +1,4 @@
-package com.gbft.framework.utils;
+package com.gbft.framework.core.architecture;
 
 import java.util.HashSet;
 import java.util.Set;

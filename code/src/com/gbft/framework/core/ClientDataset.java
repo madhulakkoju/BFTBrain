@@ -32,6 +32,8 @@ public class ClientDataset extends Dataset {
 
     @Override
     public void update(RequestData request, int value) {
+        if(request==null) return;
+
         super.update(request, value);
 
         var record = RequestUtils.getRecord(request);

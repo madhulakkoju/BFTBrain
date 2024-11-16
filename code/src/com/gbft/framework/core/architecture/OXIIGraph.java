@@ -1,4 +1,4 @@
-package com.gbft.framework.utils;
+package com.gbft.framework.core.architecture;
 
 import com.gbft.framework.data.OperationSet;
 import com.gbft.framework.data.RequestData;
