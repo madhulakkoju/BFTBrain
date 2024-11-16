@@ -201,10 +201,10 @@ public class DataUtils {
             OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
 
             if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
-                builder.setReadSet(0, opset);
+                builder.addReadSet(opset);
             }
             else{
-                builder.setWriteSet(0, opset);
+                builder.addWriteSet(opset);
             }
 
 
