@@ -160,7 +160,7 @@ public class DataUtils {
     private static final int WORKLOAD_40 = 2;
     private static final int WORKLOAD_44 = 3;
 
-    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId) {
+    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId, int numTotal) {
         var probabilities = Config.doubleList("workload.distribution");
 
         var r = random.nextDouble();
@@ -205,8 +205,12 @@ public class DataUtils {
             }
             else{
                 builder.addWriteSet(opset);
+                builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
+                for (int j = 1; j < numTotal; j++) {
+                    int randOperation = random.nextInt(5);
+                    builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(opset.getRecord()).build() );
+                }
             }
-
 
             builder.setRequestNum(reqnum)
                    .setClient(clientId)

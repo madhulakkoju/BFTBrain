@@ -90,7 +90,7 @@ public class ClientDataset extends Dataset {
             }
         }
 
-        return DataUtils.createRequest(reqnum, record, operation, value, clientId);
+        return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3) );
     }
 
 }

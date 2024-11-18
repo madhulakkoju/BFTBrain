@@ -575,11 +575,12 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
-                                        logger.write("creating block");
-                                        if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
-
+                                        logger.write("creating block ");
+                                        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
+                                            logger.write("creating dag");
                                             List<RequestDataList> dependencyList = dg.CreateGraph(block);
                                             dg.setDependencyGraph(dependencyList);
+                                            logger.write("dep list size "+dependencyList.size());
                                             checkpoint.setDependencyGraph(seqnum,dependencyList);
                                         }
                                     }
@@ -1054,7 +1055,7 @@ catch (Exception e){
             List<Integer> targets) {
 
         List<RequestDataList> dependencyList = new ArrayList<>();
-        if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
             dependencyList = dg.getDependencyGraph();
         }
         ByteString digest = null;

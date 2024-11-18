@@ -222,10 +222,10 @@ public class CheckpointData {
     }
 
     public void setDependencyGraph(Long seqnum,List<RequestDataList> dependencyGraph){
-        dependencyGraphMap.put(seqnum,dependencyGraph);
+        this.dependencyGraphMap.put(seqnum,dependencyGraph);
     }
 
     public List<RequestDataList> getDependencyGraph(Long seqnum){
-        return dependencyGraphMap.get(seqnum);
+        return this.dependencyGraphMap.get(seqnum);
     }
 }

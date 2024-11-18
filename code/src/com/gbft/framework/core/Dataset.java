@@ -53,8 +53,30 @@ public class Dataset {
     }
 
     public int execute(RequestData request) {
+        runComputeDummy(request);
 
+        List<Integer> values = new ArrayList<>();
+
+        for (var op: request.getWriteSetList()){
+            runComputeDummy(request);
+            values.add( processRequest(op) );
+        }
+
+        for (var op: request.getReadSetList()){
+            runComputeDummy(request);
+            values.add( processRequest(op));
+        }
+
+        return values.getFirst();
+    }
+
+    public void runComputeDummy(RequestData request){
         // dummy computation
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         if (request.getComputeFactor() > 0) {
             var dummy_counter = 0;
             var random = new Random();
@@ -65,18 +87,6 @@ public class Dataset {
                 OutputStream.nullOutputStream().write(dummy_counter);
             } catch (IOException e) {}
         }
-
-        List<Integer> values = new ArrayList<>();
-
-        for (var op: request.getWriteSetList()){
-            values.add( processRequest(op) );
-        }
-
-        for (var op: request.getReadSetList()){
-            values.add( processRequest(op));
-        }
-
-        return values.getFirst();
     }
 
 
