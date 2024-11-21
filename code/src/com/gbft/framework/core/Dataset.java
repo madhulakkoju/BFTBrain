@@ -108,7 +108,7 @@ public class Dataset {
         this.recordCurrentVersion.put(record, recordCurrentVersion.getOrDefault(record, 0L) + 1);
     }
 
-    public RequestData executeAhead(RequestData request) {
+    public RequestData executeAhead(Entity entity,RequestData request) {
 
         List<Integer> values = new ArrayList<>();
 
@@ -120,19 +120,43 @@ public class Dataset {
             values.add( processRequest(op));
         }
 
-        return request.toBuilder().setEarlyExecResult(values.getFirst())
-                .setCurrentVersion(recordCurrentVersion.getOrDefault(
-                        !request.getWriteSetList().isEmpty() ?
-                                request.getWriteSetList().getFirst() :
-                                (!request.getReadSetList().isEmpty() ? request.getReadSetList().getFirst() : null )
-                        , 0L))
-                .build();
+        RequestData rr = null;
+        try {
+
+            entity.logger.write( recordCurrentVersion.getOrDefault(
+                    !request.getWriteSetList().isEmpty() ?
+                            request.getWriteSetList().getFirst().getRecord() :
+                                (!request.getReadSetList().isEmpty() ?
+                                        request.getReadSetList().getFirst().getRecord() :
+                                        -1 )
+                    , 0L).toString() );
+
+
+            rr = request.toBuilder().setEarlyExecResult(values.getFirst())
+                    .setCurrentVersion(
+                            recordCurrentVersion.getOrDefault(
+                                    !request.getWriteSetList().isEmpty() ?
+                                            request.getWriteSetList().getFirst().getRecord() :
+                                            (!request.getReadSetList().isEmpty() ?
+                                                    request.getReadSetList().getFirst().getRecord() :
+                                                    -1 )
+                                    , 0L)
+                    )
+                    .build();
+
+            return  rr;
+        }
+        catch (Exception e){
+            entity.logger.write(e.getMessage());
+        }
+        return null;
     }
 
-    public List<RequestData> executeRequestsAhead(List<RequestData> block){
+    public List<RequestData> executeRequestsAhead(Entity entity,List<RequestData> block){
         List<RequestData> executeAheadBlock = new ArrayList<>(block.size());
+
         for (RequestData request : block) {
-            executeAheadBlock.add(this.executeAhead(request));
+            executeAheadBlock.add(this.executeAhead(entity,request));
         }
         return executeAheadBlock;
     }

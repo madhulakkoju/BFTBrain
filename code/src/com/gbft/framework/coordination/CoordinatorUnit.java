@@ -368,6 +368,7 @@ public class CoordinatorUnit extends CoordinatorBase {
 
         var event = DataUtils.createEvent(sizeTransformedMessages);
         sendEvent(units, event);
+
     }
 
     public void initFromConfig(Map<String, String> configContent, String defaultProtocol, List<UnitData> unitData) {

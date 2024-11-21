@@ -12,9 +12,9 @@
         <version>3.8.1</version>
         <configuration>
           <release>21</release>
-            <compilerArgs>
-              <arg>--enable-preview</arg>
-            </compilerArgs>
+<!--            <compilerArgs>-->
+<!--              <arg>&#45;&#45;enable-preview</arg>-->
+<!--            </compilerArgs>-->
         </configuration>
       </plugin>
     </plugins>

@@ -5,7 +5,7 @@ import static io.grpc.MethodDescriptor.generateFullMethodName;
 /**
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.53.0)",
+    value = "by gRPC proto compiler (version 1.56.0)",
     comments = "Source: gbft.proto")
 @io.grpc.stub.annotations.GrpcGenerated
 public final class AgentCommGrpc {
@@ -92,31 +92,32 @@ public final class AgentCommGrpc {
 
   /**
    */
-  public static abstract class AgentCommImplBase implements io.grpc.BindableService {
+  public interface AsyncService {
 
     /**
      */
-    public void sendData(com.gbft.framework.data.LearningData request,
+    default void sendData(com.gbft.framework.data.LearningData request,
         io.grpc.stub.StreamObserver<com.google.protobuf.Empty> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendDataMethod(), responseObserver);
-    }
-
-    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
-      return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-          .addMethod(
-            getSendDataMethod(),
-            io.grpc.stub.ServerCalls.asyncUnaryCall(
-              new MethodHandlers<
-                com.gbft.framework.data.LearningData,
-                com.google.protobuf.Empty>(
-                  this, METHODID_SEND_DATA)))
-          .build();
     }
   }
 
   /**
+   * Base class for the server implementation of the service AgentComm.
    */
-  public static final class AgentCommStub extends io.grpc.stub.AbstractAsyncStub<AgentCommStub> {
+  public static abstract class AgentCommImplBase
+      implements io.grpc.BindableService, AsyncService {
+
+    @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
+      return AgentCommGrpc.bindService(this);
+    }
+  }
+
+  /**
+   * A stub to allow clients to do asynchronous rpc calls to service AgentComm.
+   */
+  public static final class AgentCommStub
+      extends io.grpc.stub.AbstractAsyncStub<AgentCommStub> {
     private AgentCommStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -138,8 +139,10 @@ public final class AgentCommGrpc {
   }
 
   /**
+   * A stub to allow clients to do synchronous rpc calls to service AgentComm.
    */
-  public static final class AgentCommBlockingStub extends io.grpc.stub.AbstractBlockingStub<AgentCommBlockingStub> {
+  public static final class AgentCommBlockingStub
+      extends io.grpc.stub.AbstractBlockingStub<AgentCommBlockingStub> {
     private AgentCommBlockingStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -160,8 +163,10 @@ public final class AgentCommGrpc {
   }
 
   /**
+   * A stub to allow clients to do ListenableFuture-style rpc calls to service AgentComm.
    */
-  public static final class AgentCommFutureStub extends io.grpc.stub.AbstractFutureStub<AgentCommFutureStub> {
+  public static final class AgentCommFutureStub
+      extends io.grpc.stub.AbstractFutureStub<AgentCommFutureStub> {
     private AgentCommFutureStub(
         io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
@@ -189,10 +194,10 @@ public final class AgentCommGrpc {
       io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
       io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-    private final AgentCommImplBase serviceImpl;
+    private final AsyncService serviceImpl;
     private final int methodId;
 
-    MethodHandlers(AgentCommImplBase serviceImpl, int methodId) {
+    MethodHandlers(AsyncService serviceImpl, int methodId) {
       this.serviceImpl = serviceImpl;
       this.methodId = methodId;
     }
@@ -219,6 +224,18 @@ public final class AgentCommGrpc {
           throw new AssertionError();
       }
     }
+  }
+
+  public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+    return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+        .addMethod(
+          getSendDataMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.gbft.framework.data.LearningData,
+              com.google.protobuf.Empty>(
+                service, METHODID_SEND_DATA)))
+        .build();
   }
 
   private static abstract class AgentCommBaseDescriptorSupplier

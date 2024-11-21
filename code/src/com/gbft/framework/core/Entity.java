@@ -350,35 +350,58 @@ public abstract class Entity {
 
             if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
                 //Here, it is an endorsement. so execute ahead and send back to client
-                logger.write("Endorsement Request received to Node");
-                var aheadExecutedReqs = this.dataset.executeRequestsAhead( message.getRequestsList() );
+                var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList() );
                 var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
 
+                logger.write("Sending XOV state:: "+messageToClient.getXovState());
                 sendMessage(messageToClient);
-                logger.write("Endorsement Response sent to client + " + messageToClient.toString());
                 return;
             }
 
+            logger.write("Message : XOV state::"+ message.getXovState() + "Messgae obj:: " + message.toString());
+
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
+                try {
 
-                //Endorsement Response
-                for (var req : message.getRequestsList()) {
-                    if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+                    logger.write("2nd xov start");
+                    //Endorsement Response
+                    for (var req : message.getRequestsList()) {
+                        logger.write("2nd xov -- req:" + req.getRequestNum());
+                        if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
 
-                        this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-                        if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
-                            //Remove the request from the queue
-                            this.getEndorsementQueue().remove(req.getRequestNum());
-                            this.getEndorsementCounts().remove(req.getRequestNum());
+                            logger.write("2nd xov -- endorsement found. for req:" + req.getRequestNum());
 
-                            // Send message to state 3 to Leader
-                            if (requestGenerator != null) {
-                                //Send the request to the client
-                                requestGenerator.sendRequest(req);
+                            this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
+
+                            logger.write("Endorsement Count:: " + (this.getEndorsementCounts().get(req.getRequestNum()) + 1) + " out of " + Architecture.EndorsementPolicy);
+
+                            if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
+                                logger.write(" Endorse policy success -- next ");
+
+                                //Remove the request from the queue
+                                this.getEndorsementQueue().remove(req.getRequestNum());
+                                this.getEndorsementCounts().remove(req.getRequestNum());
+
+                                logger.write("removed");
+
+                                // Send message to state 3 to Leader
+                                if (requestGenerator != null) {
+                                    //Send the request to the client
+                                    logger.write("sending request now");
+                                    requestGenerator.sendRequest(req);
+                                }
                             }
                         }
                     }
+
+                }
+                catch (Exception e){
+                    logger.write(e.getMessage() + "\n\n" + e.toString());
+                }
+
+                finally {
+                    logger.write("---DONE----");
                 }
                 return;
             }
