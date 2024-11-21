@@ -9,8 +9,6 @@ import com.gbft.framework.statemachine.Transition.UpdateMode;
 import com.gbft.framework.utils.*;
 import com.gbft.framework.utils.MessageTally.QuorumId;
 import com.gbft.framework.utils.Printer.Verbosity;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +18,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.LockSupport;
 
+
 public class Client extends Entity {
 
     protected long nextRequestNum;
@@ -27,8 +26,6 @@ public class Client extends Entity {
     protected final int requestTargetRole;
 
     protected ClientDataset dataset;
-
-
 
     public Client(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
@@ -130,10 +127,16 @@ public class Client extends Entity {
     }
 
 
-    @NoArgsConstructor
-    @AllArgsConstructor
+
     public class RequestGenerator {
         public Client client;
+
+        public RequestGenerator() {
+        }
+
+        public RequestGenerator(Client client) {
+            this.client = client;
+        }
 
         public void init() {
             threads.add(new Thread(new RequestGeneratorRunner()));
@@ -299,7 +302,7 @@ public class Client extends Entity {
         protected void execute() {}
     }
 
-    @NoArgsConstructor
+
     public class ClosedLoopRequestGenerator extends RequestGenerator {
         protected final Semaphore semaphore = new Semaphore(Config.integer("benchmark.closed-loop.num-client"));
         protected final int block_size = Config.integer("benchmark.block-size");
@@ -308,6 +311,15 @@ public class Client extends Entity {
 
         public ClosedLoopRequestGenerator(Client client) {
             super(client);
+        }
+
+        public ClosedLoopRequestGenerator(AtomicLong nextRequestNum, long reqnumcnt) {
+            this.nextRequestNum = nextRequestNum;
+            this.reqnumcnt = reqnumcnt;
+        }
+
+        public ClosedLoopRequestGenerator() {
+            super();
         }
 
         protected long reqnumcnt = 0l;
@@ -319,9 +331,14 @@ public class Client extends Entity {
             }
         }
 
-        @NoArgsConstructor
-        @AllArgsConstructor
         protected class ClosedLoopRequestGeneratorRunner implements Runnable {
+
+            public ClosedLoopRequestGeneratorRunner(Client client) {
+                this.client = client;
+            }
+
+            public ClosedLoopRequestGeneratorRunner() {
+            }
 
             public Client client;
 
@@ -371,5 +388,9 @@ public class Client extends Entity {
             semaphore.release();
         }
     }
+
+
+
+
 
 }

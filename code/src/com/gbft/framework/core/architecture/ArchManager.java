@@ -1,65 +1,85 @@
 package com.gbft.framework.core.architecture;
 
 import com.gbft.framework.core.Entity;
-import com.gbft.framework.core.architecture.impls.*;
+import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
-import lombok.Data;
+import com.gbft.framework.statemachine.StateMachine;
 
-import java.util.HashMap;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-@Data
+
 public class ArchManager {
 
-    public HashMap<String, Architecture> architectures;
+//    public HashMap<String, Architecture> architectures;
 
     public String currentArchitectureKey;
 
     private Entity entity;
 
+    public HashSet<String> architectures;
+
     public ArchManager(Entity entity) {
-        architectures = new HashMap<>();
-        architectures.put("OX", new OXArchitecture(entity));
-        architectures.put("XOV", new XOVArchitecture(entity));
-        architectures.put("OXII", new OXIIArchitecture(entity));
-//        architectures.put("XOV++", new XOVppArchitecture(entity));
-//        architectures.put("XOV#", new XOVSerialArchitecture(entity));
-//        architectures.put("SXOV", new StreamXOVArchitecture(entity));
+        architectures = (HashSet<String>) Set.of("OX", "OXII", "XOV", "XOV++");
 
         currentArchitectureKey = "XOV";
         this.entity = entity;
-    }
-
-    public Architecture getCurrentArchitecture() {
-        return architectures.get(currentArchitectureKey);
-    }
-
-    public Architecture getArchitecture(String arch) {
-        return architectures.get(arch);
     }
 
     public void setCurrentArchitecture(String arch) {
         currentArchitectureKey = arch;
     }
 
-    public OrderResponse performOrdering(List<RequestData> block) {
-        return this.getCurrentArchitecture().performOrdering(block);
+    public MessageData createEndorsedMessageToClient(MessageData oldMessage, List<RequestData> requests){
+        //Create a new message to be sent to the client
+        //Update this with the actual logic
+        var targetClients = StateMachine.roles.indexOf("client");
+
+        var clients = this.entity.getRolePlugin().getRoleEntities(
+                oldMessage.getSequenceNum(),
+                oldMessage.getViewNum(),
+                StateMachine.NORMAL_PHASE,
+                targetClients);
+
+        var newMessage = this.entity.createMessage(
+                oldMessage.getSequenceNum(),
+                oldMessage.getViewNum(),
+                requests,
+                oldMessage.getMessageType(),
+                entity.getId(),
+                clients
+        );
+        newMessage = newMessage.toBuilder().setXovState(2)
+                .setIsEndorsementRequest(true)
+                .build();
+
+        return newMessage;
     }
 
-    public ValidatorResponse performValidation(List<RequestData> block) {
-        return this.getCurrentArchitecture().performValidation(block);
+
+    public String getCurrentArchitectureKey() {
+        return currentArchitectureKey;
     }
 
-    public List<String> getArchitectures() {
-        return List.copyOf(architectures.keySet());
+    public void setCurrentArchitectureKey(String currentArchitectureKey) {
+        this.currentArchitectureKey = currentArchitectureKey;
     }
 
-    public String getRandomArchString(){
-        return List.copyOf(architectures.keySet()).get((int) (Math.random() * architectures.size()));
+    public Entity getEntity() {
+        return entity;
     }
 
-    public Architecture getRandomArch(){
-        return architectures.get(getRandomArchString());
+    public void setEntity(Entity entity) {
+        this.entity = entity;
     }
 
+    public HashSet<String> getArchitectures() {
+        return architectures;
+    }
+
+    public void setArchitectures(HashSet<String> architectures) {
+        this.architectures = architectures;
+    }
 }

@@ -6,20 +6,13 @@ import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.MiscUtils;
 import com.gbft.framework.utils.RequestUtils;
-import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Data
 public class Architecture {
     protected Entity entity;
 
     public static int EndorsementPolicy = 1;
-
-
-
-
 
 
 
@@ -62,40 +55,40 @@ public class Architecture {
         return checkpoint.getRequestBlock(seqNum);
     }
 
-    //Default Block Execution : OX Architecture
-    public BlockExecResponse executeBlock(long seqNum){
-        var block = getBlock(seqNum);
-        //Register the block
-        //Update this with the actual registration logic
-        var orderResponse = performOrdering(block);
-        var executedBlock = executeRequests(orderResponse.getOrderedBlock());
-        var validatorResponse = performValidation(orderResponse.getOrderedBlock());
-
-        return new BlockExecResponse(
-                orderResponse.isSuccess() && validatorResponse.isSuccess(),
-                orderResponse,
-                validatorResponse
-        );
-    }
-
-    public RequestData executeRequestAhead(RequestData request){
-        return entity.getDataset().executeAhead(request);
-    }
-
-    public List<RequestData> executeRequestsAhead(List<RequestData> block){
-
-        List<RequestData> dummyList = new ArrayList<RequestData>();
-        dummyList.addAll(block);
-
-        while(!block.isEmpty()){
-            block.remove(0);
-        }
-
-        for (RequestData request : dummyList) {
-            block.add(entity.getDataset().executeAhead(request));
-        }
-        return block;
-    }
+//    //Default Block Execution : OX Architecture
+//    public BlockExecResponse executeBlock(long seqNum){
+//        var block = getBlock(seqNum);
+//        //Register the block
+//        //Update this with the actual registration logic
+//        var orderResponse = performOrdering(block);
+//        var executedBlock = executeRequests(orderResponse.getOrderedBlock());
+//        var validatorResponse = performValidation(orderResponse.getOrderedBlock());
+//
+//        return new BlockExecResponse(
+//                orderResponse.isSuccess() && validatorResponse.isSuccess(),
+//                orderResponse,
+//                validatorResponse
+//        );
+//    }
+//
+//    public RequestData executeRequestAhead(RequestData request){
+//        return entity.getDataset().executeAhead(request);
+//    }
+//
+//    public List<RequestData> executeRequestsAhead(List<RequestData> block){
+//
+//        List<RequestData> dummyList = new ArrayList<RequestData>();
+//        dummyList.addAll(block);
+//
+//        while(!block.isEmpty()){
+//            block.remove(0);
+//        }
+//
+//        for (RequestData request : dummyList) {
+//            block.add(entity.getDataset().executeAhead(request));
+//        }
+//        return block;
+//    }
 
 
     public MessageData createEndorsedMessageToClient(MessageData oldMessage, List<RequestData> requests){

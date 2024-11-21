@@ -4,7 +4,7 @@ import com.gbft.framework.data.OperationSet;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
-import lombok.Getter;
+
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,10 +15,8 @@ public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
 
-    @Getter
     protected Map<Integer, Long> recordCurrentVersion;
 
-    @Getter
     public Map<Integer, Long> recordLatestVersion;
 
     public static final int DEFAULT_VALUE = 1000;
@@ -131,6 +129,16 @@ public class Dataset {
                 .build();
     }
 
+    public List<RequestData> executeRequestsAhead(List<RequestData> block){
+        List<RequestData> executeAheadBlock = new ArrayList<>(block.size());
+        for (RequestData request : block) {
+            executeAheadBlock.add(this.executeAhead(request));
+        }
+        return executeAheadBlock;
+    }
+
+
+
     public int processRequestAhead(OperationSet operation){
         return switch (operation.getOp()) {
             case ADD -> records.get(operation.getRecord()).get()+ operation.getValue();
@@ -141,4 +149,21 @@ public class Dataset {
         };
     }
 
+
+
+    public Map<Integer, Long> getRecordCurrentVersion() {
+        return recordCurrentVersion;
+    }
+
+    public void setRecordCurrentVersion(Map<Integer, Long> recordCurrentVersion) {
+        this.recordCurrentVersion = recordCurrentVersion;
+    }
+
+    public Map<Integer, Long> getRecordLatestVersion() {
+        return recordLatestVersion;
+    }
+
+    public void setRecordLatestVersion(Map<Integer, Long> recordLatestVersion) {
+        this.recordLatestVersion = recordLatestVersion;
+    }
 }

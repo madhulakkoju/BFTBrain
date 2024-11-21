@@ -9,8 +9,6 @@ import java.util.Set;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
-import lombok.Getter;
-import lombok.Setter;
 
 public class Config {
 
@@ -18,8 +16,6 @@ public class Config {
 
     private static String currentProtocol;
 
-    @Getter
-    @Setter
     private static String currentArchitecture;
 
     public static void load(Map<String, String> configContents, String defaultProtocol) throws IOException {
@@ -51,6 +47,12 @@ public class Config {
 
     public static void setCurrentProtocol(String currentProtocol) {
         Config.currentProtocol = currentProtocol;
+    }
+    public static String getCurrentArchitecture() {
+        return currentArchitecture;
+    }
+    public static void setCurrentArchitecture(String currentArchitecture) {
+        Config.currentArchitecture = currentArchitecture;
     }
 
 
@@ -106,5 +108,8 @@ public class Config {
     public static boolean bool(String property) {
         return configs.get(currentProtocol).bool(property);
     }
+
+
+
 
 }

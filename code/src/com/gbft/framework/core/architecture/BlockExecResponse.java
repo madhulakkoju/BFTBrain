@@ -1,11 +1,9 @@
 package com.gbft.framework.core.architecture;
 
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
 
-@Data
+
 public class BlockExecResponse {
     public boolean success;
     public LocalDateTime timestamp;

@@ -44,8 +44,7 @@ import com.gbft.framework.utils.*;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
-import lombok.Getter;
-import lombok.Setter;
+
 
 public abstract class Entity {
 
@@ -61,7 +60,7 @@ public abstract class Entity {
 
     //Architecture
 
-    @Getter
+
     public ArchManager archManager;
 
     public Client.RequestGenerator requestGenerator;
@@ -75,7 +74,7 @@ public abstract class Entity {
     public final List<RequestData> EMPTY_BLOCK;
     public final ByteString EMPTY_DIGEST;
 
-    @Getter
+
     public Dataset dataset;
 
     // Protocol State
@@ -86,10 +85,10 @@ public abstract class Entity {
     protected Timekeeper timekeeper;
     protected Map<Long, Transition> executionQueue;
 
-    @Getter
+
     public Map<Long, MessageData> endorsementQueue;
 
-    @Getter
+
     public Map<Long, Integer> endorsementCounts;
 
     // Concurrency
@@ -351,12 +350,12 @@ public abstract class Entity {
 
             if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
                 //Here, it is an endorsement. so execute ahead and send back to client
-                //logger.write("Endorsement Request received to Node");
-                var aheadExecutedReqs = this.getArchManager().getCurrentArchitecture().executeRequestsAhead(message.getRequestsList());
-                var messageToClient = this.getArchManager().getCurrentArchitecture().createEndorsedMessageToClient(message, aheadExecutedReqs);
-                //logger.write("Endorsement Response sending to client");
+                logger.write("Endorsement Request received to Node");
+                var aheadExecutedReqs = this.dataset.executeRequestsAhead( message.getRequestsList() );
+                var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
+
                 sendMessage(messageToClient);
-                //logger.write("Endorsement Response sent to client + " + messageToClient.toString());
+                logger.write("Endorsement Response sent to client + " + messageToClient.toString());
                 return;
             }
 
@@ -766,11 +765,11 @@ public abstract class Entity {
         }
     }
 
-    public void endorser(){
-        while (running){
-
-        }
-    }
+//    public void endorser(){
+//        while (running){
+//
+//        }
+//    }
 
     private void checkSwitching(long seqnum) {
         if (protocols.isEmpty() && !learning) {
@@ -802,12 +801,15 @@ try {
         if (!isClient() && !protocols.isEmpty()) {
             // static switching in debug mode
             nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
-            nextArchitecture = archManager.getRandomArchString();
+            nextArchitecture = archManager.getCurrentArchitectureKey();
+
+
         } else {
             // dynamic switching via learning agent
             // or client
             nextProtocol = checkpoint.getDecision();
-            nextArchitecture = archManager.getRandomArchString();
+            nextArchitecture = archManager.getCurrentArchitectureKey();
+
             //TODO: Update architecture from learining agent
         }
 
@@ -1391,5 +1393,51 @@ catch (Exception e){
 
     public int getEpisodeNum(long seqnum) {
         return (int) (seqnum / EPISODE_SIZE);
+    }
+
+
+    public ArchManager getArchManager() {
+        return archManager;
+    }
+
+    public void setArchManager(ArchManager archManager) {
+        this.archManager = archManager;
+    }
+
+    public int getBlockSize() {
+        return blockSize;
+    }
+
+    public Dataset getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
+    }
+
+
+    public Map<Long, Integer> getEndorsementCounts() {
+        return endorsementCounts;
+    }
+
+    public void setEndorsementCounts(Map<Long, Integer> endorsementCounts) {
+        this.endorsementCounts = endorsementCounts;
+    }
+
+    public Map<Long, MessageData> getEndorsementQueue() {
+        return endorsementQueue;
+    }
+
+    public void setEndorsementQueue(Map<Long, MessageData> endorsementQueue) {
+        this.endorsementQueue = endorsementQueue;
+    }
+
+    public Map<Long, Transition> getExecutionQueue() {
+        return executionQueue;
+    }
+
+    public void setExecutionQueue(Map<Long, Transition> executionQueue) {
+        this.executionQueue = executionQueue;
     }
 }
