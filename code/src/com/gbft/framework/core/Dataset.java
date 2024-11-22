@@ -123,8 +123,8 @@ public class Dataset {
         for (var op: request.getWriteSetList()){
             runComputeDummy(request);
             values.add( processRequest(op) );
-            long latestVersion = this.recordLatVersion.getOrDefault(op.getRecord(),Long.valueOf(0));
-            this.recordCurrVersion.put(op.getRecord(),latestVersion);
+//            long latestVersion = this.recordLatVersion.getOrDefault(op.getRecord(),Long.valueOf(0));
+//            this.recordCurrVersion.put(op.getRecord(),latestVersion);
         }
 
         for (var op: request.getReadSetList()){
@@ -201,6 +201,10 @@ public class Dataset {
 
         for(var op: request.getReadSetList()){
             int record = op.getRecord();
+            if(recordVersion.getOrDefault(record,Long.valueOf(0)) != 0){
+                replies.put(request.getRequestNum(),0);
+                return false;
+            }
             replies.put(request.getRequestNum(),1000);
         }
 
@@ -208,8 +212,8 @@ public class Dataset {
             int record = op.getRecord();
             replies.put(request.getRequestNum(),request.getEarlyExecResult());
             records.get(record).set(request.getEarlyExecResult());
-            long currVersion = this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+1;
-            this.recordLatVersion.put(record,currVersion+1);
+//            long currVersion = this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+1;
+//            this.recordLatVersion.put(record,currVersion+1);
             recordVersion.put(record,Long.valueOf(1));
         }
 

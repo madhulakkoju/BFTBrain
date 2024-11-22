@@ -70,7 +70,7 @@ public class Node extends Entity {
                 newblock = dataset.validateRequests(requestBlock, replies);
                 checkpoint.addReplies(seqnum, replies);
 //                checkpoint.setValidatedBlock(seqnum,replies);
-                logger.write("came here "+replies);
+                //logger.write("came here "+replies);
             } catch (Exception e) {
                 logger.write("node 75 "+e.toString());
             }

@@ -93,7 +93,7 @@ public class BenchmarkManager {
             add(TIMEOUT, 0, timestamp);
         }
         var replies = checkpoint.getReplies(seqnum);
-        this.entity.logger.write("bench seqnum "+seqnum+" replies "+replies);
+       // this.entity.logger.write("bench seqnum "+seqnum+" replies "+replies);
         for (var request : requests) {
             if (this.entity.getArchManager().getCurrentArchitectureKey().contains("XOV") && replies.getOrDefault(request.getRequestNum(),0) != 0){
                 duration = timestamp - DataUtils.toLong(request.getTimestamp());

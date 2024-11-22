@@ -25,7 +25,7 @@ public class ArchManager {
         architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
 
 
-        currentArchitectureKey = "XOV";
+        currentArchitectureKey = "OXII";
         this.entity = entity;
     }
 
