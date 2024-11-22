@@ -22,6 +22,7 @@ public class CheckpointData {
     private Map<Long, Integer> stateMap;
     private Map<Long, RequestData> requests;
     private Map<Long, List<RequestData>> requestBlocks;
+    private Map<Long, Map<Long, Integer>> validatedBlocks;
     private Map<Long, NavigableSet<Long>> aggregationValues;
     private MessageTally messageTally;
     private MessageTally viewTally;
@@ -53,6 +54,7 @@ public class CheckpointData {
         stateMap = new ConcurrentHashMap<>();
         requests = new ConcurrentHashMap<>();
         requestBlocks = new ConcurrentHashMap<>();
+        validatedBlocks = new ConcurrentHashMap<>();
         aggregationValues = new ConcurrentHashMap<>();
         messageTally = new MessageTally();
         viewTally = new MessageTally();
@@ -228,4 +230,12 @@ public class CheckpointData {
     public List<RequestDataList> getDependencyGraph(Long seqnum){
         return this.dependencyGraphMap.get(seqnum);
     }
+
+//    public void setValidatedReplies(long seqnum,Map<Long, Integer> replies){
+//        this.validatedBlocks.put(seqnum,replies);
+//    }
+//
+//    public Map<Long, Integer> getValidatedBlock(long seqnum){
+//        return this.validatedBlocks.get(seqnum);
+//    }
 }

@@ -73,13 +73,17 @@ public class Client extends Entity {
         var tally = checkpoint.getMessageTally();
         var viewnum = tally.getMaxQuorum(seqnum);
         var replies = tally.getQuorumReplies(seqnum, viewnum);
+        logger.write("seqnum execute "+seqnum +" "+replies);
         currentViewNum = viewnum;
 
         if (replies != null) {
+            checkpoint.addReplies(seqnum, replies);
             var now = System.nanoTime();
             for (var entry : replies.entrySet()) {
                 var reqnum = entry.getKey();
                 var request = checkpoint.getRequest(reqnum);
+                if(entry.getValue() == 0)
+                    continue;
                 dataset.update(request, entry.getValue());
 
                 // benchmarkManager.requestExecuted(reqnum, now);
@@ -182,7 +186,6 @@ public class Client extends Entity {
             var reqnum = request.getRequestNum();
             var seqnum = reqnum / blockSize;
             var view = currentViewNum;
-
             // wait to know the leader mode if necessary
             var episode = getEpisodeNum(seqnum);
             rolePlugin.roleReadLock.lock();
@@ -212,9 +215,9 @@ public class Client extends Entity {
                 targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
             }
 
+
             var message = createMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
             sendMessage(message);
-
             if (Printer.verbosity >= Verbosity.VVV) {
                 Printer.print(Verbosity.VVV, prefix, "Request created: ", request);
             }

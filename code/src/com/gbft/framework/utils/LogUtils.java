@@ -100,7 +100,7 @@ public class LogUtils{
         //String filePath = "/Users/sai/Desktop/log/output.txt";
         try {
             File file = new File(filePath);
-            if (file.exists() && file.length() > 2.56 * 1024 * 1024) {
+            if (file.exists() && file.length() > 1.56 * 1024 * 1024) {
                 FileWriter clearWriter = new FileWriter(file, false); // false to overwrite content
                 clearWriter.write(""); // Clear the file
                 clearWriter.close();

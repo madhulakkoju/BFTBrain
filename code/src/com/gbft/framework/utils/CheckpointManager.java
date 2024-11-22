@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import com.gbft.framework.core.Entity;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
 import com.google.protobuf.ByteString;
 
@@ -134,4 +135,5 @@ public class CheckpointManager {
     public CheckpointData getPrevCheckpointForSeq(long seqnum) {
         return getCheckpoint(seqnum / checkpointSize - 1);
     }
+
 }

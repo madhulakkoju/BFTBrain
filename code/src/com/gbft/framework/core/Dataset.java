@@ -14,10 +14,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
+    protected Map<Integer, Long> recordCurrVersion;
+
+    public Map<Integer, Long> recordLatVersion;
 
     protected Map<Integer, Long> recordCurrentVersion;
 
     public Map<Integer, Long> recordLatestVersion;
+
+    public Entity entity;
 
     public static final int DEFAULT_VALUE = 1000;
     public static final int RECORD_COUNT = Config.integer("workload.dataset-size");
@@ -26,6 +31,8 @@ public class Dataset {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
         recordCurrentVersion = new TreeMap<>();
         recordLatestVersion = new TreeMap<>();
+        recordCurrVersion = new TreeMap<>();
+        recordLatVersion = new TreeMap<>();
     }
 
     // use this for copying service state
@@ -51,7 +58,7 @@ public class Dataset {
     }
 
     public int execute(RequestData request) {
-        runComputeDummy(request);
+        //runComputeDummy(request);
 
         List<Integer> values = new ArrayList<>();
 
@@ -109,27 +116,32 @@ public class Dataset {
     }
 
     public RequestData executeAhead(Entity entity,RequestData request) {
-
+        this.entity = entity;
         List<Integer> values = new ArrayList<>();
+//        HashSet<Integer> tempRecords = new HashSet<>();
 
         for (var op: request.getWriteSetList()){
+            runComputeDummy(request);
             values.add( processRequest(op) );
+            long latestVersion = this.recordLatVersion.getOrDefault(op.getRecord(),Long.valueOf(0));
+            this.recordCurrVersion.put(op.getRecord(),latestVersion);
         }
 
         for (var op: request.getReadSetList()){
+            runComputeDummy(request);
             values.add( processRequest(op));
         }
 
         RequestData rr = null;
         try {
 
-            entity.logger.write( recordCurrentVersion.getOrDefault(
-                    !request.getWriteSetList().isEmpty() ?
-                            request.getWriteSetList().getFirst().getRecord() :
-                                (!request.getReadSetList().isEmpty() ?
-                                        request.getReadSetList().getFirst().getRecord() :
-                                        -1 )
-                    , 0L).toString() );
+//            entity.logger.write( recordCurrentVersion.getOrDefault(
+//                    !request.getWriteSetList().isEmpty() ?
+//                            request.getWriteSetList().getFirst().getRecord() :
+//                                (!request.getReadSetList().isEmpty() ?
+//                                        request.getReadSetList().getFirst().getRecord() :
+//                                        -1 )
+//                    , 0L).toString() );
 
 
             rr = request.toBuilder().setEarlyExecResult(values.getFirst())
@@ -147,7 +159,7 @@ public class Dataset {
             return  rr;
         }
         catch (Exception e){
-            entity.logger.write(e.getMessage());
+            entity.logger.write("dataset 160 "+e.getMessage());
         }
         return null;
     }
@@ -161,7 +173,48 @@ public class Dataset {
         return executeAheadBlock;
     }
 
+    public List<RequestData> validateRequests(List<RequestData> block,HashMap<Long, Integer> replies){
+        Map<Integer, Long> recordVersion= new TreeMap<>();
+        List<RequestData> newblock = new ArrayList<>();
+        for (RequestData request : block) {
+          boolean val = validate(request,replies,recordVersion);
+          request = request.toBuilder().setIsTnxValid(val).build();
+          newblock.add(request);
 
+        }
+        return newblock;
+    }
+
+    public boolean validate(RequestData request,HashMap<Long, Integer> replies,Map<Integer, Long> recordVersion){
+        for (var op: request.getWriteSetList()){
+            int record = op.getRecord();
+            //this.entity.logger.write("check record "+ record +"  "+this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+" "+this.recordLatVersion.getOrDefault(record,Long.valueOf(0)));
+//            if(this.recordCurrVersion.getOrDefault(record,Long.valueOf(0)) != this.recordLatVersion.getOrDefault(record,Long.valueOf(0))){
+//                replies.put(request.getRequestNum(),0);
+//                return false;
+//            }
+            if(recordVersion.getOrDefault(record,Long.valueOf(0)) != 0){
+                replies.put(request.getRequestNum(),0);
+                return false;
+            }
+        }
+
+        for(var op: request.getReadSetList()){
+            int record = op.getRecord();
+            replies.put(request.getRequestNum(),1000);
+        }
+
+        for (var op: request.getWriteSetList()){
+            int record = op.getRecord();
+            replies.put(request.getRequestNum(),request.getEarlyExecResult());
+            records.get(record).set(request.getEarlyExecResult());
+            long currVersion = this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+1;
+            this.recordLatVersion.put(record,currVersion+1);
+            recordVersion.put(record,Long.valueOf(1));
+        }
+
+       return true;
+    }
 
     public int processRequestAhead(OperationSet operation){
         return switch (operation.getOp()) {

@@ -3,6 +3,7 @@ package com.gbft.framework.core;
 import com.gbft.framework.coordination.CoordinatorUnit;
 import com.gbft.framework.data.LearningData;
 import com.gbft.framework.data.MessageData;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.RequestDataList;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
@@ -13,6 +14,7 @@ import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
 import java.beans.Expression;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -32,70 +34,12 @@ public class Node extends Entity {
         super(id, coordinator);
     }
 
-//    public void executeParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph) {
-//        // Define the number of threads you want to use
-////        ExecutorService executor = Executors.newFixedThreadPool(dependencyGraph.size());
-//
-//            try {
-//                // Submit each task to the executor for parallel execution
-//                List<Thread> threads = new ArrayList<>();
-//                for (RequestDataList requestDataList : dependencyGraph) {
-////                    executor.submit(() -> this.executeTransaction(replies, requestDataList));
-//                    executeTransaction(replies, requestDataList);
-////                    Thread thread = new Thread(() -> this.executeTransaction(replies, requestDataList));
-////                    thread.start();
-////                    threads.add(thread);
-//                }
-////                for (Thread thread : threads) {
-////                    try {
-////                        thread.join(); // Join each thread to ensure it completes
-////                    } catch (InterruptedException e) {
-////                        e.printStackTrace(); // Handle interruption
-////                    }
-////                }
-//
-//            }
-//            catch (Exception e){
-//                logger.write("Exception "+ e);
-//            }
-////            finally {
-////                // Gracefully shut down the executor
-////                //executor.shutdown();
-////            }
-//    }
-
     public void executeParallel(ConcurrentHashMap<Long, Integer> replies, List<RequestDataList> dependencyGraph) {
-//        ExecutorService executor = Executors.newFixedThreadPool(dependencyGraph.size());
-//
-//        try {
-//            for (RequestDataList requestDataList : dependencyGraph) {
-//                executor.submit(() -> this.executeTransaction(replies, requestDataList));
-//            }
-//        } catch (Exception e) {
-//            logger.write("Exception " + e);
-//        } finally {
-//            executor.shutdown();
-//            try {
-//                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-//                    executor.shutdownNow();
-//                }
-//            } catch (InterruptedException e) {
-//                executor.shutdownNow();
-//            }
-//        }
         for (RequestDataList requestDataList : dependencyGraph) {
             this.executeTransaction(replies, requestDataList);
         }
     }
 
-//    public void executeTransaction(ConcurrentHashMap<Long, Integer> replies, RequestDataList requestDataList) {
-//        var requestData = requestDataList.getReqDataListList();
-//        logger.write("request data size "+requestData.size());
-//        for (var request : requestData) {
-//            replies.put(request.getRequestNum(), dataset.execute(request));
-//        }
-//        // Log the collected record string for this transaction
-//    }
 
     public void executeTransaction(ConcurrentHashMap<Long, Integer> replies, RequestDataList requestDataList) {
         var requestData = requestDataList.getReqDataListList();
@@ -118,10 +62,23 @@ public class Node extends Entity {
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
+        if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV")){
+            logger.write("came inside");
+            try {
+                var replies = new HashMap<Long, Integer>();
+                List<RequestData> newblock = new ArrayList<>();
+                newblock = dataset.validateRequests(requestBlock, replies);
+                checkpoint.addReplies(seqnum, replies);
+//                checkpoint.setValidatedBlock(seqnum,replies);
+                logger.write("came here "+replies);
+            } catch (Exception e) {
+                logger.write("node 75 "+e.toString());
+            }
+        }
+
         if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OX")) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
-
 //                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
 //                    if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
 //

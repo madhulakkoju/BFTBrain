@@ -92,11 +92,19 @@ public class BenchmarkManager {
         if (timeout != null && timeout == 1) {
             add(TIMEOUT, 0, timestamp);
         }
-
+        var replies = checkpoint.getReplies(seqnum);
+        this.entity.logger.write("bench seqnum "+seqnum+" replies "+replies);
         for (var request : requests) {
-            duration = timestamp - DataUtils.toLong(request.getTimestamp());
-            add(REQUEST_EXECUTE, duration, timestamp);
-            addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+            if (this.entity.getArchManager().getCurrentArchitectureKey().contains("XOV") && replies.getOrDefault(request.getRequestNum(),0) != 0){
+                duration = timestamp - DataUtils.toLong(request.getTimestamp());
+                add(REQUEST_EXECUTE, duration, timestamp);
+                addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+            }
+            else if(!this.entity.getArchManager().getCurrentArchitectureKey().contains("XOV")){
+                duration = timestamp - DataUtils.toLong(request.getTimestamp());
+                add(REQUEST_EXECUTE, duration, timestamp);
+                addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+            }
         }
     }
 

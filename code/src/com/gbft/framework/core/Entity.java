@@ -146,7 +146,7 @@ public abstract class Entity {
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
 
-    LogUtils logger = new LogUtils();
+    public LogUtils logger = new LogUtils();
     DependencyGraph dg = new DependencyGraph(this);
 
     public Entity(int id, CoordinatorUnit coordinator) {
@@ -344,6 +344,8 @@ public abstract class Entity {
                 //return;
             }
 
+
+
 //            logger.write("First Condition check: " + !this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 //            logger.write("IS Endorsement Req: " + message.getIsEndorsementRequest());
 //            logger.write("XOV State: " + message.getXovState());
@@ -352,57 +354,27 @@ public abstract class Entity {
                 //Here, it is an endorsement. so execute ahead and send back to client
                 var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList() );
                 var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
-
-                logger.write("Sending XOV state:: "+messageToClient.getXovState());
                 sendMessage(messageToClient);
                 return;
             }
-
-            logger.write("Message : XOV state::"+ message.getXovState() + "Messgae obj:: " + message.toString());
-
             if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
-                try {
-
-                    logger.write("2nd xov start");
                     //Endorsement Response
                     for (var req : message.getRequestsList()) {
-                        logger.write("2nd xov -- req:" + req.getRequestNum());
                         if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-
-                            logger.write("2nd xov -- endorsement found. for req:" + req.getRequestNum());
-
                             this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
-
-                            logger.write("Endorsement Count:: " + (this.getEndorsementCounts().get(req.getRequestNum()) + 1) + " out of " + Architecture.EndorsementPolicy);
-
                             if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
-                                logger.write(" Endorse policy success -- next ");
-
                                 //Remove the request from the queue
                                 this.getEndorsementQueue().remove(req.getRequestNum());
                                 this.getEndorsementCounts().remove(req.getRequestNum());
-
-                                logger.write("removed");
-
                                 // Send message to state 3 to Leader
                                 if (requestGenerator != null) {
                                     //Send the request to the client
-                                    logger.write("sending request now");
                                     requestGenerator.sendRequest(req);
                                 }
                             }
                         }
                     }
-
-                }
-                catch (Exception e){
-                    logger.write(e.getMessage() + "\n\n" + e.toString());
-                }
-
-                finally {
-                    logger.write("---DONE----");
-                }
                 return;
             }
 
@@ -415,7 +387,7 @@ public abstract class Entity {
                     checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
                 }
             }else{
-                logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum());
+                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum());
             }
 
 
@@ -1463,4 +1435,5 @@ catch (Exception e){
     public void setExecutionQueue(Map<Long, Transition> executionQueue) {
         this.executionQueue = executionQueue;
     }
+
 }
