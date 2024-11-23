@@ -15,7 +15,7 @@ public class LogUtils{
     HashMap<Integer,String> hm=new HashMap<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
 
-    private static String folderPath = "/Users/sai/Desktop/AP2/log/";
+    private static String folderPath = "/users/Madhu_SB/AP/Logs";
 
     public static LogUtils errorLog = new LogUtils();
     public static LogUtils commonLog = new LogUtils();

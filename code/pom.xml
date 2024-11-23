@@ -12,9 +12,9 @@
         <version>3.8.1</version>
         <configuration>
           <release>21</release>
-<!--            <compilerArgs>-->
-<!--              <arg>&#45;&#45;enable-preview</arg>-->
-<!--            </compilerArgs>-->
+          <compilerArgs>
+            <arg>--enable-preview</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
     </plugins>
@@ -43,13 +43,13 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>4.28.2</version>
+      <version>3.21.7</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util -->
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>4.28.2</version>
+      <version>3.21.7</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.amihaiemil.web/eo-yaml -->
     <dependency>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>io.grpc</groupId>
       <artifactId>protoc-gen-grpc-java</artifactId>
-      <version>1.47.0</version>
+      <version>1.63.0</version>
       <type>pom</type>
     </dependency>
     <dependency> <!-- necessary for Java 9+ -->
@@ -85,13 +85,8 @@
       <version>6.0.53</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.32</version>
-      <scope>provided</scope>
 
-    </dependency>
+
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
@@ -104,7 +99,6 @@
       <version>5.9.3</version>
       <scope>compile</scope>
     </dependency>
-
 
   </dependencies>
 </project>
