@@ -46,9 +46,6 @@ message RequestData {
 //    Operation operation = 4;
     int32 value = 5;
 
-    repeated OperationSet read_set = 15;
-    repeated OperationSet write_set = 16;
-
     google.protobuf.Timestamp timestamp = 6;
     repeated LearningData report_quorum = 7;
 
@@ -60,6 +57,9 @@ message RequestData {
     bool is_tnx_valid = 12;
     int64 current_version = 13;
     repeated RequestDataList reqLists = 14;
+
+    repeated OperationSet read_set = 15;
+    repeated OperationSet write_set = 16;
 }
 message MessageData {
     int64 sequence_num = 1;

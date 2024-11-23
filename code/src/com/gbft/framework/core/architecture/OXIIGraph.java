@@ -77,7 +77,6 @@ public class OXIIGraph{
                 for (int k = 0; k < numKeys; k++) {
                     if (
                             (readBitmaps.get(i)[k] && writeBitmaps.get(j)[k]) || // Read-after-write
-                                    (writeBitmaps.get(i)[k] && readBitmaps.get(j)[k]) || // Write-after-read
                                     (writeBitmaps.get(i)[k] && writeBitmaps.get(j)[k])   // Write-after-write
                     ) {
                         conflict = true;
