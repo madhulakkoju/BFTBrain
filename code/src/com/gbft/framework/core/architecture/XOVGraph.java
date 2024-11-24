@@ -4,8 +4,6 @@ import com.gbft.framework.data.OperationSet;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.RequestDataList;
 
-import java.util.List;
-
 import java.util.*;
 
 public class XOVGraph {
@@ -37,7 +35,7 @@ public class XOVGraph {
                     if (rawConflict) break;
                 }
                 if (rawConflict) {
-                    conflictGraph.get(j).outEdges.add(i);
+                    conflictGraph.get(j).outEdges.add(i); // Edge from writer (txJ) to reader (txI)
                 }
 
                 // Check for Write-Write (WAW) conflicts
@@ -57,12 +55,24 @@ public class XOVGraph {
                     conflictGraph.get(j).outEdges.add(i);
                 }
 
-                // According to the rules, ignore Read-Write (WAR) and Read-Read (RAR) conflicts
+                // According to the rules, ignore Write-After-Read (WAR) and Read-Read (RAR) conflicts
             }
         }
         return conflictGraph;
     }
 
+    // New method to select transactions to abort in a cycle
+    private void resolveCycle(List<Integer> cycle, List<RequestData> S, Set<Integer> abortedTransactions) {
+        // Analyze the cycle to decide which transaction(s) to abort
+        // For simplicity, abort transactions with the highest index (assuming they are newer)
+        int transactionToAbort = Collections.max(cycle);
+        if (!abortedTransactions.contains(transactionToAbort)) {
+            RequestData tx = S.get(transactionToAbort);
+            RequestData abortedTx = tx.toBuilder().setIsTnxValid(false).build(); // Mark as aborted
+            S.set(transactionToAbort, abortedTx);
+            abortedTransactions.add(transactionToAbort);
+        }
+    }
 
 
     public RequestDataList processXOVReordering(List<RequestData> transactions, boolean earlyAbort, boolean reorder) {
@@ -75,26 +85,18 @@ public class XOVGraph {
         // Find elementary cycles in the conflict graph
         CyclesSearch cyclesSearch = new CyclesSearch();
         cyclesSearch.getElementaryCycles(conflictGraph);
+        System.out.println("Detected Cycles: " + cyclesSearch.cycles);
 
-        // Aborting transactions involved in cycles
+        // Aborted transactions due to cycles
         Set<Integer> abortedTransactions = new HashSet<>();
-        if (!cyclesSearch.cycles.isEmpty()) {
-            // Collect all transactions involved in cycles
-            Set<Integer> transactionsInCycles = new HashSet<>();
-            for (List<Integer> cycle : cyclesSearch.cycles) {
-                transactionsInCycles.addAll(cycle);
-            }
-            // Abort all transactions involved in cycles
-            for (Integer idx : transactionsInCycles) {
-                RequestData tx = S.get(idx);
-                RequestData abortedTx = tx.toBuilder().setIsTnxValid(false).build(); // Mark as aborted
-                S.set(idx, abortedTx);
-                abortedTransactions.add(idx);
-            }
-            // Remove aborted transactions from conflict graph
-            for (Vertex v : conflictGraph) {
-                v.outEdges.removeAll(abortedTransactions);
-            }
+        // Process each cycle individually
+        for (List<Integer> cycle : cyclesSearch.cycles) {
+            resolveCycle(cycle, S, abortedTransactions);
+        }
+
+        // Remove aborted transactions from conflict graph
+        for (Vertex v : conflictGraph) {
+            v.outEdges.removeAll(abortedTransactions);
         }
 
         // Proceed to perform topological sort for reordering
@@ -158,53 +160,51 @@ public class XOVGraph {
         }
 
         // Handle early aborts
-// Handle early aborts
         if (earlyAbort) {
-            Set<Integer> abortedKeys = new HashSet<>();
-            Set<Integer> newlyAbortedTransactions = new HashSet<>(abortedTransactions);
-
-            // Keep applying early aborts until no new transactions are aborted
             boolean newAborts;
             do {
                 newAborts = false;
-
-                // Collect keys written by newly aborted transactions
-                for (Integer idx : newlyAbortedTransactions) {
-                    RequestData abortedTx = S.get(idx);
-                    for (OperationSet writeOp : abortedTx.getWriteSetList()) {
-                        abortedKeys.add(writeOp.getRecord());
-                    }
-                }
-                newlyAbortedTransactions.clear();
-
-                List<RequestData> finalBlock = new ArrayList<>();
+                // Map from keys to the indices of transactions that write them
+                Map<Integer, Set<Integer>> keyToWritingTxs = new HashMap<>();
                 for (int i = 0; i < blockTransactions.size(); i++) {
                     RequestData tx = blockTransactions.get(i);
-                    if (!tx.getIsTnxValid()) {
-                        // Already aborted
-                        finalBlock.add(tx);
-                        continue;
+                    if (!tx.getIsTnxValid()) continue; // Skip aborted transactions
+                    for (OperationSet writeOp : tx.getWriteSetList()) {
+                        keyToWritingTxs.computeIfAbsent(writeOp.getRecord(), k -> new HashSet<>()).add(i);
                     }
+                }
+
+                // Abort transactions that read from keys written by other transactions
+                for (int i = 0; i < blockTransactions.size(); i++) {
+                    RequestData tx = blockTransactions.get(i);
+                    if (!tx.getIsTnxValid()) continue; // Skip aborted transactions
+
                     boolean shouldAbort = false;
                     for (OperationSet readOp : tx.getReadSetList()) {
-                        if (abortedKeys.contains(readOp.getRecord())) {
-                            shouldAbort = true;
-                            break;
+                        Set<Integer> writers = keyToWritingTxs.get(readOp.getRecord());
+                        if (writers != null) {
+                            for (Integer writerIdx : writers) {
+                                if (writerIdx != i) {
+                                    shouldAbort = true;
+                                    break;
+                                }
+                            }
                         }
+                        if (shouldAbort) break;
                     }
                     if (shouldAbort) {
                         RequestData abortedTx = tx.toBuilder().setIsTnxValid(false).build(); // Mark as aborted
-                        finalBlock.add(abortedTx);
-                        newlyAbortedTransactions.add(i);
+                        blockTransactions.set(i, abortedTx);
                         newAborts = true;
-                    } else {
-                        finalBlock.add(tx);
                     }
                 }
-                blockTransactions = finalBlock;
             } while (newAborts);
         }
 
+        System.out.println("Execution Order:");
+        for (RequestData tx : blockTransactions) {
+            System.out.println("Transaction " + tx.getRequestNum() + " Aborted: " + !tx.getIsTnxValid());
+        }
 
         // Return the reordered transactions
         RequestDataList result = RequestDataList.newBuilder()
@@ -213,6 +213,4 @@ public class XOVGraph {
 
         return result;
     }
-
-
 }
