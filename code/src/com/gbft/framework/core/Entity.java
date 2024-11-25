@@ -380,14 +380,21 @@ public abstract class Entity {
 
             if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
                 var a = message.getReqListsList();
-                logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
+                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
                 if(!message.getReqListsList().isEmpty()){
                     Long seqnum = message.getSequenceNum();
                     var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
                     checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
                 }
-            }else{
-                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum());
+            }
+            if(this.getArchManager().getCurrentArchitectureKey().contains("XOV++")){
+                var a = message.getReqListsList();
+                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
+                if(!message.getReqListsList().isEmpty()){
+                    Long seqnum = message.getSequenceNum();
+                    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+                    checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
+                }
             }
 
 
@@ -573,6 +580,13 @@ public abstract class Entity {
                                         if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
                                             logger.write("creating dag");
                                             List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                            dg.setDependencyGraph(dependencyList);
+                                            logger.write("dep list size "+dependencyList.size());
+                                            checkpoint.setDependencyGraph(seqnum,dependencyList);
+                                        }
+                                        if(this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
+                                            logger.write("creating dag");
+                                            List<RequestDataList> dependencyList = dg.earlyAbort(block);
                                             dg.setDependencyGraph(dependencyList);
                                             logger.write("dep list size "+dependencyList.size());
                                             checkpoint.setDependencyGraph(seqnum,dependencyList);
@@ -1052,7 +1066,7 @@ catch (Exception e){
             List<Integer> targets) {
 
         List<RequestDataList> dependencyList = new ArrayList<>();
-        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
+        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII") || this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
             dependencyList = dg.getDependencyGraph();
         }
         ByteString digest = null;

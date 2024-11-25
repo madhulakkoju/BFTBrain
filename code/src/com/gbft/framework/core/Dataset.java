@@ -185,14 +185,17 @@ public class Dataset {
         return newblock;
     }
 
+    public void writeData(RequestData request){
+        for (var op: request.getWriteSetList()){
+            int record = op.getRecord();
+            records.get(record).set(request.getEarlyExecResult());
+        }
+
+    }
+
     public boolean validate(RequestData request,HashMap<Long, Integer> replies,Map<Integer, Long> recordVersion){
         for (var op: request.getWriteSetList()){
             int record = op.getRecord();
-            //this.entity.logger.write("check record "+ record +"  "+this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+" "+this.recordLatVersion.getOrDefault(record,Long.valueOf(0)));
-//            if(this.recordCurrVersion.getOrDefault(record,Long.valueOf(0)) != this.recordLatVersion.getOrDefault(record,Long.valueOf(0))){
-//                replies.put(request.getRequestNum(),0);
-//                return false;
-//            }
             if(recordVersion.getOrDefault(record,Long.valueOf(0)) != 0){
                 replies.put(request.getRequestNum(),0);
                 return false;

@@ -54,6 +54,30 @@ public class Node extends Entity {
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
+    public void validateParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph){
+        logger.write("validate parallel");
+        var requestDataList = dependencyGraph.get(0);
+        var requestData = requestDataList.getReqDataListList();
+        var futures = requestData.stream()
+                .map(request -> CompletableFuture.runAsync(() -> {
+                    boolean valid = request.getIsTnxValid();
+
+
+                    if(!request.getIsTnxValid()) {
+                        logger.write("request "+ request.getIsTnxValid());
+                        replies.put(request.getRequestNum(), 0);
+                    }
+                    else{
+                        logger.write("request "+ request.getIsTnxValid());
+                        dataset.writeData(request);
+                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
+                    }
+                })).toList();
+
+        // Wait for all tasks to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+    }
+
 
     // TODO: Update this to use Architecture based Execution
     @Override
@@ -76,7 +100,7 @@ public class Node extends Entity {
             }
         }
 
-        if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OX")) {
+        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OX")) {
             var replies = new HashMap<Long, Integer>();
             for (var request : requestBlock) {
 //                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
@@ -129,6 +153,21 @@ public class Node extends Entity {
 //            logger.write("replies"+ replies);
             checkpoint.addReplies(seqnum, replies);
         }
+
+        else if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
+            var replies = new ConcurrentHashMap<Long, Integer>();
+            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+            if(checkpoint.getDependencyGraph(seqnum) == null) {
+                for (var request : requestBlock) {
+                    replies.put(request.getRequestNum(), dataset.execute(request));
+                }
+            }
+            else{
+                validateParallel(replies,dependencyGraph);
+            }
+            checkpoint.addReplies(seqnum, replies);
+        }
+
 
         // checkpoint
         if ((seqnum + 1) % checkpointSize == 0) {

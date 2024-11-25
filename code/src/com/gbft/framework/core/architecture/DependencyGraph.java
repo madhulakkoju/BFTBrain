@@ -12,25 +12,20 @@ public class DependencyGraph {
     public Entity entity;
     public List<RequestDataList> dag = new ArrayList<>();
     public OXIIGraph oxiiGraph = new OXIIGraph();
+    public XOVGraph xovGraph = new XOVGraph();
     public DependencyGraph(Entity entity){
         this.entity = entity;
     }
     public List<RequestDataList> CreateGraph(List<RequestData> block){
         return oxiiGraph.processOXIIReordering(block);
-//        dag = new ArrayList<>();
-//        Map<Integer,List<RequestData>> reqList = new HashMap<>();
-//        for(int i=0;i<block.size();i++){
-//            RequestData req = block.get(i);
-//            List<RequestData> l = reqList.getOrDefault(RequestUtils.getRecord(req),new ArrayList<>());
-//            l.add(req);
-//            reqList.put(RequestUtils.getRecord(req),new ArrayList<>(l));
-//        }
-//        for(Map.Entry<Integer,List<RequestData>> entry : reqList.entrySet()){
-//            var builder = RequestDataList.newBuilder();
-//            builder.addAllReqDataList(entry.getValue());
-//            dag.add(builder.build());
-//        }
-//        return dag;
+    }
+
+    public List<RequestDataList> earlyAbort(List<RequestData> block){
+        List<RequestDataList> graph = new ArrayList<>();
+//        this.entity.logger.write("before graph "+block);
+        graph.add(xovGraph.processXOVReordering(block,false,true));
+//        this.entity.logger.write("graph created ");
+        return graph;
     }
 
     public void setDependencyGraph(List<RequestDataList> dag){

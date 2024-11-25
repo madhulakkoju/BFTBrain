@@ -3,29 +3,40 @@ package com.gbft.framework.core.architecture;
 import com.gbft.framework.data.OperationSet;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.RequestDataList;
-
-import java.util.List;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.cycle.CycleDetector;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.traverse.TopologicalOrderIterator;
 
 import java.util.*;
 
 public class XOVGraph {
 
-    public List<Vertex> buildConflictGraphXOV(List<RequestData> transactions, boolean reorder) {
-        int n = transactions.size();
-        List<Vertex> conflictGraph = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            conflictGraph.add(new Vertex());
+    /**
+     * Builds a conflict graph based on RAW and WAW conflicts using JGraphT.
+     *
+     * @param transactions List of transactions
+     * @param reorder      Whether to reorder based on conflicts
+     * @return A directed graph representing conflicts
+     */
+    public Graph<Integer, DefaultEdge> buildConflictGraphXOV(List<RequestData> transactions, boolean reorder) {
+        // Create a directed graph with Integer vertices and DefaultEdge edges
+        Graph<Integer, DefaultEdge> conflictGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+
+        // Add all transaction indices as vertices
+        for (int i = 0; i < transactions.size(); i++) {
+            conflictGraph.addVertex(i);
         }
 
         // Build the conflict graph
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < transactions.size(); i++) {
             RequestData txI = transactions.get(i);
-            for (int j = 0; j < n; j++) {
+            for (int j = 0; j < transactions.size(); j++) {
                 if (i == j) continue;
                 RequestData txJ = transactions.get(j);
 
                 // Check for Read-After-Write (RAW) conflicts
-                // If txI reads a key that txJ writes, add an edge from txJ to txI (txJ must come before txI)
                 boolean rawConflict = false;
                 for (OperationSet readI : txI.getReadSetList()) {
                     for (OperationSet writeJ : txJ.getWriteSetList()) {
@@ -37,15 +48,12 @@ public class XOVGraph {
                     if (rawConflict) break;
                 }
                 if (rawConflict) {
-                    if(reorder){
-                    conflictGraph.get(i).outEdges.add(j);
-                    }else{
-                        conflictGraph.get(j).outEdges.add(i);
+                    if (reorder) {
+                        conflictGraph.addEdge(i, j); // Edge from txJ to txI
                     }
                 }
 
                 // Check for Write-Write (WAW) conflicts
-                // If txI and txJ both write to the same key, add bidirectional edges
                 boolean wawConflict = false;
                 for (OperationSet writeI : txI.getWriteSetList()) {
                     for (OperationSet writeJ : txJ.getWriteSetList()) {
@@ -57,81 +65,83 @@ public class XOVGraph {
                     if (wawConflict) break;
                 }
                 if (wawConflict) {
-                    conflictGraph.get(i).outEdges.add(j);
-                    conflictGraph.get(j).outEdges.add(i);
+                    conflictGraph.addEdge(i, j);
+                    conflictGraph.addEdge(j, i);
                 }
-
-                // According to the rules, ignore Read-Write (WAR) and Read-Read (RAR) conflicts
+                // Ignore Read-Write (WAR) and Read-Read (RAR) conflicts
             }
         }
         return conflictGraph;
     }
 
-
+    /**
+     * Processes transaction reordering based on conflict graph and cycle detection.
+     *
+     * @param transactions List of transactions
+     * @param earlyAbort   Whether to perform early aborts
+     * @param reorder      Whether to reorder transactions
+     * @return A list of reordered transactions with abort flags
+     */
     public RequestDataList processXOVReordering(List<RequestData> transactions, boolean earlyAbort, boolean reorder) {
-        // Initialize
-        List<RequestData> S = new ArrayList<>(transactions);
+        // Initialize all transactions as valid
+        List<RequestData> S = new ArrayList<>();
+        for (int i = 0; i < transactions.size(); i++) {
+            RequestData tx = transactions.get(i).toBuilder().setIsTnxValid(true).build();
+            S.add(tx);
+        }
 
-        // Build conflict graph over S
-        List<Vertex> conflictGraph = buildConflictGraphXOV(S, reorder);
+        // Build conflict graph using JGraphT
+        Graph<Integer, DefaultEdge> conflictGraph = buildConflictGraphXOV(S, reorder);
 
-        // Find elementary cycles in the conflict graph
-        CyclesSearch cyclesSearch = new CyclesSearch();
-        cyclesSearch.getElementaryCycles(conflictGraph);
-        System.out.println(cyclesSearch.cycles);
+        // Detect cycles using CycleDetector
+        CycleDetector<Integer, DefaultEdge> cycleDetector = new CycleDetector<>(conflictGraph);
+        boolean hasCycles = cycleDetector.detectCycles();
 
-        // Aborting transactions involved in cycles
         Set<Integer> abortedTransactions = new HashSet<>();
-        if (!cyclesSearch.cycles.isEmpty()) {
-            // Collect all transactions involved in cycles
-            Set<Integer> transactionsInCycles = new HashSet<>();
-            for (List<Integer> cycle : cyclesSearch.cycles) {
-                transactionsInCycles.addAll(cycle);
-            }
+        if (hasCycles) {
+            // Identify transactions involved in cycles
+            Set<Integer> transactionsInCycles = cycleDetector.findCycles();
+            abortedTransactions.addAll(transactionsInCycles);
+
             // Abort all transactions involved in cycles
-            for (Integer idx : transactionsInCycles) {
+            for (Integer idx : abortedTransactions) {
                 RequestData tx = S.get(idx);
                 RequestData abortedTx = tx.toBuilder().setIsTnxValid(false).build(); // Mark as aborted
                 S.set(idx, abortedTx);
-                abortedTransactions.add(idx);
-            }
-            // Remove aborted transactions from conflict graph
-            for (Vertex v : conflictGraph) {
-                v.outEdges.removeAll(abortedTransactions);
             }
         }
 
-        // Proceed to perform topological sort for reordering
+        // Proceed with topological sort or other processing as before
         List<RequestData> blockTransactions = new ArrayList<>();
         if (reorder) {
-            // Perform topological sort on the conflict graph
-            int[] inDegree = new int[conflictGraph.size()];
-            for (int u = 0; u < conflictGraph.size(); u++) {
-                if (abortedTransactions.contains(u)) continue; // Skip aborted transactions
-                for (int v : conflictGraph.get(u).outEdges) {
-                    if (!abortedTransactions.contains(v)) {
-                        inDegree[v]++;
-                    }
+            // Remove aborted transactions from the graph
+            Graph<Integer, DefaultEdge> activeGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+            for (int i = 0; i < S.size(); i++) {
+                if (!abortedTransactions.contains(i)) {
+                    activeGraph.addVertex(i);
+                }
+            }
+            for (DefaultEdge edge : conflictGraph.edgeSet()) {
+                Integer source = conflictGraph.getEdgeSource(edge);
+                Integer target = conflictGraph.getEdgeTarget(edge);
+                if (!abortedTransactions.contains(source) && !abortedTransactions.contains(target)) {
+                    activeGraph.addEdge(source, target);
                 }
             }
 
-            Queue<Integer> queue = new LinkedList<>();
-            for (int u = 0; u < inDegree.length; u++) {
-                if (inDegree[u] == 0 && !abortedTransactions.contains(u)) {
-                    queue.offer(u);
-                }
+            // Perform topological sort
+            List<Integer> sortedVertices;
+            try {
+                sortedVertices = topologicalSort(activeGraph);
+            } catch (IllegalArgumentException e) {
+                // Graph has cycles even after aborting conflicting transactions
+                System.err.println("Cycle detected in active transactions after aborting. Skipping topological sort.");
+                sortedVertices = new ArrayList<>();
             }
 
-            while (!queue.isEmpty()) {
-                int u = queue.poll();
-                blockTransactions.add(S.get(u));
-                for (int v : conflictGraph.get(u).outEdges) {
-                    if (abortedTransactions.contains(v)) continue; // Skip edges to aborted transactions
-                    inDegree[v]--;
-                    if (inDegree[v] == 0 && !abortedTransactions.contains(v)) {
-                        queue.offer(v);
-                    }
-                }
+            // Add transactions in topological order
+            for (Integer idx : sortedVertices) {
+                blockTransactions.add(S.get(idx));
             }
         } else {
             // No reordering, proceed in original order
@@ -147,9 +157,8 @@ public class XOVGraph {
             blockTransactions.add(S.get(idx));
         }
 
-// Handle early aborts
         // Handle early aborts
-        if (!reorder) {
+        if (earlyAbort) {
             boolean newAborts;
             do {
                 newAborts = false;
@@ -190,12 +199,6 @@ public class XOVGraph {
             } while (newAborts);
         }
 
-
-        System.out.println("Execution Order:");
-        for (RequestData tx : blockTransactions) {
-            System.out.println("Transaction " + tx.getRequestNum() + " Aborted: " + !tx.getIsTnxValid());
-        }
-
         // Return the reordered transactions
         RequestDataList result = RequestDataList.newBuilder()
                 .addAllReqDataList(blockTransactions)
@@ -204,7 +207,30 @@ public class XOVGraph {
         return result;
     }
 
+    /**
+     * Performs a topological sort on the given graph.
+     *
+     * @param graph The graph to sort
+     * @return A list of vertices in topologically sorted order
+     */
+    private List<Integer> topologicalSort(Graph<Integer, DefaultEdge> graph) {
+        List<Integer> sorted = new ArrayList<>();
+        TopologicalOrderIterator<Integer, DefaultEdge> iterator = new TopologicalOrderIterator<>(graph);
+        while (iterator.hasNext()) {
+            sorted.add(iterator.next());
+        }
+        return sorted;
+    }
 
-
-
+    /**
+     * Prints the conflict graph edges.
+     *
+     * @param graph The conflict graph to print
+     */
+    private void printConflictGraph(Graph<Integer, DefaultEdge> graph) {
+        System.out.println("Conflict Graph:");
+        for (DefaultEdge edge : graph.edgeSet()) {
+            System.out.println(graph.getEdgeSource(edge) + " -> " + graph.getEdgeTarget(edge));
+        }
+    }
 }

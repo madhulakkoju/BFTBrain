@@ -15,7 +15,7 @@ public class LogUtils{
     HashMap<Integer,String> hm=new HashMap<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
 
-    private static String folderPath = "/users/Madhu_SB/AP/Logs";
+    private static String folderPath = "/Users/sai/Desktop/AP2/log/";
 
     public static LogUtils errorLog = new LogUtils();
     public static LogUtils commonLog = new LogUtils();
@@ -100,16 +100,12 @@ public class LogUtils{
         //String filePath = "/Users/sai/Desktop/log/output.txt";
         try {
             File file = new File(filePath);
-            if (file.exists() && file.length() > 1.56 * 1024 * 1024) {
-                FileWriter clearWriter = new FileWriter(file, false); // false to overwrite content
-                clearWriter.write(""); // Clear the file
-                clearWriter.close();
-            }
             boolean fileExists = file.exists();
             FileWriter fileWriter = new FileWriter(file,file.exists());
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             bufferedWriter.write("\n"+s +" ["+formattedTime+"]");
             bufferedWriter.close();
+            //System.out.println("Text has been written to the file successfully.");
         } catch (IOException e) {
             // Print an error message if an IOException occurs
             //System.out.println("An error occurred while writing to the file: " + e.getMessage());

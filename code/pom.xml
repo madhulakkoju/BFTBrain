@@ -12,9 +12,9 @@
         <version>3.8.1</version>
         <configuration>
           <release>21</release>
-          <compilerArgs>
-            <arg>--enable-preview</arg>
-          </compilerArgs>
+<!--          <compilerArgs>-->
+<!--            <arg>&#45;&#45;enable-preview</arg>-->
+<!--          </compilerArgs>-->
         </configuration>
       </plugin>
     </plugins>
@@ -43,13 +43,13 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.21.7</version>
+      <version>4.28.2</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util -->
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>3.21.7</version>
+      <version>4.28.2</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.amihaiemil.web/eo-yaml -->
     <dependency>
@@ -62,6 +62,11 @@
       <artifactId>grpc-netty-shaded</artifactId>
       <version>1.54.1</version>
       <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jgrapht</groupId>
+      <artifactId>jgrapht-core</artifactId>
+      <version>1.5.1</version> <!-- Use the latest version available -->
     </dependency>
     <dependency>
       <groupId>io.grpc</groupId>
