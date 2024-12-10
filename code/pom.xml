@@ -12,9 +12,9 @@
         <version>3.8.1</version>
         <configuration>
           <release>21</release>
-<!--          <compilerArgs>-->
-<!--            <arg>&#45;&#45;enable-preview</arg>-->
-<!--          </compilerArgs>-->
+         <compilerArgs>
+            <arg>--enable-preview</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
     </plugins>
@@ -43,13 +43,13 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>4.28.2</version>
+      <version>3.12.4</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util -->
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
-      <version>4.28.2</version>
+      <version>3.12.4</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.amihaiemil.web/eo-yaml -->
     <dependency>
