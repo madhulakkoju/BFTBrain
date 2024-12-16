@@ -43,7 +43,7 @@ public class Node extends Entity {
 
     public void executeTransaction(ConcurrentHashMap<Long, Integer> replies, RequestDataList requestDataList) {
         var requestData = requestDataList.getReqDataListList();
-        logger.write("request data size " + requestData.size());
+     //   logger.write("request data size " + requestData.size());
         var futures = requestData.stream()
                 .map(request -> CompletableFuture.runAsync(() -> {
                     int result = dataset.execute(request);
@@ -55,7 +55,7 @@ public class Node extends Entity {
     }
 
     public void validateParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph){
-        logger.write("validate parallel");
+       // logger.write("validate parallel");
         var requestDataList = dependencyGraph.get(0);
         var requestData = requestDataList.getReqDataListList();
         var futures = requestData.stream()
@@ -64,11 +64,11 @@ public class Node extends Entity {
 
 
                     if(!request.getIsTnxValid()) {
-                        logger.write("request "+ request.getIsTnxValid());
+                       // logger.write("request "+ request.getIsTnxValid());
                         replies.put(request.getRequestNum(), 0);
                     }
                     else{
-                        logger.write("request "+ request.getIsTnxValid());
+                       // logger.write("request "+ request.getIsTnxValid());
                         dataset.writeData(request);
                         replies.put(request.getRequestNum(), request.getEarlyExecResult());
                     }
@@ -82,12 +82,12 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        logger.write("execute seqnum "+seqnum);
+        //logger.write("execute seqnum "+seqnum);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
         if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV")){
-            logger.write("came inside");
+         //   logger.write("came inside");
             try {
                 var replies = new HashMap<Long, Integer>();
                 List<RequestData> newblock = new ArrayList<>();
@@ -96,7 +96,7 @@ public class Node extends Entity {
 //                checkpoint.setValidatedBlock(seqnum,replies);
                 //logger.write("came here "+replies);
             } catch (Exception e) {
-                logger.write("node 75 "+e.toString());
+               // logger.write("node 75 "+e.toString());
             }
         }
 
@@ -122,8 +122,8 @@ public class Node extends Entity {
 
             }
             if(checkpoint.getRequestBlock(seqnum) == null){
-                logger.write("block is null");
-                logger.write("replies "+replies);
+                // logger.write("block is null");
+                // logger.write("replies "+replies);
             }
 
             checkpoint.addReplies(seqnum, replies);
@@ -134,18 +134,18 @@ public class Node extends Entity {
             List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
             if(checkpoint.getDependencyGraph(seqnum) == null) {
                 if(checkpoint.getRequestBlock(seqnum) == null){
-                    logger.write("block is null");
+                   // logger.write("block is null");
                     for (var request : requestBlock) {
                         replies.put(request.getRequestNum(), dataset.execute(request));
                     }
                 }
                 else{
-                    logger.write("null block " + checkpoint.getRequestBlock(seqnum));
+                 //   logger.write("null block " + checkpoint.getRequestBlock(seqnum));
                 }
 
             }else{
 //                logger.write("printing dag "+checkpoint.getDependencyGraph(seqnum));
-                logger.write("node dag "+checkpoint.getDependencyGraph(seqnum).size() +" seq num "+ seqnum + " protocol "+ checkpoint.getProtocol());
+              //  logger.write("node dag "+checkpoint.getDependencyGraph(seqnum).size() +" seq num "+ seqnum + " protocol "+ checkpoint.getProtocol());
                 executeParallel(replies,dependencyGraph);
             }
 

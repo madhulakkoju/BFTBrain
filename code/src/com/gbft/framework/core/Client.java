@@ -27,9 +27,9 @@ public class Client extends Entity {
 
     protected ClientDataset dataset;
 
+ 
     public Client(int id, CoordinatorUnit coordinator) {
         super(id, coordinator);
-
         intervalns = Config.integer("benchmark.request-interval-micros") * 1000L;
         var targetConfig = Config.string("protocol.general.request-target");
         requestTargetRole = StateMachine.roles.indexOf(targetConfig);
@@ -73,7 +73,7 @@ public class Client extends Entity {
         var tally = checkpoint.getMessageTally();
         var viewnum = tally.getMaxQuorum(seqnum);
         var replies = tally.getQuorumReplies(seqnum, viewnum);
-        logger.write("seqnum execute "+seqnum +" "+replies);
+        //logger.write("seqnum execute "+seqnum +" "+replies);
         currentViewNum = viewnum;
 
         if (replies != null) {
@@ -95,7 +95,7 @@ public class Client extends Entity {
     }
 
     @Override
-    public Map<String, String> reportBenchmark() {
+    public Map<String, String> reportBenchmark() { 
         var benchmark = benchmarkManager.getBenchmarkById(reportnum);
 
         var report = new HashMap<String, String>();
@@ -120,6 +120,13 @@ public class Client extends Entity {
         var blockCount = benchmark.count(BenchmarkManager.BLOCK_EXECUTE);
         var timeoutCount = benchmark.count(BenchmarkManager.TIMEOUT);
         report.put("slow-path", String.format("ratio: %.2f",  (double) timeoutCount / (double) blockCount));
+
+        String benchmarkLogString = ""+currentEpisodeNum.get()+","+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ",THROUGHPUT"+
+                    String.format("%.2freq/s", throughput)+","+executeCount;
+
+        logger.write(benchmarkLogString);
 
         reportnum += 1;
         return report;

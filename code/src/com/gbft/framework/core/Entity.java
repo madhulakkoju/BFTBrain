@@ -576,19 +576,19 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
-                                        logger.write("creating block ");
+                                        //logger.write("creating block ");
                                         if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
-                                            logger.write("creating dag");
+                                           // logger.write("creating dag");
                                             List<RequestDataList> dependencyList = dg.CreateGraph(block);
                                             dg.setDependencyGraph(dependencyList);
-                                            logger.write("dep list size "+dependencyList.size());
+                                           // logger.write("dep list size "+dependencyList.size());
                                             checkpoint.setDependencyGraph(seqnum,dependencyList);
                                         }
                                         if(this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
-                                            logger.write("creating dag");
+                                            //logger.write("creating dag");
                                             List<RequestDataList> dependencyList = dg.earlyAbort(block);
                                             dg.setDependencyGraph(dependencyList);
-                                            logger.write("dep list size "+dependencyList.size());
+                                           // logger.write("dep list size "+dependencyList.size());
                                             checkpoint.setDependencyGraph(seqnum,dependencyList);
                                         }
                                     }
@@ -1303,8 +1303,13 @@ catch (Exception e){
         report.put("current-architecture", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
         reportnum += 1;
 
-        logger.write("Report Benchmark: \n" + report.toString());
+        // logger.write("Report Benchmark: \n" + report.toString());
 
+            String benchmarkLogString = ""+currentEpisodeNum.get()+","+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
+                    "-"+",";
+            logger.write(benchmarkLogString);
         return report;
     }
 

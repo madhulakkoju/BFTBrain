@@ -159,7 +159,7 @@ public class Dataset {
             return  rr;
         }
         catch (Exception e){
-            entity.logger.write("dataset 160 "+e.getMessage());
+           // entity.logger.write("dataset 160 "+e.getMessage());
         }
         return null;
     }
