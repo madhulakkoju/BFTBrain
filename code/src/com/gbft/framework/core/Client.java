@@ -123,8 +123,8 @@ public class Client extends Entity {
 
         String benchmarkLogString = ""+currentEpisodeNum.get()+","+
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
-                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ",THROUGHPUT"+
-                    String.format("%.2freq/s", throughput)+","+executeCount;
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
+                    String.format("%.2f", throughput)+","+executeCount;
 
         logger.write(benchmarkLogString);
 
