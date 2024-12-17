@@ -13,7 +13,6 @@ import java.util.stream.IntStream;
 
 import com.gbft.framework.data.*;
 import com.gbft.framework.data.Event.EventType;
-import com.gbft.framework.data.Operation;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
@@ -208,7 +207,8 @@ public class DataUtils {
                 builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
                 for (int j = 1; j < numTotal; j++) {
                     int randOperation = random.nextInt(5);
-                    builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(opset.getRecord()).build() );
+                    builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(
+                        random.nextInt(AdvanceConfig.integer("workload.contention-level"))).build() );
                 }
             }
 
