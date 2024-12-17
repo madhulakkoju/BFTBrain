@@ -1,6 +1,10 @@
 package com.gbft.framework.core;
 
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.core.Client.ClosedLoopRequestGenerator;
+import com.gbft.framework.core.Client.ClosedLoopRequestGenerator.ClosedLoopRequestGeneratorRunner;
+import com.gbft.framework.core.Client.RequestGenerator;
+import com.gbft.framework.core.Client.RequestGenerator.RequestGeneratorRunner;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.Operation;
 import com.gbft.framework.data.RequestData;
@@ -121,10 +125,12 @@ public class Client extends Entity {
         var timeoutCount = benchmark.count(BenchmarkManager.TIMEOUT);
         report.put("slow-path", String.format("ratio: %.2f",  (double) timeoutCount / (double) blockCount));
 
-        String benchmarkLogString = ""+currentEpisodeNum.get()+","+
+        String benchmarkLogString = ""+
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
-                    String.format("%.2f", throughput)+","+executeCount;
+                    AdvanceConfig.integer("workload.contention-level") + "," +
+                    AdvanceConfig.integer("benchmark.block-size")  + "," +
+                    String.format("%.2f", throughput); 
 
         logger.write(benchmarkLogString);
 

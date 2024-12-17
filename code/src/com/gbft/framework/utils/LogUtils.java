@@ -108,7 +108,7 @@ public class LogUtils{
             boolean fileExists = file.exists();
             FileWriter fileWriter = new FileWriter(file,file.exists());
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            bufferedWriter.write("\n"+s +" ["+formattedTime+"]");
+            bufferedWriter.write("\n"+s );
             bufferedWriter.close();
         } catch (IOException e) {
             // Print an error message if an IOException occurs
