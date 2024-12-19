@@ -77,11 +77,11 @@ public class Dataset {
 
     public void runComputeDummy(RequestData request){
         // dummy computation
-        try {
-            Thread.sleep(2);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        // try {
+        //     Thread.sleep(2);
+        // } catch (InterruptedException e) {
+        //     throw new RuntimeException(e);
+        // }
         if (request.getComputeFactor() > 0) {
             var dummy_counter = 0;
             var random = new Random();

@@ -4,7 +4,7 @@ import com.gbft.framework.core.Entity;
 import com.gbft.framework.data.MessageData;
 import com.gbft.framework.data.RequestData;
 import com.gbft.framework.statemachine.StateMachine;
-
+import com.gbft.framework.utils.Config;
 
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +25,7 @@ public class ArchManager {
         architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
 
 
-        currentArchitectureKey = "XOV";
+        currentArchitectureKey = Config.string("general.architecture");//"OXII"; //change
         this.entity = entity;
     }
 

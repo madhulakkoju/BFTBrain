@@ -14,6 +14,7 @@ general:
   learning: true
   report-sequence: 2500
   exchange-sequence: 3000
+  architecture: OXII
 benchmark:
   block-size: 100
   checkpoint-size: 5000
