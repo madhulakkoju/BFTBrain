@@ -1,4 +1,4 @@
-Protocol,Architecture,Contention,BlockSize,Throughput 
+Protocol,Architecture,Contention,BlockSize,Throughput
 prime,OXII,100,100,33.33
 prime,OXII,100,100,100.00
 prime,OXII,100,100,66.67
