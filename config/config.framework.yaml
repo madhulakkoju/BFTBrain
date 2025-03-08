@@ -12,12 +12,12 @@ general:
   verbosity: v
   logfile: false # true -> file, false -> stdout
   learning: true
-  report-sequence: 2500
-  exchange-sequence: 3000
-  architecture: OXII
+  report-sequence: 250
+  exchange-sequence: 300
+  architecture: OX
 benchmark:
-  block-size: 100
-  checkpoint-size: 5000
+  block-size: 10
+  checkpoint-size: 500
   catch-up-k: 2
   request-interval-micros: 100
   benchmark-interval-ms: 3000
@@ -74,7 +74,7 @@ fault:
     # instead of victims of malicious leaders
     affected-entities:
       - 0
-    attacking: true
+    attacking: false
     timer: 100
     
 switching:
