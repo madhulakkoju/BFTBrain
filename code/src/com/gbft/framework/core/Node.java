@@ -230,6 +230,11 @@ public class Node extends Entity {
                     report.put(FeatureManager.RECEIVED_MESSAGE_PER_SLOT, (float) Math.round(PollutionFault.randomFeatureGenerator(100f)));
                     report.put(FeatureManager.HAS_FAST_PATH, PollutionFault.randomOnehot());
                     report.put(FeatureManager.HAS_LEADER_ROTATION, PollutionFault.randomOnehot());
+
+                    report.put(FeatureManager.WRITE_RATIO, 0 + (1 - 0) * random.nextFloat() );
+                    report.put(FeatureManager.HOT_KEY_RATIO, 0 + (0.1 - 0) * random.nextFloat());
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000 - 0) * random.nextFloat());
+                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
                 } else {
                     // request
                     report.put(FeatureManager.REQUEST_SIZE, (float) extractor.average(FeatureManager.REQUEST_SIZE));
@@ -247,6 +252,12 @@ public class Node extends Entity {
                     // protocol encodings
                     report.put(FeatureManager.HAS_FAST_PATH, (float) featureManager.hasFastPath.get(checkpoint.getProtocol()));
                     report.put(FeatureManager.HAS_LEADER_ROTATION, (float) featureManager.hasLeaderRotation.get(checkpoint.getProtocol()));
+
+                    report.put(FeatureManager.WRITE_RATIO, 0 + (1 - 0) * random.nextFloat() );
+                    report.put(FeatureManager.HOT_KEY_RATIO, 0 + (0.1 - 0) * random.nextFloat());
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000 - 0) * random.nextFloat());
+                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
+
                 }
 
                 var learningDataBuilder = LearningData.newBuilder().putAllReport(report);
