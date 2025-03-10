@@ -98,16 +98,14 @@ message SwitchingData {
     bool switch_ready = 1;
     string next_protocol = 2;
     uint64 next_blocksize = 3;
-    bool next_early_execution = 4;
-    bool next_reorder = 5;
+    string next_architecture = 4;
 }
 
 message LearningData {
     map<int32, float> report = 1;
     string next_protocol = 2;
     uint64 next_blocksize = 3;
-    bool next_early_execution = 4;
-    bool next_reorder = 5;
+    string next_architecture = 4;
 }
 
 message FetchData {
@@ -162,7 +160,8 @@ message UnitData {
 message ConfigData {
     map<string, string> data = 1;
     string defaultProtocol = 2;
-    repeated UnitData units = 3;
+    string defaultArchitecture = 3;
+    repeated UnitData units = 4;
 }
 
 message PluginData {

@@ -17,6 +17,7 @@ private static final long serialVersionUID = 0L;
   }
   private SwitchingData() {
     nextProtocol_ = "";
+    nextArchitecture_ = "";
   }
 
   @java.lang.Override
@@ -58,6 +59,17 @@ private static final long serialVersionUID = 0L;
             java.lang.String s = input.readStringRequireUtf8();
 
             nextProtocol_ = s;
+            break;
+          }
+          case 24: {
+
+            nextBlocksize_ = input.readUInt64();
+            break;
+          }
+          case 34: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            nextArchitecture_ = s;
             break;
           }
           default: {
@@ -141,6 +153,55 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int NEXT_BLOCKSIZE_FIELD_NUMBER = 3;
+  private long nextBlocksize_;
+  /**
+   * <code>uint64 next_blocksize = 3;</code>
+   * @return The nextBlocksize.
+   */
+  @java.lang.Override
+  public long getNextBlocksize() {
+    return nextBlocksize_;
+  }
+
+  public static final int NEXT_ARCHITECTURE_FIELD_NUMBER = 4;
+  private volatile java.lang.Object nextArchitecture_;
+  /**
+   * <code>string next_architecture = 4;</code>
+   * @return The nextArchitecture.
+   */
+  @java.lang.Override
+  public java.lang.String getNextArchitecture() {
+    java.lang.Object ref = nextArchitecture_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      nextArchitecture_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string next_architecture = 4;</code>
+   * @return The bytes for nextArchitecture.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getNextArchitectureBytes() {
+    java.lang.Object ref = nextArchitecture_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      nextArchitecture_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -161,6 +222,12 @@ private static final long serialVersionUID = 0L;
     if (!getNextProtocolBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, nextProtocol_);
     }
+    if (nextBlocksize_ != 0L) {
+      output.writeUInt64(3, nextBlocksize_);
+    }
+    if (!getNextArchitectureBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, nextArchitecture_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -176,6 +243,13 @@ private static final long serialVersionUID = 0L;
     }
     if (!getNextProtocolBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, nextProtocol_);
+    }
+    if (nextBlocksize_ != 0L) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeUInt64Size(3, nextBlocksize_);
+    }
+    if (!getNextArchitectureBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, nextArchitecture_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -196,6 +270,10 @@ private static final long serialVersionUID = 0L;
         != other.getSwitchReady()) return false;
     if (!getNextProtocol()
         .equals(other.getNextProtocol())) return false;
+    if (getNextBlocksize()
+        != other.getNextBlocksize()) return false;
+    if (!getNextArchitecture()
+        .equals(other.getNextArchitecture())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -212,6 +290,11 @@ private static final long serialVersionUID = 0L;
         getSwitchReady());
     hash = (37 * hash) + NEXT_PROTOCOL_FIELD_NUMBER;
     hash = (53 * hash) + getNextProtocol().hashCode();
+    hash = (37 * hash) + NEXT_BLOCKSIZE_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
+        getNextBlocksize());
+    hash = (37 * hash) + NEXT_ARCHITECTURE_FIELD_NUMBER;
+    hash = (53 * hash) + getNextArchitecture().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -349,6 +432,10 @@ private static final long serialVersionUID = 0L;
 
       nextProtocol_ = "";
 
+      nextBlocksize_ = 0L;
+
+      nextArchitecture_ = "";
+
       return this;
     }
 
@@ -377,6 +464,8 @@ private static final long serialVersionUID = 0L;
       com.gbft.framework.data.SwitchingData result = new com.gbft.framework.data.SwitchingData(this);
       result.switchReady_ = switchReady_;
       result.nextProtocol_ = nextProtocol_;
+      result.nextBlocksize_ = nextBlocksize_;
+      result.nextArchitecture_ = nextArchitecture_;
       onBuilt();
       return result;
     }
@@ -430,6 +519,13 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getNextProtocol().isEmpty()) {
         nextProtocol_ = other.nextProtocol_;
+        onChanged();
+      }
+      if (other.getNextBlocksize() != 0L) {
+        setNextBlocksize(other.getNextBlocksize());
+      }
+      if (!other.getNextArchitecture().isEmpty()) {
+        nextArchitecture_ = other.nextArchitecture_;
         onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
@@ -564,6 +660,113 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       nextProtocol_ = value;
+      onChanged();
+      return this;
+    }
+
+    private long nextBlocksize_ ;
+    /**
+     * <code>uint64 next_blocksize = 3;</code>
+     * @return The nextBlocksize.
+     */
+    @java.lang.Override
+    public long getNextBlocksize() {
+      return nextBlocksize_;
+    }
+    /**
+     * <code>uint64 next_blocksize = 3;</code>
+     * @param value The nextBlocksize to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNextBlocksize(long value) {
+      
+      nextBlocksize_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>uint64 next_blocksize = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearNextBlocksize() {
+      
+      nextBlocksize_ = 0L;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object nextArchitecture_ = "";
+    /**
+     * <code>string next_architecture = 4;</code>
+     * @return The nextArchitecture.
+     */
+    public java.lang.String getNextArchitecture() {
+      java.lang.Object ref = nextArchitecture_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        nextArchitecture_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string next_architecture = 4;</code>
+     * @return The bytes for nextArchitecture.
+     */
+    public com.google.protobuf.ByteString
+        getNextArchitectureBytes() {
+      java.lang.Object ref = nextArchitecture_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        nextArchitecture_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string next_architecture = 4;</code>
+     * @param value The nextArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNextArchitecture(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      nextArchitecture_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string next_architecture = 4;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearNextArchitecture() {
+      
+      nextArchitecture_ = getDefaultInstance().getNextArchitecture();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string next_architecture = 4;</code>
+     * @param value The bytes for nextArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNextArchitectureBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      nextArchitecture_ = value;
       onChanged();
       return this;
     }

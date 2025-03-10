@@ -1,18 +1,20 @@
 # Usage: ./local_exp.sh [protocol] [learning (optional)]
 # Examples:
-#        ./local_exp.sh pbft # run pbft without learning agents
-#        ./local_exp.sh pbft # run bedrock with learning agents, using pbft as the default protocol
+#        ./local_exp.sh pbft OX # run pbft without learning agents
+#        ./local_exp.sh pbft OX # run bedrock with learning agents, using pbft as the default protocol
 # [protocol]: protocol name to run
 # [learning]: if *learning* provided, each bedrock entity will be paired with a local learning agent
+source ../.venv/bin/activate
 
 protocol=$1
+architecture=$2
 
 
 count=6 # 3f+3
 agent_count=0
 # if learning, agent_count=count-2
 if [ $# -gt 1 ]; then
-  if [ "$2" == "learning" ]; then
+  if [ "$3" == "learning" ]; then
     agent_count=$((count-2))
   fi
 fi
@@ -58,7 +60,7 @@ done
 
 echo "Protocol $protocol : [1/6] Starting Coordination Server"
 # start server on the first server
-tmux send-keys -t cloudlab:0 "./run.sh CoordinatorServer -p 9020 -r $protocol" C-m
+tmux send-keys -t cloudlab:0 "./run.sh CoordinatorServer -p 9020 -r $protocol -a $architecture" C-m
 
 echo "Protocol $protocol : [2/6] Waiting for 10 seconds for coordination server to set up ..."
 sleep 5

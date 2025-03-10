@@ -173,50 +173,53 @@ public final class Gbft {
       "aEntry\022\013\n\003key\030\001 \001(\003\022\r\n\005value\030\002 \001(\005:\0028\001\0322" +
       "\n\020ExtraValuesEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value" +
       "\030\002 \001(\003:\0028\001\0320\n\016ExtraDataEntry\022\013\n\003key\030\001 \001(" +
-      "\005\022\r\n\005value\030\002 \001(\014:\0028\001\"<\n\rSwitchingData\022\024\n" +
+      "\005\022\r\n\005value\030\002 \001(\014:\0028\001\"o\n\rSwitchingData\022\024\n" +
       "\014switch_ready\030\001 \001(\010\022\025\n\rnext_protocol\030\002 \001" +
-      "(\t\"\177\n\014LearningData\022)\n\006report\030\001 \003(\0132\031.Lea" +
-      "rningData.ReportEntry\022\025\n\rnext_protocol\030\002" +
-      " \001(\t\032-\n\013ReportEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005valu" +
-      "e\030\002 \001(\002:\0028\001\"\211\001\n\tFetchData\022\022\n\nis_request\030" +
-      "\001 \001(\010\0223\n\rservice_state\030\002 \003(\0132\034.FetchData" +
-      ".ServiceStateEntry\0323\n\021ServiceStateEntry\022" +
-      "\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\005:\0028\001\"L\n\tFault" +
-      "Data\022\027\n\017blocked_targets\030\001 \003(\005\022\027\n\017delayed" +
-      "_targets\030\002 \003(\005\022\r\n\005delay\030\003 \001(\003\"2\n\014Message" +
-      "Block\022\"\n\014message_data\030\006 \003(\0132\014.MessageDat" +
-      "a\"\263\003\n\005Event\022$\n\nevent_type\030\001 \001(\0162\020.Event." +
-      "EventType\022\036\n\tunit_data\030\002 \001(\0132\t.UnitDataH" +
-      "\000\022\"\n\013config_data\030\003 \001(\0132\013.ConfigDataH\000\022\"\n" +
-      "\013plugin_data\030\004 \001(\0132\013.PluginDataH\000\022\"\n\013rep" +
-      "ort_data\030\005 \001(\0132\013.ReportDataH\000\022&\n\rmessage" +
-      "_block\030\006 \001(\0132\r.MessageBlockH\000\022\020\n\006target\030" +
-      "\007 \001(\005H\000\"\257\001\n\tEventType\022\010\n\004INIT\020\000\022\n\n\006CONFI" +
-      "G\020\001\022\t\n\005READY\020\002\022\017\n\013PLUGIN_INIT\020\003\022\t\n\005START" +
-      "\020\004\022\t\n\005BLOCK\020\005\022\010\n\004STOP\020\006\022\010\n\004EXIT\020\007\022\023\n\017BEN" +
-      "CHMARK_START\020\010\022\024\n\020BENCHMARK_REPORT\020\t\022\013\n\007" +
-      "MESSAGE\020\n\022\016\n\nCONNECTION\020\013B\014\n\nevent_data\"" +
-      "B\n\010UnitData\022\014\n\004unit\030\001 \001(\005\022\022\n\nnode_count\030" +
-      "\002 \001(\005\022\024\n\014client_count\030\003 \001(\005\"\221\001\n\nConfigDa" +
-      "ta\022#\n\004data\030\001 \003(\0132\025.ConfigData.DataEntry\022" +
-      "\027\n\017defaultProtocol\030\002 \001(\t\022\030\n\005units\030\003 \003(\0132" +
-      "\t.UnitData\032+\n\tDataEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005" +
-      "value\030\002 \001(\t:\0028\001\"f\n\nPluginData\022\023\n\013plugin_" +
-      "name\030\001 \001(\t\022\024\n\014message_type\030\002 \001(\005\022\014\n\004data" +
-      "\030\003 \001(\014\022\016\n\006source\030\004 \001(\005\022\017\n\007targets\030\005 \003(\005\"" +
-      "\201\002\n\nReportData\0220\n\013report_data\030\001 \003(\0132\033.Re" +
-      "portData.ReportDataEntry\032I\n\017ReportDataEn" +
-      "try\022\013\n\003key\030\001 \001(\t\022%\n\005value\030\002 \001(\0132\026.Report" +
-      "Data.ReportItem:\0028\001\032v\n\nReportItem\0227\n\tite" +
-      "m_data\030\002 \003(\0132$.ReportData.ReportItem.Ite" +
-      "mDataEntry\032/\n\rItemDataEntry\022\013\n\003key\030\001 \001(\t" +
-      "\022\r\n\005value\030\002 \001(\t:\0028\001*G\n\tOperation\022\007\n\003NOP\020" +
-      "\000\022\007\n\003ADD\020\001\022\007\n\003SUB\020\002\022\007\n\003INC\020\003\022\007\n\003DEC\020\004\022\r\n" +
-      "\tREAD_ONLY\020\0052F\n\nEntityComm\0228\n\rsend_decis" +
-      "ion\022\r.LearningData\032\026.google.protobuf.Emp" +
-      "ty\"\0002A\n\tAgentComm\0224\n\tsend_data\022\r.Learnin" +
-      "gData\032\026.google.protobuf.Empty\"\000B\033\n\027com.g" +
-      "bft.framework.dataP\001b\006proto3"
+      "(\t\022\026\n\016next_blocksize\030\003 \001(\004\022\031\n\021next_archi" +
+      "tecture\030\004 \001(\t\"\262\001\n\014LearningData\022)\n\006report" +
+      "\030\001 \003(\0132\031.LearningData.ReportEntry\022\025\n\rnex" +
+      "t_protocol\030\002 \001(\t\022\026\n\016next_blocksize\030\003 \001(\004" +
+      "\022\031\n\021next_architecture\030\004 \001(\t\032-\n\013ReportEnt" +
+      "ry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002 \001(\002:\0028\001\"\211\001\n\tF" +
+      "etchData\022\022\n\nis_request\030\001 \001(\010\0223\n\rservice_" +
+      "state\030\002 \003(\0132\034.FetchData.ServiceStateEntr" +
+      "y\0323\n\021ServiceStateEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005v" +
+      "alue\030\002 \001(\005:\0028\001\"L\n\tFaultData\022\027\n\017blocked_t" +
+      "argets\030\001 \003(\005\022\027\n\017delayed_targets\030\002 \003(\005\022\r\n" +
+      "\005delay\030\003 \001(\003\"2\n\014MessageBlock\022\"\n\014message_" +
+      "data\030\006 \003(\0132\014.MessageData\"\263\003\n\005Event\022$\n\nev" +
+      "ent_type\030\001 \001(\0162\020.Event.EventType\022\036\n\tunit" +
+      "_data\030\002 \001(\0132\t.UnitDataH\000\022\"\n\013config_data\030" +
+      "\003 \001(\0132\013.ConfigDataH\000\022\"\n\013plugin_data\030\004 \001(" +
+      "\0132\013.PluginDataH\000\022\"\n\013report_data\030\005 \001(\0132\013." +
+      "ReportDataH\000\022&\n\rmessage_block\030\006 \001(\0132\r.Me" +
+      "ssageBlockH\000\022\020\n\006target\030\007 \001(\005H\000\"\257\001\n\tEvent" +
+      "Type\022\010\n\004INIT\020\000\022\n\n\006CONFIG\020\001\022\t\n\005READY\020\002\022\017\n" +
+      "\013PLUGIN_INIT\020\003\022\t\n\005START\020\004\022\t\n\005BLOCK\020\005\022\010\n\004" +
+      "STOP\020\006\022\010\n\004EXIT\020\007\022\023\n\017BENCHMARK_START\020\010\022\024\n" +
+      "\020BENCHMARK_REPORT\020\t\022\013\n\007MESSAGE\020\n\022\016\n\nCONN" +
+      "ECTION\020\013B\014\n\nevent_data\"B\n\010UnitData\022\014\n\004un" +
+      "it\030\001 \001(\005\022\022\n\nnode_count\030\002 \001(\005\022\024\n\014client_c" +
+      "ount\030\003 \001(\005\"\256\001\n\nConfigData\022#\n\004data\030\001 \003(\0132" +
+      "\025.ConfigData.DataEntry\022\027\n\017defaultProtoco" +
+      "l\030\002 \001(\t\022\033\n\023defaultArchitecture\030\003 \001(\t\022\030\n\005" +
+      "units\030\004 \003(\0132\t.UnitData\032+\n\tDataEntry\022\013\n\003k" +
+      "ey\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\"f\n\nPluginDat" +
+      "a\022\023\n\013plugin_name\030\001 \001(\t\022\024\n\014message_type\030\002" +
+      " \001(\005\022\014\n\004data\030\003 \001(\014\022\016\n\006source\030\004 \001(\005\022\017\n\007ta" +
+      "rgets\030\005 \003(\005\"\201\002\n\nReportData\0220\n\013report_dat" +
+      "a\030\001 \003(\0132\033.ReportData.ReportDataEntry\032I\n\017" +
+      "ReportDataEntry\022\013\n\003key\030\001 \001(\t\022%\n\005value\030\002 " +
+      "\001(\0132\026.ReportData.ReportItem:\0028\001\032v\n\nRepor" +
+      "tItem\0227\n\titem_data\030\002 \003(\0132$.ReportData.Re" +
+      "portItem.ItemDataEntry\032/\n\rItemDataEntry\022" +
+      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001*G\n\tOpera" +
+      "tion\022\007\n\003NOP\020\000\022\007\n\003ADD\020\001\022\007\n\003SUB\020\002\022\007\n\003INC\020\003" +
+      "\022\007\n\003DEC\020\004\022\r\n\tREAD_ONLY\020\0052F\n\nEntityComm\0228" +
+      "\n\rsend_decision\022\r.LearningData\032\026.google." +
+      "protobuf.Empty\"\0002A\n\tAgentComm\0224\n\tsend_da" +
+      "ta\022\r.LearningData\032\026.google.protobuf.Empt" +
+      "y\"\000B\033\n\027com.gbft.framework.dataP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -271,13 +274,13 @@ public final class Gbft {
     internal_static_SwitchingData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SwitchingData_descriptor,
-        new java.lang.String[] { "SwitchReady", "NextProtocol", });
+        new java.lang.String[] { "SwitchReady", "NextProtocol", "NextBlocksize", "NextArchitecture", });
     internal_static_LearningData_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_LearningData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_LearningData_descriptor,
-        new java.lang.String[] { "Report", "NextProtocol", });
+        new java.lang.String[] { "Report", "NextProtocol", "NextBlocksize", "NextArchitecture", });
     internal_static_LearningData_ReportEntry_descriptor =
       internal_static_LearningData_descriptor.getNestedTypes().get(0);
     internal_static_LearningData_ReportEntry_fieldAccessorTable = new
@@ -325,7 +328,7 @@ public final class Gbft {
     internal_static_ConfigData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ConfigData_descriptor,
-        new java.lang.String[] { "Data", "DefaultProtocol", "Units", });
+        new java.lang.String[] { "Data", "DefaultProtocol", "DefaultArchitecture", "Units", });
     internal_static_ConfigData_DataEntry_descriptor =
       internal_static_ConfigData_descriptor.getNestedTypes().get(0);
     internal_static_ConfigData_DataEntry_fieldAccessorTable = new
