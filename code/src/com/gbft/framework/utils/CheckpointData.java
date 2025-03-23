@@ -133,6 +133,7 @@ public class CheckpointData {
     //TODO: Understand if quorom is on all protocols or do we quorom
     public String getDecision() {
         Optional<String> nextProtocol;
+        Optional<String> nextArchitecture;
         do {
             nextProtocol = decisionMatching.entrySet().parallelStream()
                     .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
@@ -213,11 +214,11 @@ public class CheckpointData {
     public void setArchitecture(String architecture) {
         this.architecture.set(architecture);
 
-        this.entity.getArchManager().setCurrentArchitecture(architecture);
+        this.entity.getArchManager().setCurrentArchitectureKey(architecture);
     }
 
     public String getArchitecture() {
-        return this.entity.archManager.currentArchitectureKey;
+        return this.entity.archManager.getCurrentArchitectureKey();
 //        if(architecture.get() == null)
 //            return "XOV";
 //        else

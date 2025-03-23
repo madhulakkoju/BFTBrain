@@ -80,7 +80,7 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        System.out.println("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
+        this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
@@ -251,10 +251,15 @@ public class Node extends Entity {
                     report.put(FeatureManager.HAS_FAST_PATH, (float) featureManager.hasFastPath.get(checkpoint.getProtocol()));
                     report.put(FeatureManager.HAS_LEADER_ROTATION, (float) featureManager.hasLeaderRotation.get(checkpoint.getProtocol()));
 
-                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
-                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
-                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
-                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
+                    report.put(FeatureManager.WRITE_RATIO, 0.65f);
+                    report.put(FeatureManager.HOT_KEY_RATIO, 0.05f);
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 1200f);
+                    report.put(FeatureManager.EXECUTION_DELAY, 1300f);
+
+//                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
+//                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
+//                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
+//                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
 
                 }
 
