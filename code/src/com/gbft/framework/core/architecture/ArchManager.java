@@ -24,8 +24,9 @@ public class ArchManager {
     public ArchManager(Entity entity) {
         architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
 
+        //TODO: here use this point.
 
-        currentArchitectureKey = Config.string("general.architecture");//"OXII"; //change
+        currentArchitectureKey = Config.getCurrentArchitecture();
         this.entity = entity;
     }
 

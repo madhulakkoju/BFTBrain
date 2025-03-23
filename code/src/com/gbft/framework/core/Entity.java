@@ -216,6 +216,8 @@ public abstract class Entity {
         pollutionFault = new PollutionFault();
 
         checkpointManager.getCheckpoint(0).setProtocol(coordinator.defaultProtocol);
+        checkpointManager.getCheckpoint(0).setArchitecture(coordinator.defaultArchitecture);
+
         checkpointManager.getCheckpoint(0).beginTimestamp = System.nanoTime();
         rolePlugin.episodeLeaderMode.put(0, Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
 
@@ -800,6 +802,7 @@ try {
         if(this.isClient()){
             CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);
         }
+//        logger.write(episodeReport);
         System.out.println(episodeReport);
         Printer.print(Verbosity.V, prefix, episodeReport);
         Printer.flush();
@@ -814,6 +817,7 @@ try {
 
 
         } else {
+
             // dynamic switching via learning agent
             // or client
             nextProtocol = checkpoint.getDecision();
@@ -825,6 +829,7 @@ try {
         // warm up episodes
         if (nextProtocol.equals("repeat")) {
             nextProtocol = checkpoint.getProtocol();
+            nextArchitecture = checkpoint.getArchitecture();
         }
         System.out.println(prefix + "nextProtocol = " + nextProtocol);
         System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
@@ -1303,13 +1308,11 @@ catch (Exception e){
         report.put("current-architecture", "value: " + checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture());
         reportnum += 1;
 
-        // logger.write("Report Benchmark: \n" + report.toString());
 
-            String benchmarkLogString = ""+currentEpisodeNum.get()+","+
-                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
-                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
-                    "-"+",";
-            logger.write(benchmarkLogString);
+            String benchmarkLogString = "Episode: "+currentEpisodeNum.get()+", Protocol: "+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+", Architecture:"+
+                    checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture();
+            logger.write("[BenchmarkLogString]:" + benchmarkLogString);
         return report;
     }
 

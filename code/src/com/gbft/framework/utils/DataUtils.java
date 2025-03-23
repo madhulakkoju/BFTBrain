@@ -32,8 +32,8 @@ public class DataUtils {
         return UnitData.newBuilder().setUnit(unit).setNodeCount(nodeCount).setClientCount(clientCount).build();
     }
 
-    public static ConfigData createConfigData(Map<String, String> configContent, String defaultProtocol, List<UnitData> unitDataList) {
-        return ConfigData.newBuilder().putAllData(configContent).setDefaultProtocol(defaultProtocol).addAllUnits(unitDataList).build();
+    public static ConfigData createConfigData(Map<String, String> configContent, String defaultProtocol, String defaultArchitecture, List<UnitData> unitDataList) {
+        return ConfigData.newBuilder().putAllData(configContent).setDefaultProtocol(defaultProtocol).setDefaultArchitecture(defaultArchitecture).addAllUnits(unitDataList).build();
     }
 
     public static PluginData createPluginData(String name, int messageType, ByteString data, int source,

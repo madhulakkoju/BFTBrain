@@ -10,17 +10,16 @@ general:
   f: 1
   max-active-requests: 1000
   verbosity: v
-  logfile: false # true -> file, false -> stdout
+  logfile: true # true -> file, false -> stdout
   learning: true
   report-sequence: 250
   exchange-sequence: 300
-  architecture: OX
 benchmark:
   block-size: 10
   checkpoint-size: 500
   catch-up-k: 2
   request-interval-micros: 100
-  benchmark-interval-ms: 3000
+  benchmark-interval-ms: 30000
   timeout: fixed
   timeout-trigger-interval-ms: 50
   client: basic
@@ -85,6 +84,11 @@ switching:
     - cheapbft
     - sbft
     - prime
+  architecture-pool:
+    - OX
+    - XOV
+    - XOV++
+    - OXII
   # debug-sequence:
   #   - cheapbft
   #   - hotstuff

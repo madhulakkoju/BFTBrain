@@ -68,6 +68,7 @@ public abstract class CoordinatorBase {
 
     protected void initFromConfig(Map<String, String> yamlData, String defaultProtocol, String defaultArchitecture) {
         try {
+            System.out.println("INSIDE INIT FROM CONFIG :" +defaultProtocol + defaultArchitecture);
             Config.load(yamlData, defaultProtocol, defaultArchitecture);
 
             AdvanceConfig.load(yamlData.get("framework"));

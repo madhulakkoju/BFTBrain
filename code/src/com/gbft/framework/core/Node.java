@@ -13,25 +13,23 @@ import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
-import java.beans.Expression;
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-
-
-
 
 
 public class Node extends Entity {
 
 
 
-
+    Random random;
 
     public Node(int id, CoordinatorUnit coordinator) {
+
         super(id, coordinator);
+
+        random = new Random();
     }
 
     public void executeParallel(ConcurrentHashMap<Long, Integer> replies, List<RequestDataList> dependencyGraph) {
@@ -82,7 +80,7 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        //logger.write("execute seqnum "+seqnum);
+        System.out.println("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
@@ -231,9 +229,9 @@ public class Node extends Entity {
                     report.put(FeatureManager.HAS_FAST_PATH, PollutionFault.randomOnehot());
                     report.put(FeatureManager.HAS_LEADER_ROTATION, PollutionFault.randomOnehot());
 
-                    report.put(FeatureManager.WRITE_RATIO, 0 + (1 - 0) * random.nextFloat() );
-                    report.put(FeatureManager.HOT_KEY_RATIO, 0 + (0.1 - 0) * random.nextFloat());
-                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000 - 0) * random.nextFloat());
+                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
+                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
                     report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
                 } else {
                     // request
@@ -253,9 +251,9 @@ public class Node extends Entity {
                     report.put(FeatureManager.HAS_FAST_PATH, (float) featureManager.hasFastPath.get(checkpoint.getProtocol()));
                     report.put(FeatureManager.HAS_LEADER_ROTATION, (float) featureManager.hasLeaderRotation.get(checkpoint.getProtocol()));
 
-                    report.put(FeatureManager.WRITE_RATIO, 0 + (1 - 0) * random.nextFloat() );
-                    report.put(FeatureManager.HOT_KEY_RATIO, 0 + (0.1 - 0) * random.nextFloat());
-                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000 - 0) * random.nextFloat());
+                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
+                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
                     report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
 
                 }
@@ -294,7 +292,15 @@ public class Node extends Entity {
                                 entry -> entry.getKey(),
                                 entry -> calculateMedian(entry.getValue())));
                 // reuse the proto field `next_protocol` to store the current protocol just for convenience
-                var learningData = LearningData.newBuilder().putAllReport(featureToMedian).setNextProtocol(checkpoint.getProtocol()).build();
+
+                // TODO: GET THE REAL BLOCK SIZE
+                var learningData = LearningData.newBuilder()
+                        .putAllReport(featureToMedian)
+                        .setNextProtocol(checkpoint.getProtocol())
+                        .setNextBlocksize(100)
+                        .setNextArchitecture(checkpoint.getArchitecture())
+                        .build();
+                System.out.println("BEFORE Sending to learning agent" + learningData);
                 new Thread(() -> agentStub.sendData(learningData)).start(); 
                 System.out.println("notify learning agent for episode " + currentEpisodeNum.get() + ", exchangeSequence=" + exchangeSequence);
             }

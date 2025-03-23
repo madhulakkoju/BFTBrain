@@ -1,3 +1,4 @@
+import itertools
 import gbft_pb2_grpc
 import gbft_pb2
 import logging
@@ -14,7 +15,7 @@ import os
 from datetime import datetime
 from concurrent import futures
 from threading import Condition, Lock
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import RandomForestRegressor
 from constants import *
 
 parser = argparse.ArgumentParser(description='Start a learning agent.')
@@ -34,20 +35,24 @@ parser.add_argument('--multi-onehot', '-o', type=bool, default=False,
 args = parser.parse_args()
 
 request_queue = queue.Queue()
-protocol_pool = ["pbft", "zyzzyva", "cheapbft", "sbft", "hotstuff", "prime"]
+protocol_pool = ["pbft", "cheapbft", "sbft", "prime"]
 blocksize_options = [1, 10, 20, 50, 100, 200, 500]
-early_execution_options = [False, True]
-reorder_options = [False, True]
+architecture_pool = ['OX', 'XOV', 'OXII', "XOV++"]
 
 
 def reward_engineering(reward: float) -> float:
+    """
+    Sample shaping function, can be modified as needed.
+    """
     if reward < 1000:
         return (reward / 1000) ** 2 * 1000
     return reward
 
 
 class AgentCommServicer(gbft_pb2_grpc.AgentCommServicer):
-
+    """
+    Receives data from the Bedrock entity (via gRPC) and puts it into request_queue.
+    """
     def send_data(self, request, context):
         request_queue.put(request)
         return gbft_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
@@ -60,113 +65,149 @@ def get_replay_buffer_length(experiences_y):
 
 
 def init_single_experience_buffer(experiences_X, experiences_y, actions_list):
-    # Read all csv files in the checkpoint folder in sequence according to their timestamp
+    """
+    Loads any prior CSV checkpoints from the 'checkpoint/' folder,
+    and populates experiences_X, experiences_y with them.
+    """
     folder_path = "checkpoint/"
+    if not os.path.exists(folder_path):
+        return
+
     files = sorted([f for f in os.listdir(folder_path) if f.endswith(".csv")])
 
-    # Initialize the experience buffer (the order of training data is preserved)
     for file in files:
         df = pd.read_csv(folder_path + file)
         df.rename(columns=str.strip, inplace=True)
+
         # Map protocol names to indices
-        df['action_protocol'] = df['action_protocol'].apply(lambda a: protocol_pool.index(str.strip(a)))
-        # Map early_execution and reorder to integers
-        df['action_early_execution'] = df['action_early_execution'].astype(int)
-        df['action_reorder'] = df['action_reorder'].astype(int)
+        df['action_protocol'] = df['action_protocol'].apply(
+            lambda a: protocol_pool.index(str.strip(a))
+        )
+
+        # Map architecture names to indices
+        df['action_architecture'] = df['action_architecture'].apply(
+            lambda a: architecture_pool.index(str.strip(a))
+        )
+
         # States
         states = df.loc[:, [
-                               'FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE',
-                               'MESSAGE_PER_SLOT', 'HAS_FAST_PATH', 'HAS_LEADER_ROTATION',
-                               'WRITE_RATIO', 'HOT_KEY_RATIO', 'TRANS_ARRIVAL_RATE', 'EXECUTION_DELAY'
-                           ]].values
-        # Actions
-        actions = df.loc[:, ['action_protocol', 'action_blocksize', 'action_early_execution', 'action_reorder']].values
-        # One-hot encode protocols
+            'FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE',
+            'MESSAGE_PER_SLOT', 'HAS_FAST_PATH', 'HAS_LEADER_ROTATION',
+            'WRITE_RATIO', 'HOT_KEY_RATIO', 'TRANS_ARRIVAL_RATE', 'EXECUTION_DELAY'
+        ]].values
+
+        # Actions: protocol (index), blocksize, architecture (index)
+        actions = df.loc[:, ['action_protocol', 'action_blocksize', 'action_architecture']].values
+
+        # One-hot encode protocol
         protocol_one_hot = np.eye(len(protocol_pool))[actions[:, 0].astype(int)]
-        # Combine action features
+        # Remaining columns: blocksize, architecture
         action_features = np.hstack((protocol_one_hot, actions[:, 1:]))
+
         # Rewards
         rewards = df['throughput'].values
-        # experiences_X = (state, action)
+
+        # Concatenate states and action features
         states_actions = np.hstack((states, action_features))
-        experiences_X.extend([states_actions[i, :] for i in range(states_actions.shape[0])])
-        experiences_y.extend([reward_engineering(reward) for reward in rewards])
+
+        for i in range(states_actions.shape[0]):
+            experiences_X.append(states_actions[i, :])
+            experiences_y.append(reward_engineering(rewards[i]))
 
 
 class SingleRF:
+    """
+    A simple single-model approach using RandomForestRegressor.
+    It enumerates all (protocol, blocksize, architecture) combos,
+    picks the best predicted reward each time.
+    """
 
     def __init__(self):
         self.experiences_X = []
         self.experiences_y = []
         self.model = RandomForestRegressor(max_depth=20)
-        # Generate all possible action combinations
-        self.action_combinations = list(itertools.product(
-            protocol_pool,
-            blocksize_options,
-            early_execution_options,
-            reorder_options
-        ))
-        # Create action feature matrix
+
+        # Generate all possible action combinations: (protocol, blocksize, architecture)
+        self.action_combinations = list(
+            itertools.product(protocol_pool, blocksize_options, architecture_pool)
+        )
+
+        # Build a matrix for all possible actions
         self.actions_matrix = self.create_actions_matrix()
-        # Initialize enumeration matrix (will be updated with current state later)
-        self.enumeration_matrix = np.hstack((np.zeros((len(self.action_combinations), 10)), self.actions_matrix))
-        # Init experience buffer
+
+        # We'll keep a big enumeration matrix for inference: shape(#actions, 10 + #action_features)
+        # The first 10 columns will be replaced each time by the current state.
+        self.enumeration_matrix = np.hstack(
+            (np.zeros((len(self.action_combinations), 10)), self.actions_matrix)
+        )
+
+        # Initialize experience buffer from disk
         init_single_experience_buffer(self.experiences_X, self.experiences_y, self.action_combinations)
-        # Init model
+
+        # If we have any existing data, train immediately
         if len(self.experiences_y):
             self.train()
 
     def create_actions_matrix(self):
+        """
+        Creates a NumPy array containing the features for each possible (protocol, blocksize, architecture).
+        Protocol is one-hot, blocksize is numeric, architecture is an index.
+        """
         action_features = []
         for action in self.action_combinations:
-            protocol, blocksize, early_execution, reorder = action
-            # One-hot encode protocol
+            protocol, blocksize, architecture = action
+            # One-hot protocol
             protocol_one_hot = np.eye(len(protocol_pool))[protocol_pool.index(protocol)]
-            # Normalize blocksize (optional, can also use raw value)
-            blocksize_value = blocksize  # Or normalize as needed
-            early_execution_value = int(early_execution)
-            reorder_value = int(reorder)
-            # Combine all action features
-            action_feature = np.concatenate((
-                protocol_one_hot,
-                [blocksize_value, early_execution_value, reorder_value]
-            ))
+            # Architecture index
+            architecture_idx = architecture_pool.index(architecture)
+            # Combine protocol + blocksize + architecture
+            action_feature = np.concatenate((protocol_one_hot, [blocksize, architecture_idx]))
             action_features.append(action_feature)
         return np.array(action_features)
 
     def record_reward(self, prev_action, action, reward):
+        """
+        Log the reward for the previous experience. The actual (state+action) was appended
+        in record_state_and_action(...). We only need to append the reward in the same order.
+        """
         self.experiences_y.append(reward_engineering(reward))
 
     def record_state_and_action(self, current_action, best_action, state):
-        # Get action features for best_action
+        """
+        The agent has observed `state`, was *currently* using `current_action`
+        and has decided `best_action`. We store (state, best_action) for the
+        next time we see the result (reward).
+        """
         action_feature = self.get_action_feature(best_action)
-        # Combine state and action
         state_action = np.concatenate((state, action_feature))
         self.experiences_X.append(state_action)
 
     def get_action_feature(self, action):
-        protocol, blocksize, early_execution, reorder = action
-        # One-hot encode protocol
+        """
+        Convert a triple (protocol, blocksize, architecture) into the numeric feature vector
+        (one-hot for protocol, numeric blocksize, index for architecture).
+        """
+        protocol, blocksize, architecture = action
         protocol_one_hot = np.eye(len(protocol_pool))[protocol_pool.index(protocol)]
-        # Convert action features
-        blocksize_value = blocksize  # Or normalize as needed
-        early_execution_value = int(early_execution)
-        reorder_value = int(reorder)
-        # Combine all action features
-        action_feature = np.concatenate((
-            protocol_one_hot,
-            [blocksize_value, early_execution_value, reorder_value]
-        ))
-        return action_feature
+        arch_idx = architecture_pool.index(architecture)
+        return np.concatenate((protocol_one_hot, [blocksize, arch_idx]))
 
     def get_prev_state(self, prev_prev_action, prev_action):
+        """
+        Returns just the state portion [0..9] from the last experience if it exists.
+        """
         idx = len(self.experiences_y) - 1
         if idx >= 0:
+            # The first 10 columns in experiences_X are the state features
             return self.experiences_X[idx][:10].tolist()
         else:
             return None
 
     def train(self):
+        """
+        Re-trains the random forest on the entire (or replay-limited) buffer.
+        Uses bootstrap sampling from experiences_X, experiences_y.
+        """
         replay_length = get_replay_buffer_length(self.experiences_y)
         bootstrapped_idx = np.random.choice(replay_length, replay_length, replace=True)
         training_X = np.vstack(self.experiences_X)[-replay_length:][bootstrapped_idx, :]
@@ -174,60 +215,85 @@ class SingleRF:
         self.model.fit(training_X, training_y)
 
     def retrain_and_predict(self, state, prev_action):
+        """
+        1) Retrain if we have any experience data
+        2) Predict reward for each possible action in self.action_combinations
+           by filling in the `state` portion of self.enumeration_matrix
+        3) Pick the best action
+        4) Return best_action, training_overhead, inference_overhead
+        """
         training_overhead = 0
         inference_overhead = 0
-        # Update the state part of enumeration matrix
+
+        # Update the state part of enumeration matrix (10 features of state)
         self.enumeration_matrix[:, 0:10] = state
+
         if len(self.experiences_y):
+            # Retrain
             training_start = time.time()
-            # Retrain the model if there is any training data
             self.train()
-            training_overhead += round(time.time() - training_start, 6)
+            training_overhead = round(time.time() - training_start, 6)
+
             # Inference
             inference_start = time.time()
             prediction = self.model.predict(self.enumeration_matrix)
-            inference_overhead += round(time.time() - inference_start, 6)
-            # Find the best action
-            best_idx = np.random.choice(np.flatnonzero(np.isclose(prediction, prediction.max())), replace=True)
+            inference_overhead = round(time.time() - inference_start, 6)
+
+            # Pick best
+            best_idx = np.random.choice(
+                np.flatnonzero(np.isclose(prediction, prediction.max())),
+                replace=True
+            )
             best_action = self.action_combinations[best_idx]
         else:
-            # Choose a random action if there is no training data
+            # No data yet => pick random
             best_action = random.choice(self.action_combinations)
 
         return best_action, training_overhead, inference_overhead
 
 
 def run_agent(agent_stub):
-    # Init
+    """
+    Main loop:
+      - Wait for state & reward from bedrock entity
+      - Update the model with the old reward
+      - Decide on the next action
+      - Send decision back to entity
+      - Log data to CSV
+    """
     actions = []
     time_records = []
+
     if args.model == "random-forest":
+        logging.info("Random Forest Model Initialized")
         model = SingleRF()
     elif args.model == "neural-network":
-        logging.error('neural network is not implemented yet')
+        logging.error('Neural network model not implemented.')
         return
 
-    # Create the csv file for debugging and offline training
+    # Create the csv file for offline training/analysis
     folder_name = "data/"
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data_store = open(folder_name + timestamp + " u" + str(args.unit) + ".csv", 'w')
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    data_store = open(folder_name + timestamp + "_u" + str(args.unit) + ".csv", 'w', newline='')
     csv_writer = csv.writer(data_store)
-    csv_writer.writerow(
-        ['FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE', 'MESSAGE_PER_SLOT', 'HAS_FAST_PATH',
-         'HAS_LEADER_ROTATION',
-         'WRITE_RATIO', 'HOT_KEY_RATIO', 'TRANS_ARRIVAL_RATE', 'EXECUTION_DELAY',
-         'previous_action_protocol', 'previous_action_blocksize', 'previous_action_early_execution',
-         'previous_action_reorder',
-         'action_protocol', 'action_blocksize', 'action_early_execution', 'action_reorder',
-         'throughput', 'training_overhead(s)', 'inference_overhead(s)'])
-    logging.info('learning agent has been initialized.')
+    csv_writer.writerow([
+        'FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE', 'MESSAGE_PER_SLOT', 'HAS_FAST_PATH',
+        'HAS_LEADER_ROTATION', 'WRITE_RATIO', 'HOT_KEY_RATIO', 'TRANS_ARRIVAL_RATE', 'EXECUTION_DELAY',
+        'previous_action_protocol', 'previous_action_blocksize', 'previous_action_architecture',
+        'action_protocol', 'action_blocksize', 'action_architecture',
+        'throughput', 'training_overhead(s)', 'inference_overhead(s)'
+    ])
+    logging.info('Learning agent has been initialized.')
 
     for episode in range(args.episodes):
-        # Wait for the notification from entity
+        # Wait for data from bedrock entity
         request = request_queue.get()
         data = request.report
+
+        # Current state (10 features)
         state = np.array([
             data[FAST_PATH_FREQUENCY],
             data[SLOWNESS_OF_PROPOSAL],
@@ -240,47 +306,63 @@ def run_agent(agent_stub):
             data[TRANS_ARRIVAL_RATE],
             data[EXECUTION_DELAY]
         ])
+
+        # Current action used by the bedrock entity
         current_action = (
             request.next_protocol,
             request.next_blocksize,
-            request.next_early_execution,
-            request.next_reorder
+            request.next_architecture
         )
-        logging.info('episode %d: received learning request from bedrock entity, state=%s, current_action=%s', episode,
-                     state, current_action)
 
-        # Record the reward for the previous episodes
+        logging.info('Episode %d: Got state=%s, current_action=%s', episode, state, current_action)
+
+        # Record the reward from the previous step
         if len(actions) > 1:
             prev_action, action = actions.pop(0)
             time_record = time_records.pop(0)
             model.record_reward(prev_action, action, data[REWARD])
+
+            # Also log to CSV
             prev_row = model.get_prev_state(prev_action, action)
             if prev_row is not None:
-                prev_row = prev_row + list(prev_action) + list(action) + [data[REWARD]] + time_record
-                csv_writer.writerow(prev_row)
+                # Append [prev_action_protocol, ..., action_protocol, ..., throughput, overheads...]
+                row = (prev_row
+                       + list(prev_action)
+                       + list(action)
+                       + [data[REWARD]]
+                       + time_record)
+                csv_writer.writerow(row)
 
-        # Discard warm up episodes
-        if episode < args.discard - 1:
-            # Notify the entity to repeat current default action
-            agent_stub.send_decision(gbft_pb2.LearningData(next_protocol="repeat"))
-            continue
+        # Discard warm-up episodes
+        # if episode < args.discard - 1:
+        #     # Tell bedrock entity to repeat its default action during warm-up
+        #     learningdata = gbft_pb2.LearningData(
+        #         next_protocol="repeat",
+        #         next_architecture="repeat"
+        #     )
+        #     logging.info("Warmup episode, repeating current bedrock action.")
+        #     agent_stub.send_decision(learningdata)
+        #     continue
 
-        # Retrain and inference
-        best_action, training_overhead, inference_overhead = model.retrain_and_predict(state, current_action)
+        # Retrain & pick best action
+        best_action, training_overhead, inference_overhead = model.retrain_and_predict(
+            state, current_action
+        )
 
-        # Record the state and action for the next episode
+        # Prepare for next iteration (the model will need to see how the *best_action* performs)
         actions.append((current_action, best_action))
         time_records.append([training_overhead, inference_overhead])
         model.record_state_and_action(current_action, best_action, state)
 
-        # Send back decision to the entity
-        agent_stub.send_decision(gbft_pb2.LearningData(
+        # The chosen best_action is a triple: (protocol, blocksize, architecture)
+        learningdata = gbft_pb2.LearningData(
             next_protocol=best_action[0],
             next_blocksize=best_action[1],
-            next_early_execution=best_action[2],
-            next_reorder=best_action[3]
-        ))
+            next_architecture=best_action[2]
+        )
 
+        logging.info("Sending best_action decision back: %s", learningdata)
+        agent_stub.send_decision(learningdata)
         data_store.flush()
 
 
@@ -292,7 +374,7 @@ if __name__ == '__main__':
     random.seed(0)
     np.random.seed(0)
 
-    # Start the grpc server and client
+    # Start gRPC server
     bedrockRPCPort = args.port + 10
     agentPort = args.port + 20
     server_address = '[::]:{}'.format(agentPort)
@@ -300,11 +382,14 @@ if __name__ == '__main__':
     gbft_pb2_grpc.add_AgentCommServicer_to_server(AgentCommServicer(), server)
     server.add_insecure_port(server_address)
     server.start()
-    logging.info('grpc server running at %s.', server_address)
+    logging.info('gRPC server running at %s.', server_address)
 
     try:
-        entity_channel = grpc.insecure_channel('localhost:9031')
+        # Connect to the bedrock entity
+        entity_channel = grpc.insecure_channel('localhost:{}'.format(bedrockRPCPort))
         agent_stub = gbft_pb2_grpc.EntityCommStub(entity_channel)
+
+        # Main agent loop
         run_agent(agent_stub)
     finally:
         entity_channel.close()
