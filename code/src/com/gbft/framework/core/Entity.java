@@ -807,8 +807,9 @@ try {
             // dynamic switching via learning agent
             // or client
             this.logger.write("Getting next Decision");
-            nextProtocol = checkpoint.getDecision();
-//            nextArchitecture = archManager.getCurrentArchitectureKey();
+            Decision nextDecision = checkpoint.getDecision();
+            nextProtocol = nextDecision.getNextProtocol();
+//            nextArchitecture = nextDecision.getNextArchitecture();
 
             //TODO: temporary code
             List<String> archList = new ArrayList<>(archManager.architectures);
@@ -1112,8 +1113,10 @@ catch (Exception e){
         if (seqnum != null && seqnum == getEndOfEpisode(seqnum) && type == StateMachine.REPLY) {
             var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
             var protocol = checkpointNew.getProtocol();
+            var architecture = checkpointNew.getArchitecture();
 
             var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
+            switchingDataBuilder.setNextArchitecture(architecture);
             message = message.toBuilder().setSwitch(switchingDataBuilder).build();        
             // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");  
         }
@@ -1167,8 +1170,11 @@ catch (Exception e){
         if (seqnum != null && seqnum == getEndOfEpisode(seqnum) && type == StateMachine.REPLY) {
             var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
             var protocol = checkpointNew.getProtocol();
+            var architecture = checkpointNew.getArchitecture();
 
             var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
+            switchingDataBuilder.setNextArchitecture(architecture);
+
             message = message.toBuilder().setSwitch(switchingDataBuilder).build();
             // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");
         }

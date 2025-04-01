@@ -32,6 +32,7 @@ public class CheckpointData {
 
     // counter for next(i)
     protected Map<String, LongAdder> decisionMatching;
+    private Map<String, LongAdder> architectureDecisionMatching;
     private static int decisionQuorumSize = 1;
 
     // protocol
@@ -61,6 +62,7 @@ public class CheckpointData {
         serviceState = null;
         replies = new HashMap<>();
         decisionMatching = new ConcurrentHashMap<>();
+        architectureDecisionMatching = new ConcurrentHashMap<>();
     }
 
     /**
@@ -94,6 +96,10 @@ public class CheckpointData {
 
         if (type == StateMachine.REPLY && !message.getSwitch().getNextProtocol().isEmpty()) {
             decisionMatching.computeIfAbsent(message.getSwitch().getNextProtocol(), p -> new LongAdder()).increment();
+            architectureDecisionMatching.computeIfAbsent(message.getSwitch().getNextArchitecture(),p -> new LongAdder()).increment();
+//            this.entity.logger.write("TALLY: Protocol decision matching: " + decisionMatching.toString() + " Protocol:" + message.getSwitch().getNextProtocol());
+//            this.entity.logger.write("TALLY: Architecture decision matching: " + architectureDecisionMatching.toString()+ " Architecture: "+ message.getSwitch().getNextArchitecture());
+
         }
 
         // used to debug tally stack trace
@@ -109,8 +115,13 @@ public class CheckpointData {
         }
     }
 
-    public void tallyDecision(String decision) {
-        decisionMatching.computeIfAbsent(decision, p -> new LongAdder()).increment();
+    public void tallyDecision(String protocol, String architecture) {
+
+        decisionMatching.computeIfAbsent(protocol, p -> new LongAdder()).increment();
+        architectureDecisionMatching.computeIfAbsent(architecture, p -> new LongAdder()).increment();
+//        this.entity.logger.write("TALLYDECISION: Protocol decision matching: " + decisionMatching.toString() + " Protocol:" + protocol);
+//        this.entity.logger.write("TALLYDECISION: Architecture decision matching: " + architectureDecisionMatching.toString()+ " Architecture: "+ architecture);
+
     }
 
     public void addAggregationValue(MessageData message) {
@@ -131,17 +142,27 @@ public class CheckpointData {
     }
 
     //TODO: Understand if quorom is on all protocols or do we quorom
-    public String getDecision() {
+    public Decision getDecision() {
         Optional<String> nextProtocol;
         Optional<String> nextArchitecture;
         do {
             nextProtocol = decisionMatching.entrySet().parallelStream()
                     .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
                     .findAny();
-        } while (!nextProtocol.isPresent());
+            nextArchitecture = architectureDecisionMatching.entrySet().parallelStream()
+                    .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
+                    .findAny();
 
-        this.entity.logger.write("Decision: " + nextProtocol.get() + " with " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
-        return nextProtocol.get();
+        } while (nextProtocol.isEmpty());
+
+//        this.entity.logger.write("Architecture decision matching: " + architectureDecisionMatching.toString());
+//        this.entity.logger.write("Protocol decision matching: " + decisionMatching.toString());
+
+        Decision decision = new Decision(nextProtocol.get(),nextArchitecture.get());
+
+       // this.entity.logger.write("Decision: " + nextProtocol.get() + "and   " with " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
+        this.entity.logger.write("Decision: " + decision+ "  " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
+        return decision;
     }
 
     public void addRequestBlock(long seqnum, List<RequestData> requestBlock) {

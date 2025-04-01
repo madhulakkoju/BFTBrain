@@ -80,7 +80,7 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
+       // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
 
