@@ -159,7 +159,7 @@ public class DataUtils {
     private static final int WORKLOAD_40 = 2;
     private static final int WORKLOAD_44 = 3;
 
-    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId, int numTotal) {
+    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId, int numTotal, String curr_architecture) {
         var probabilities = Config.doubleList("workload.distribution");
 
         var r = random.nextDouble();
@@ -218,7 +218,8 @@ public class DataUtils {
                    .setReplySize(replySize)
                    .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
                    .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
-                   .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+                   .setTimestamp(Timestamps.fromNanos(System.nanoTime()))
+                    .setCurrArchitecture(curr_architecture);
 
 
 

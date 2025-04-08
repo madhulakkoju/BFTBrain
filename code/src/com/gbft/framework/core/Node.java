@@ -33,8 +33,13 @@ public class Node extends Entity {
     }
 
     public void executeParallel(ConcurrentHashMap<Long, Integer> replies, List<RequestDataList> dependencyGraph) {
-        for (RequestDataList requestDataList : dependencyGraph) {
-            this.executeTransaction(replies, requestDataList);
+        try {
+            for (RequestDataList requestDataList : dependencyGraph) {
+                this.executeTransaction(replies, requestDataList);
+            }
+        } catch (Exception e) {
+            System.out.println("Node 41 Exception :"+e);
+            System.exit(0);
         }
     }
 
@@ -54,118 +59,118 @@ public class Node extends Entity {
 
     public void validateParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph){
        // logger.write("validate parallel");
-        var requestDataList = dependencyGraph.get(0);
-        var requestData = requestDataList.getReqDataListList();
-        var futures = requestData.stream()
-                .map(request -> CompletableFuture.runAsync(() -> {
-                    boolean valid = request.getIsTnxValid();
+        try {
+            var requestDataList = dependencyGraph.get(0);
+            var requestData = requestDataList.getReqDataListList();
+            var futures = requestData.stream()
+                    .map(request -> CompletableFuture.runAsync(() -> {
+                        boolean valid = request.getIsTnxValid();
+                        if (!request.getIsTnxValid()) {
+                            replies.put(request.getRequestNum(), 0);
+                        } else {
+                            // logger.write("request "+ request.getIsTnxValid());
+                            dataset.writeData(request);
+                            replies.put(request.getRequestNum(), request.getEarlyExecResult());
+                        }
+                    })).toList();
 
-
-                    if(!request.getIsTnxValid()) {
-                       // logger.write("request "+ request.getIsTnxValid());
-                        replies.put(request.getRequestNum(), 0);
-                    }
-                    else{
-                       // logger.write("request "+ request.getIsTnxValid());
-                        dataset.writeData(request);
-                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
-                    }
-                })).toList();
-
-        // Wait for all tasks to complete
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            // Wait for all tasks to complete
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        } catch (Exception e) {
+            System.out.println("Exception node 75"+e);
+            System.exit(0);
+        }
     }
 
 
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
+//        System.out.println("Executed seqNum :"+seqnum);
        // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
-
-        if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV")){
-         //   logger.write("came inside");
-            try {
-                var replies = new HashMap<Long, Integer>();
-                List<RequestData> newblock = new ArrayList<>();
-                newblock = dataset.validateRequests(requestBlock, replies);
-                checkpoint.addReplies(seqnum, replies);
+        String curr_architecture = "";
+        try{
+            if(requestBlock != null && !requestBlock.isEmpty()){
+                curr_architecture = requestBlock.getFirst().getCurrArchitecture();
+            }
+        }catch(Exception e){
+            logger.write(e+ " exception");
+        }
+        try {
+            if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV")) {
+                //   logger.write("came inside");
+                try {
+                    var replies = new HashMap<Long, Integer>();
+                    List<RequestData> newblock = new ArrayList<>();
+                    newblock = dataset.validateRequests(requestBlock, replies);
+                    checkpoint.addReplies(seqnum, replies);
 //                checkpoint.setValidatedBlock(seqnum,replies);
-                //logger.write("came here "+replies);
-            } catch (Exception e) {
-               // logger.write("node 75 "+e.toString());
-            }
-        }
-
-        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OX")) {
-            var replies = new HashMap<Long, Integer>();
-            for (var request : requestBlock) {
-//                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
-//                    if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
-//
-//                        //TODO: something seems odd in this type of validation and updation
-//                        logger.write("Node:: Request is validated amd updated with "+ request.getEarlyExecResult());
-//                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
-//                        logger.write("Node:: Dataset is updated with value "+ request.getEarlyExecResult());
-//                        //update value on node dataset
-//                        dataset.update(request, request.getEarlyExecResult());
-//                    }
-//                }
-//                else{
-//                      replies.put(request.getRequestNum(), dataset.execute(request));
-//                }
-
-                replies.put(request.getRequestNum(), dataset.execute(request));
-
-            }
-            if(checkpoint.getRequestBlock(seqnum) == null){
-                // logger.write("block is null");
-                // logger.write("replies "+replies);
-            }
-
-            checkpoint.addReplies(seqnum, replies);
-        }
-
-        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OXII")) { // make true for oxii
-            var replies = new ConcurrentHashMap<Long, Integer>();
-            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
-            if(checkpoint.getDependencyGraph(seqnum) == null) {
-                if(checkpoint.getRequestBlock(seqnum) == null){
-                   // logger.write("block is null");
-                    for (var request : requestBlock) {
-                        replies.put(request.getRequestNum(), dataset.execute(request));
-                    }
+                    //logger.write("came here "+replies);
+                } catch (Exception e) {
+                    System.out.println("node 107 " + e.toString());
+                    System.out.println("Exception node " + e);
+                    System.exit(0);
                 }
-                else{
-                 //   logger.write("null block " + checkpoint.getRequestBlock(seqnum));
-                }
-
-            }else{
-//                logger.write("printing dag "+checkpoint.getDependencyGraph(seqnum));
-              //  logger.write("node dag "+checkpoint.getDependencyGraph(seqnum).size() +" seq num "+ seqnum + " protocol "+ checkpoint.getProtocol());
-                executeParallel(replies,dependencyGraph);
             }
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OX")) {
 
+                try{
 
-//            logger.write("replies"+ replies);
-            checkpoint.addReplies(seqnum, replies);
-        }
-
-        else if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
-            var replies = new ConcurrentHashMap<Long, Integer>();
-            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
-            if(checkpoint.getDependencyGraph(seqnum) == null) {
+                var replies = new HashMap<Long, Integer>();
                 for (var request : requestBlock) {
                     replies.put(request.getRequestNum(), dataset.execute(request));
                 }
-            }
-            else{
-                validateParallel(replies,dependencyGraph);
-            }
-            checkpoint.addReplies(seqnum, replies);
-        }
+                if (checkpoint.getRequestBlock(seqnum) == null) {
+                    // logger.write("block is null");
+                    // logger.write("replies "+replies);
+                }
 
+                checkpoint.addReplies(seqnum, replies);
+
+            }
+
+                catch (Exception e){
+                System.out.println("Node 130 "+e);
+                System.exit(0);
+            }
+            }
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OXII")) { // make true for oxii
+                try {
+                    var replies = new ConcurrentHashMap<Long, Integer>();
+                    List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+                    if (dependencyGraph == null || dependencyGraph.isEmpty()) {
+                        for (var request : requestBlock) {
+                            replies.put(request.getRequestNum(), dataset.execute(request));
+                        }
+                    } else {
+                        executeParallel(replies, dependencyGraph);
+                    }
+                    checkpoint.addReplies(seqnum, replies);
+                }
+
+                catch (Exception e){
+                    System.out.println("Node 163 "+e);
+                    System.exit(0);
+                }
+            }
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV++")) {
+                var replies = new ConcurrentHashMap<Long, Integer>();
+                List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+                if (dependencyGraph == null || dependencyGraph.isEmpty()) {
+                    for (var request : requestBlock) {
+                        replies.put(request.getRequestNum(), dataset.execute(request));
+                    }
+                } else {
+                    validateParallel(replies, dependencyGraph);
+                }
+                checkpoint.addReplies(seqnum, replies);
+            }
+        }catch (Exception e){
+            System.out.println("Node 180 "+e);
+            System.exit(0);
+        }
 
         // checkpoint
         if ((seqnum + 1) % checkpointSize == 0) {

@@ -22,6 +22,7 @@ import com.gbft.framework.plugins.InitializablePluginInterface;
 import com.gbft.framework.plugins.MessagePlugin;
 import com.gbft.framework.utils.DataUtils;
 import com.gbft.framework.utils.EntityMapUtils;
+import com.gbft.framework.utils.LogUtils;
 import com.gbft.framework.utils.Printer;
 import com.gbft.framework.utils.Printer.Verbosity;
 import com.google.protobuf.ByteString;
@@ -133,12 +134,18 @@ public class MacMessagePlugin implements MessagePlugin, InitializablePluginInter
         stream.write(targets.size());
 
         try {
+            //LogUtils.LogCommon("TARGETs given to MACMESSAGEPLUGIN : " + targets.toString() );
+           // System.out.println("TARGETs given to MACMESSAGEPLUGIN : " + targets.toString());
+
             for (var target : targets) {
                 if (target == entity.getId()) {
                     continue;
                 }
 
                 var mac = Mac.getInstance("HmacSHA512");
+                LogUtils.LogCommon("TARGET in MACMESSAGEPLUGIN : " + target);
+                LogUtils.LogCommon("SECRETS(TARGET) in MACMESSAGEPLUGIN : " + secretKeys.get(target));
+
                 mac.init(new SecretKeySpec(secretKeys.get(target), "HmacSHA512"));
                 mac.update(data);
                 var bytes = mac.doFinal();
@@ -148,6 +155,9 @@ public class MacMessagePlugin implements MessagePlugin, InitializablePluginInter
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException | IOException e) {
             e.printStackTrace();
+            LogUtils.LogCommon("ERROR in MACMESSAGE PLUGIN : " + e.getMessage());
+            System.out.println("TARGETs given to MACMESSAGEPLUGIN : " + targets.toString());
+
             return null;
         }
 

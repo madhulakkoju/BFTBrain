@@ -34,7 +34,7 @@ public class Client extends Entity {
         var targetConfig = Config.string("protocol.general.request-target");
         requestTargetRole = StateMachine.roles.indexOf(targetConfig);
 
-        dataset = new ClientDataset(id);
+        dataset = new ClientDataset(id,this);
         nextRequestNum = 0L;
 
         requestGenerator = createRequestGenerator();
@@ -172,18 +172,8 @@ public class Client extends Entity {
 
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
-
-
                     // from here sending generated request to leader
                     sendRequest(request);
-
-
-
-
-
-
-
-
                     while (System.nanoTime() < next) {
                         LockSupport.parkNanos(intervalns / 3);
                     }
@@ -240,72 +230,87 @@ public class Client extends Entity {
                                          List<Integer> targets) {
             var message = createMessage(seqnum, viewNum, block, type, source, targets);
             message = message.toBuilder().setIsEndorsementRequest(true).setXovState(1).build();
+
             return processMessage(message);
         }
 
 
         protected void sendEndorserRequest(RequestData request) {
-            var reqnum = request.getRequestNum();
-            var seqnum = reqnum / blockSize;
-            var view = currentViewNum;
+            try{
+                var reqnum = request.getRequestNum();
+                var seqnum = reqnum / blockSize;
+                var view = currentViewNum;
 
-            // wait to know the leader mode if necessary
-            var episode = getEpisodeNum(seqnum);
-            rolePlugin.roleReadLock.lock();
-            try {
-                if (rolePlugin.episodeLeaderMode.get(episode) == null) {
-                    rolePlugin.roleReadLock.unlock();
-                    rolePlugin.roleWriteLock.lock();
-                    try {
-                        while (rolePlugin.episodeLeaderMode.get(episode) == null) {
-                            rolePlugin.roleCondition.await();
+                // wait to know the leader mode if necessaryf
+                var episode = getEpisodeNum(seqnum);
+                rolePlugin.roleReadLock.lock();
+                try {
+                    if (rolePlugin.episodeLeaderMode.get(episode) == null) {
+                        rolePlugin.roleReadLock.unlock();
+                        rolePlugin.roleWriteLock.lock();
+                        try {
+                            while (rolePlugin.episodeLeaderMode.get(episode) == null) {
+                                rolePlugin.roleCondition.await();
+                            }
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } finally {
+                            rolePlugin.roleWriteLock.unlock();
+                            rolePlugin.roleReadLock.lock();
                         }
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } finally {
-                        rolePlugin.roleWriteLock.unlock();
-                        rolePlugin.roleReadLock.lock();
+                    }
+                } finally {
+                    rolePlugin.roleReadLock.unlock();
+                }
+
+                var nodesTargetRole = StateMachine.roles.indexOf("nodes");
+
+                var targetsList = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
+
+                List<Integer> targets = new ArrayList<>();
+                LogUtils.LogCommon("SEND ENDORSER REQ " + targetsList.toString());
+                for(var target : targetsList) {
+                    if(target %2 == 0 && reqnum %2 == 0) {
+                        targets.add(target);
+                    }
+                    if(target %2 == 1 && reqnum %2 == 1) {
+                        targets.add(target);
                     }
                 }
-            } finally {
-                rolePlugin.roleReadLock.unlock();
-            }
 
-            var nodesTargetRole = StateMachine.roles.indexOf("nodes");
+                LogUtils.LogCommon("SEND ENDORSER REQ TARGETSLIST " + targetsList.toString());
+                LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
 
-            var targetsList = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
 
-            List<Integer> targets = new ArrayList<>();
-
-            for(var target : targetsList) {
-                if(target %2 == 0 && reqnum %2 == 0) {
-                    targets.add(target);
+                if ( RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
+                    targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
+                    LogUtils.LogCommon("TARGETS CHANGED with roleplugin because Operation READ_ONLY " + targets.toString());
                 }
-                if(target %2 == 1 && reqnum %2 == 1) {
-                    targets.add(target);
+
+                LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
+
+                var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
+
+                for (var req : message.getRequestsList()) {
+                    this.client.getEndorsementQueue().put(req.getRequestNum(), message);
+                    this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
                 }
-            }
+                
+                sendMessage(message);
 
-
-            if ( RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
-                targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
-            }
-
-            var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
-            sendMessage(message);
-
-            if (Printer.verbosity >= Verbosity.VVV) {
-                Printer.print(Verbosity.VVV, prefix, "Endorser Request created: ", request);
-            }
+                if (Printer.verbosity >= Verbosity.VVV) {
+                    Printer.print(Verbosity.VVV, prefix, "Endorser Request created: ", request);
+                }
 
 
 
-            //this.client.getEndorsementQueue().put(message.getRequestsList().get(0).getRequestNum(), message);
+                //this.client.getEndorsementQueue().put(message.getRequestsList().get(0).getRequestNum(), message);
 
-            for (var req : message.getRequestsList()) {
-                this.client.getEndorsementQueue().put(req.getRequestNum(), message);
-                this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
+
+            }catch (Exception e){
+                System.out.println("Exception in client 320 "+e);
+                System.exit(0);
             }
 
         }
@@ -376,10 +381,12 @@ public class Client extends Entity {
 
                             // System.out.println("client " + id + " record " + (++ reqnumcnt));
                             // System.out.println("client " + id + " send request " + reqnum);
-
+                            String curr_arch = "";
+                            if(request != null){
+                                curr_arch = request.getCurrArchitecture();
+                            }
                             if( this.client != null &&
-                                this.client.getArchManager() != null &&
-                                this.client.getArchManager().getCurrentArchitectureKey().contains("XOV")) {
+                                this.client.getArchManager() != null && curr_arch.contains("XOV")) {
                                 sendEndorserRequest(request);
                             }
                             else {

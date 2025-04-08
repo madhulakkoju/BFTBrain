@@ -176,4 +176,16 @@ public interface RequestDataOrBuilder extends
    */
   com.gbft.framework.data.OperationSetOrBuilder getWriteSetOrBuilder(
       int index);
+
+  /**
+   * <code>string curr_architecture = 17;</code>
+   * @return The currArchitecture.
+   */
+  java.lang.String getCurrArchitecture();
+  /**
+   * <code>string curr_architecture = 17;</code>
+   * @return The bytes for currArchitecture.
+   */
+  com.google.protobuf.ByteString
+      getCurrArchitectureBytes();
 }

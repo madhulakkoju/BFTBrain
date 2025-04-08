@@ -161,7 +161,7 @@ public class CheckpointData {
         Decision decision = new Decision(nextProtocol.get(),nextArchitecture.get());
 
        // this.entity.logger.write("Decision: " + nextProtocol.get() + "and   " with " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
-        this.entity.logger.write("Decision: " + decision+ "  " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
+        //this.entity.logger.write("Decision: " + decision+ "  " + decisionMatching.get(nextProtocol.get()).longValue() + " votes");
         return decision;
     }
 

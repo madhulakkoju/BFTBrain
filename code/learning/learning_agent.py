@@ -37,8 +37,8 @@ args = parser.parse_args()
 request_queue = queue.Queue()
 protocol_pool = ["pbft", "cheapbft", "sbft", "prime"]
 blocksize_options = [1, 10, 20, 50, 100, 200, 500]
-# architecture_pool = ['OX', 'XOV', 'OXII', "XOV++"]
-architecture_pool = ['OX', 'OXII']
+architecture_pool = ['OX', 'XOV', 'OXII', "XOV++"]
+# architecture_pool = ['XOV', 'XOV++']
 
 
 def reward_engineering(reward: float) -> float:

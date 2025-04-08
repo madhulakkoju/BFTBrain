@@ -144,8 +144,8 @@ public abstract class Entity {
 
         archManager = new ArchManager(this);
 
-        endorsementQueue = new HashMap<Long, MessageData>();
-        endorsementCounts = new HashMap<Long, Integer>();
+        endorsementQueue = new ConcurrentHashMap<Long, MessageData>();
+        endorsementCounts = new ConcurrentHashMap<Long, Integer>();
 
         blockSize = Config.integer("benchmark.block-size");
         checkpointSize = Config.integer("benchmark.checkpoint-size");
@@ -337,20 +337,35 @@ public abstract class Entity {
 //            logger.write("First Condition check: " + !this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
 //            logger.write("IS Endorsement Req: " + message.getIsEndorsementRequest());
 //            logger.write("XOV State: " + message.getXovState());
-
-            if (!this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 1) {
+            String curr_architecture = "";
+            try{
+                if(!message.getRequestsList().isEmpty()){
+                    curr_architecture = message.getRequestsList().getFirst().getCurrArchitecture();
+                }
+            }catch(Exception e){
+                System.out.println(e+ " exception  entity 346");
+                System.exit(0);
+            }
+            if (!this.isClient() && curr_architecture.contains("XOV") && message.getXovState() == 1) {
                 //Here, it is an endorsement. so execute ahead and send back to client
-                var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList() );
-                var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
-                sendMessage(messageToClient);
+                try {
+                    var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList());
+                    var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
+                    sendMessage(messageToClient);
+                }catch (Exception e){
+                    System.out.println("Exception in Entity 355 "+e);
+                    System.exit(0);
+                }
                 return;
             }
-            if (this.isClient() && this.getArchManager().getCurrentArchitectureKey().contains("XOV") && message.getXovState() == 2) {
+            if (this.isClient() && curr_architecture.contains("XOV") && message.getXovState() == 2) {
                 //Endorsement Policy: atleast 1 endorsed response needed to pass on
-                    //Endorsement Response
+                //Endorsement Response
+                try {
                     for (var req : message.getRequestsList()) {
                         if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                            this.getEndorsementCounts().put(req.getRequestNum(), this.getEndorsementCounts().get(req.getRequestNum()) + 1);
+                            int endorsersCount = this.getEndorsementCounts().getOrDefault(req.getRequestNum(),0);
+                            this.getEndorsementCounts().put(req.getRequestNum(), endorsersCount+ 1);
                             if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
                                 //Remove the request from the queue
                                 this.getEndorsementQueue().remove(req.getRequestNum());
@@ -361,12 +376,19 @@ public abstract class Entity {
                                     requestGenerator.sendRequest(req);
                                 }
                             }
+                            else{
+                                return;
+                            }
                         }
                     }
+                }catch (Exception e){
+                    System.out.println("Exception in Entity 379 "+e);
+                    System.exit(0);
+                }
                 return;
             }
 
-            if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
+            if(curr_architecture.contains("OX")){
                 var a = message.getReqListsList();
                 //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
                 if(!message.getReqListsList().isEmpty()){
@@ -375,7 +397,7 @@ public abstract class Entity {
                     checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
                 }
             }
-            if(this.getArchManager().getCurrentArchitectureKey().contains("XOV++")){
+            if(curr_architecture.contains("XOV")){ // xov++
                 var a = message.getReqListsList();
                 //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
                 if(!message.getReqListsList().isEmpty()){
@@ -437,7 +459,8 @@ public abstract class Entity {
             benchmarkManager.messageProcessed(start, System.nanoTime());
         }
         catch (Exception e){
-            logger.errors("Error in handling message: " + e.getMessage());
+            System.out.println("Error in handling message: " + e.getMessage());
+            System.exit(0);
         }
     }
 
@@ -550,9 +573,15 @@ public abstract class Entity {
                                             }
                                         }
 
-                                        block = new ArrayList<RequestData>(blockSize);
+                                        block = new ArrayList<RequestData>();
+                                        String prev_arch = "";
                                         for (var i = 0; i < blockSize; i++) {
                                             var request = pendingRequests.remove();
+                                            if(!prev_arch.isEmpty() && !prev_arch.equals(request.getCurrArchitecture())){
+                                                pendingRequests.offer(request);
+                                                break;
+                                            }
+                                            prev_arch = request.getCurrArchitecture();
                                             // carry the report quorum in the first request of this reserved block
                                             if (learning && seqnum == exchangeSequence && isPrimary(seqnum) && i == 0) {
                                                 var reportQuorum = new ArrayList<LearningData>(REPORT_QUORUM);
@@ -564,20 +593,33 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
-                                        //logger.write("creating block ");
-                                        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII")){
-                                           // logger.write("creating dag");
-                                            List<RequestDataList> dependencyList = dg.CreateGraph(block);
-                                            dg.setDependencyGraph(dependencyList);
-                                           // logger.write("dep list size "+dependencyList.size());
-                                            checkpoint.setDependencyGraph(seqnum,dependencyList);
+                                        System.out.println("Block Created with size :"+block.size()+" seqnum : "+seqnum+" arch: "+block.getFirst().getCurrArchitecture());
+                                        String curr_architecture = "";
+                                        try{
+                                            if(block != null && !block.isEmpty()){
+                                                curr_architecture = block.getFirst().getCurrArchitecture();
+                                            }
+                                        }catch(Exception e){
+                                            System.out.println(e+ " exception");
+                                            System.exit(0);
                                         }
-                                        if(this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
-                                            //logger.write("creating dag");
-                                            List<RequestDataList> dependencyList = dg.earlyAbort(block);
-                                            dg.setDependencyGraph(dependencyList);
-                                           // logger.write("dep list size "+dependencyList.size());
-                                            checkpoint.setDependencyGraph(seqnum,dependencyList);
+                                        try {
+                                            if (curr_architecture.equals("OXII")) {
+                                                List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                                dg.setDependencyGraph(dependencyList);
+                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
+                                            }
+                                            if (curr_architecture.equals("XOV++")) {
+                                                //logger.write("creating dag");
+                                                List<RequestDataList> dependencyList = dg.earlyAbort(block);
+                                                dg.setDependencyGraph(dependencyList);
+                                                // logger.write("dep list size "+dependencyList.size());
+                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
+                                            }
+                                        }
+                                        catch (Exception e){
+                                            System.out.println("Exception entity 612 "+e);
+                                            System.exit(0);
                                         }
                                     }
                                 }
@@ -806,20 +848,22 @@ try {
 
             // dynamic switching via learning agent
             // or client
-            this.logger.write("Getting next Decision");
+          //  this.logger.write("Getting next Decision");
             Decision nextDecision = checkpoint.getDecision();
             nextProtocol = nextDecision.getNextProtocol();
-//            nextArchitecture = nextDecision.getNextArchitecture();
+
+            // architecture from LEARNING AGENT
+            nextArchitecture = nextDecision.getNextArchitecture();
 
             //TODO: temporary code
-            List<String> archList = new ArrayList<>(archManager.architectures);
-            long episodeNum = currentEpisodeNum.get();
-            int index = (int) (episodeNum % archList.size());
-            nextArchitecture = archList.get(index);
+            // architecture from CONDITIONS
+//            List<String> archList = new ArrayList<>(archManager.architectures);
+//            long episodeNum = currentEpisodeNum.get();
+//            int index = (int) (episodeNum % archList.size());
+//            nextArchitecture = archList.get(index);
 
             archManager.setCurrentArchitectureKey(nextArchitecture);
 
-            //TODO: Update architecture from learining agent
         }
 
         // warm up episodes
@@ -877,7 +921,8 @@ try {
     }
 }
 catch (Exception e){
-    logger.errors("Error in checkSwitching: " + e.getMessage());
+    System.out.println("Error in checkSwitching: " + e.getMessage());
+    System.exit(0);
 }
     }
 
@@ -1067,9 +1112,19 @@ catch (Exception e){
             List<Integer> targets) {
 
         List<RequestDataList> dependencyList = new ArrayList<>();
-        if(this.getArchManager().getCurrentArchitectureKey().equals("OXII") || this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
-            dependencyList = dg.getDependencyGraph();
+        String curr_architecture = "";
+        try{
+            if(block != null && !block.isEmpty()){
+                curr_architecture = block.getFirst().getCurrArchitecture();
+            }
+        }catch(Exception e){
+            System.out.println(e+ " exception");
+            System.exit(0);
         }
+        dependencyList = dg.getDependencyGraph();
+//        if(curr_architecture.equals("OXII") || curr_architecture.equals("XOV++")){
+//
+//        }
         ByteString digest = null;
         Map<Long, Integer> replies = null;
         MessageData message;
@@ -1183,9 +1238,13 @@ catch (Exception e){
     }
 
     public MessageData processMessage(MessageData message) {
-        for (var i = 0; i < messagePlugins.size(); i++) {
-            var plugin = messagePlugins.get(i);
-            message = plugin.processOutgoingMessage(message);
+        try{
+            for (var i = 0; i < messagePlugins.size(); i++) {
+                var plugin = messagePlugins.get(i);
+                message = plugin.processOutgoingMessage(message);
+            }
+        }catch (Exception e){
+            System.out.println("Exception in Entity 1222 "+e);
         }
 
         return message;

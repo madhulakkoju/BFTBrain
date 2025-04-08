@@ -1,13 +1,13 @@
 package com.gbft.framework.utils;
 
+import com.gbft.framework.core.Entity;
+import com.gbft.framework.data.RequestData;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
-
-import com.gbft.framework.core.Entity;
-import com.gbft.framework.data.RequestData;
 
 public class BenchmarkManager {
 
@@ -93,19 +93,26 @@ public class BenchmarkManager {
             add(TIMEOUT, 0, timestamp);
         }
         var replies = checkpoint.getReplies(seqnum);
-       // this.entity.logger.write("bench seqnum "+seqnum+" replies "+replies);
-        for (var request : requests) {
-            if (this.entity.getArchManager().getCurrentArchitectureKey().contains("XOV") && replies.getOrDefault(request.getRequestNum(),0) != 0){
-                duration = timestamp - DataUtils.toLong(request.getTimestamp());
-                add(REQUEST_EXECUTE, duration, timestamp);
-                addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
-            }
-            else if(!this.entity.getArchManager().getCurrentArchitectureKey().contains("XOV")){
-                duration = timestamp - DataUtils.toLong(request.getTimestamp());
-                add(REQUEST_EXECUTE, duration, timestamp);
-                addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
-            }
-        }
+      try {
+          for (var request : requests) {
+              String curr_arch = "";
+              if (request != null) {
+                  curr_arch = request.getCurrArchitecture();
+              }
+              if (curr_arch.contains("XOV") && replies.getOrDefault(request.getRequestNum(), 0) != 0) {
+                  duration = timestamp - DataUtils.toLong(request.getTimestamp());
+                  add(REQUEST_EXECUTE, duration, timestamp);
+                  addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+              } else if (!curr_arch.contains("XOV")) {
+                  duration = timestamp - DataUtils.toLong(request.getTimestamp());
+                  add(REQUEST_EXECUTE, duration, timestamp);
+                  addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+              }
+          }
+      }catch (Exception e){
+          System.out.println("BM 112 Exception "+e);
+          System.exit(0);
+      }
     }
 
     public void messageProcessed(long start, long timestamp) {

@@ -60,6 +60,8 @@ message RequestData {
 
     repeated OperationSet read_set = 15;
     repeated OperationSet write_set = 16;
+
+    string curr_architecture = 17;
 }
 message MessageData {
     int64 sequence_num = 1;

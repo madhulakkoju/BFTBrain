@@ -5,10 +5,10 @@ import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
 
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Dataset {
@@ -31,13 +31,13 @@ public class Dataset {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
         recordCurrentVersion = new TreeMap<>();
         recordLatestVersion = new TreeMap<>();
-        recordCurrVersion = new TreeMap<>();
-        recordLatVersion = new TreeMap<>();
+//        recordCurrVersion = new TreeMap<>();
+//        recordLatVersion = new TreeMap<>();
     }
 
     // use this for copying service state
     public Dataset(Dataset dataset) {
-        records = new TreeMap<>();
+        records = new ConcurrentHashMap<>();
         for (var entry : dataset.records.entrySet()) {
             this.records.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
         }
@@ -95,14 +95,32 @@ public class Dataset {
     }
 
 
-    public int processRequest(OperationSet operation){
-        return switch (operation.getOp()) {
-            case ADD -> records.get(operation.getRecord()).addAndGet(operation.getValue());
-            case SUB -> records.get(operation.getRecord()).addAndGet(-operation.getValue());
-            case INC -> records.get(operation.getRecord()).incrementAndGet();
-            case DEC -> records.get(operation.getRecord()).decrementAndGet();
-            default -> records.get(operation.getRecord()).get();
-        };
+    public int processRequest(OperationSet operation) {
+
+        try {
+            records.computeIfAbsent(operation.getRecord(),x -> new AtomicInteger(DEFAULT_VALUE));
+            AtomicInteger recordValue = records.get(operation.getRecord());
+            if (recordValue == null) {
+                records.put(operation.getRecord(), new AtomicInteger(DEFAULT_VALUE));
+            }
+            return switch (operation.getOp()) {
+                case ADD -> records.get(operation.getRecord()).addAndGet(operation.getValue());
+                case SUB -> records.get(operation.getRecord()).addAndGet(-operation.getValue());
+                case INC -> records.get(operation.getRecord()).incrementAndGet();
+                case DEC -> records.get(operation.getRecord()).decrementAndGet();
+                default -> records.get(operation.getRecord()).get();
+            };
+        }
+        catch (Exception e){
+            System.out.println("Exception 112 "+e+"\n\n"+ operation.toString() );
+//            System.out.println( "EEERRRRROOOORRRR Operation Record: "+operation.getRecord() +"\n" + e.getMessage() );
+//            for ( var rec:  records.keySet()){
+//                System.out.print("" +rec + "->" + records.get(rec) +" " );
+//            }
+//            System.out.println(records.keySet().stream().toArray().toString());
+            System.exit(0);
+        }
+        return 0;
     }
 
     public void update(RequestData request, int value) {

@@ -4,23 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="Mostly protobuf changes.">
-      <change afterPath="$PROJECT_DIR$/.idea/csv-editor.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/NextDecision.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/run.sh" afterDir="false" />
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="Architecture from learning_agent.py working.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/code/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/learning/learning_agent.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/learning_agent.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorBase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/ArchManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Config.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/BenchmarkManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/BenchmarkManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/CheckpointData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/CheckpointData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/MacMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/MacMessagePlugin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/config.framework.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.framework.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +74,9 @@
     &quot;accountId&quot;: &quot;af475058-a351-436f-ac6d-523e0ffd5429&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jrt:///usr/lib/jvm/java-1.21.0-openjdk-amd64!/java.base/javax/crypto/spec/SecretKeySpec.class" root0="SKIP_INSPECTION" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -101,10 +112,10 @@
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -171,7 +182,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741566626636</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Working with Set of architectures&#10;&#10;(OX, XOV) or (XOV,XOV++)&#10;&#10;Combined not working.">
+      <option name="closed" value="true" />
+      <created>1742755532813</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1742755532813</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Architecture from learning_agent.py working.">
+      <option name="closed" value="true" />
+      <created>1743469474393</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1743469474393</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -208,17 +235,8 @@
     <MESSAGE value="modified Request Data.. for further changes to Parallel Implementations" />
     <MESSAGE value="stable commit for ML model integration." />
     <MESSAGE value="Mostly protobuf changes." />
-    <option name="LAST_COMMIT_MESSAGE" value="Mostly protobuf changes." />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>686</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Working with Set of architectures&#10;&#10;(OX, XOV) or (XOV,XOV++)&#10;&#10;Combined not working." />
+    <MESSAGE value="Architecture from learning_agent.py working." />
+    <option name="LAST_COMMIT_MESSAGE" value="Architecture from learning_agent.py working." />
   </component>
 </project>

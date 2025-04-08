@@ -24,9 +24,10 @@ public class ArchManager {
 
     public ArchManager(Entity entity) {
 //        architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
-//        architectures = new HashSet<>(Set.of("XOV", "OXII", "XOV"));
+        architectures = new HashSet<>(Set.of("XOV", "OXII", "XOV++"));
+//        architectures = new HashSet<>(Set.of("OXII", "OX"));
 //        architectures = new HashSet<>(Set.of("XOV", "XOV++"));
-        architectures = new HashSet<>(Set.of("OXII", "OX"));
+//        architectures = new HashSet<>(Set.of("XOV++","OX"));
 
         //TODO: here use this point.
 

@@ -21,6 +21,7 @@ private static final long serialVersionUID = 0L;
     reqLists_ = java.util.Collections.emptyList();
     readSet_ = java.util.Collections.emptyList();
     writeSet_ = java.util.Collections.emptyList();
+    currArchitecture_ = "";
   }
 
   @java.lang.Override
@@ -146,6 +147,12 @@ private static final long serialVersionUID = 0L;
             }
             writeSet_.add(
                 input.readMessage(com.gbft.framework.data.OperationSet.parser(), extensionRegistry));
+            break;
+          }
+          case 138: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            currArchitecture_ = s;
             break;
           }
           default: {
@@ -482,6 +489,44 @@ private static final long serialVersionUID = 0L;
     return writeSet_.get(index);
   }
 
+  public static final int CURR_ARCHITECTURE_FIELD_NUMBER = 17;
+  private volatile java.lang.Object currArchitecture_;
+  /**
+   * <code>string curr_architecture = 17;</code>
+   * @return The currArchitecture.
+   */
+  @java.lang.Override
+  public java.lang.String getCurrArchitecture() {
+    java.lang.Object ref = currArchitecture_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      currArchitecture_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string curr_architecture = 17;</code>
+   * @return The bytes for currArchitecture.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getCurrArchitectureBytes() {
+    java.lang.Object ref = currArchitecture_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      currArchitecture_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -537,6 +582,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < writeSet_.size(); i++) {
       output.writeMessage(16, writeSet_.get(i));
+    }
+    if (!getCurrArchitectureBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 17, currArchitecture_);
     }
     unknownFields.writeTo(output);
   }
@@ -603,6 +651,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(16, writeSet_.get(i));
     }
+    if (!getCurrArchitectureBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(17, currArchitecture_);
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -649,6 +700,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getReadSetList())) return false;
     if (!getWriteSetList()
         .equals(other.getWriteSetList())) return false;
+    if (!getCurrArchitecture()
+        .equals(other.getCurrArchitecture())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -701,6 +754,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + WRITE_SET_FIELD_NUMBER;
       hash = (53 * hash) + getWriteSetList().hashCode();
     }
+    hash = (37 * hash) + CURR_ARCHITECTURE_FIELD_NUMBER;
+    hash = (53 * hash) + getCurrArchitecture().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -886,6 +941,8 @@ private static final long serialVersionUID = 0L;
       } else {
         writeSetBuilder_.clear();
       }
+      currArchitecture_ = "";
+
       return this;
     }
 
@@ -963,6 +1020,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.writeSet_ = writeSetBuilder_.build();
       }
+      result.currArchitecture_ = currArchitecture_;
       onBuilt();
       return result;
     }
@@ -1144,6 +1202,10 @@ private static final long serialVersionUID = 0L;
             writeSetBuilder_.addAllMessages(other.writeSet_);
           }
         }
+      }
+      if (!other.getCurrArchitecture().isEmpty()) {
+        currArchitecture_ = other.currArchitecture_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -2549,6 +2611,82 @@ private static final long serialVersionUID = 0L;
         writeSet_ = null;
       }
       return writeSetBuilder_;
+    }
+
+    private java.lang.Object currArchitecture_ = "";
+    /**
+     * <code>string curr_architecture = 17;</code>
+     * @return The currArchitecture.
+     */
+    public java.lang.String getCurrArchitecture() {
+      java.lang.Object ref = currArchitecture_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        currArchitecture_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string curr_architecture = 17;</code>
+     * @return The bytes for currArchitecture.
+     */
+    public com.google.protobuf.ByteString
+        getCurrArchitectureBytes() {
+      java.lang.Object ref = currArchitecture_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        currArchitecture_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string curr_architecture = 17;</code>
+     * @param value The currArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCurrArchitecture(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      currArchitecture_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string curr_architecture = 17;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearCurrArchitecture() {
+      
+      currArchitecture_ = getDefaultInstance().getCurrArchitecture();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string curr_architecture = 17;</code>
+     * @param value The bytes for currArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCurrArchitectureBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      currArchitecture_ = value;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(
