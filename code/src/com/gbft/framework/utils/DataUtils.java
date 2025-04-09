@@ -113,44 +113,44 @@ public class DataUtils {
         return builder.build();
     }
 
-    public static MessageData createMessage(Long seqnum, long viewNum, int messageType, int source,
-                                            List<Integer> targets, List<Long> reqnums, List<RequestData> requests, Map<Long, Integer> replies,
-                                            ByteString digest, List<RequestDataList> dependencyList) {
-
-        var builder = MessageData.newBuilder();
-        builder.setViewNum(viewNum)
-                .setMessageType(messageType)
-                .setSource(source)
-                .addAllTargets(targets);
-
-        if (seqnum != null) {
-            builder.setSequenceNum(seqnum);
-        }
-
-        if (reqnums != null) {
-            builder.addAllRequestNums(reqnums);
-        }
-
-        if (dependencyList != null) {
-            builder.addAllReqLists(dependencyList);
-        }
-
-        if (requests != null) {
-            builder.addAllRequests(requests);
-        }
-
-        if (replies != null) {
-            builder.putAllReplyData(replies);
-        }
-
-        if (digest != null) {
-            builder.setDigest(digest);
-        }
-
-        builder.setTimestamp(Timestamps.fromNanos(System.nanoTime()));
-
-        return builder.build();
-    }
+//    public static MessageData createMessage(Long seqnum, long viewNum, int messageType, int source,
+//                                            List<Integer> targets, List<Long> reqnums, List<RequestData> requests, Map<Long, Integer> replies,
+//                                            ByteString digest, List<RequestDataList> dependencyList) {
+//
+//        var builder = MessageData.newBuilder();
+//        builder.setViewNum(viewNum)
+//                .setMessageType(messageType)
+//                .setSource(source)
+//                .addAllTargets(targets);
+//
+//        if (seqnum != null) {
+//            builder.setSequenceNum(seqnum);
+//        }
+//
+//        if (reqnums != null) {
+//            builder.addAllRequestNums(reqnums);
+//        }
+//
+//        if (dependencyList != null) {
+//            builder.addAllReqLists(dependencyList);
+//        }
+//
+//        if (requests != null) {
+//            builder.addAllRequests(requests);
+//        }
+//
+//        if (replies != null) {
+//            builder.putAllReplyData(replies);
+//        }
+//
+//        if (digest != null) {
+//            builder.setDigest(digest);
+//        }
+//
+//        builder.setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+//
+//        return builder.build();
+//    }
 
 
 

@@ -173,6 +173,16 @@ public class Client extends Entity {
                     var request = dataset.createRequest(nextRequestNum);
                     nextRequestNum += 1;
                     // from here sending generated request to leader
+//                    String curr_arch = "";
+//                    if(request != null){
+//                        curr_arch = request.getCurrArchitecture();
+//                    }
+//                    if(curr_arch.contains("XOV")) {
+//                        sendEndorserRequest(request);
+//                    }
+//                    else{
+//                        sendRequest(request);
+//                    }
                     sendRequest(request);
                     while (System.nanoTime() < next) {
                         LockSupport.parkNanos(intervalns / 3);
@@ -270,14 +280,21 @@ public class Client extends Entity {
 
                 List<Integer> targets = new ArrayList<>();
                 LogUtils.LogCommon("SEND ENDORSER REQ " + targetsList.toString());
-                for(var target : targetsList) {
-                    if(target %2 == 0 && reqnum %2 == 0) {
-                        targets.add(target);
-                    }
-                    if(target %2 == 1 && reqnum %2 == 1) {
-                        targets.add(target);
-                    }
-                }
+                int noOfEndorsers = targetsList.size();
+                targets.add((int)reqnum % noOfEndorsers);
+//                targets.add(0);
+//                targets.add(1);
+//                targets.add(2);
+//                targets.add(3);
+
+//                for(var target : targetsList) {
+//                    if(target %2 == 0 && reqnum %2 == 0) {
+//                        targets.add(target);
+//                    }
+//                    if(target %2 == 1 && reqnum %2 == 1) {
+//                        targets.add(target);
+//                    }
+//                }
 
                 LogUtils.LogCommon("SEND ENDORSER REQ TARGETSLIST " + targetsList.toString());
                 LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
@@ -292,10 +309,10 @@ public class Client extends Entity {
 
                 var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
 
-                for (var req : message.getRequestsList()) {
-                    this.client.getEndorsementQueue().put(req.getRequestNum(), message);
-                    this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
-                }
+//                for (var req : message.getRequestsList()) {
+//                    this.client.getEndorsementQueue().put(req.getRequestNum(), message);
+//                    this.client.getEndorsementCounts().put(req.getRequestNum(), 0);
+//                }
                 
                 sendMessage(message);
 

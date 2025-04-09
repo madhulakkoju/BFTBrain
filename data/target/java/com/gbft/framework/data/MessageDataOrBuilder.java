@@ -320,7 +320,7 @@ public interface MessageDataOrBuilder extends
 
   /**
    * <pre>
-   * 0: DO_ENDORSE -&gt; all nodes, 1: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
+   * 1: DO_ENDORSE -&gt; all nodes, 2: ENDORSED -&gt; client .........OX........ 3: Validate on all nodes
    * </pre>
    *
    * <code>int32 xov_state = 21;</code>

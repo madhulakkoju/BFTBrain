@@ -232,7 +232,9 @@ public class CoordinatorUnit extends CoordinatorBase {
 					new Thread(() -> {
 						try {
 							if (_delay > 0L) Thread.sleep(_delay);
-							entities.get(target).handleMessage(message);
+                            if( message.getXovState() == 1) entities.get(target).endorseMessage(message);
+                            else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
+                            else entities.get(target).handleMessage(message);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -278,7 +280,9 @@ public class CoordinatorUnit extends CoordinatorBase {
 									new Thread(() -> {
 										try {
 											if (_delay > 0L) Thread.sleep(_delay);
-											entities.get(target).handleMessage(message);
+                                            if(message.getXovState() == 1) entities.get(target).endorseMessage(message);
+                                            else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
+                                            else entities.get(target).handleMessage(message);
 										} catch (InterruptedException e) {
 											e.printStackTrace();
 										}

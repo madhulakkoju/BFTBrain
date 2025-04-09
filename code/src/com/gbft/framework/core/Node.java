@@ -86,7 +86,6 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-//        System.out.println("Executed seqNum :"+seqnum);
        // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
         var requestBlock = checkpoint.getRequestBlock(seqnum);
@@ -139,7 +138,7 @@ public class Node extends Entity {
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OXII")) { // make true for oxii
                 try {
                     var replies = new ConcurrentHashMap<Long, Integer>();
-                    List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+                    List<RequestDataList> dependencyGraph = requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
                     if (dependencyGraph == null || dependencyGraph.isEmpty()) {
                         for (var request : requestBlock) {
                             replies.put(request.getRequestNum(), dataset.execute(request));
@@ -157,7 +156,7 @@ public class Node extends Entity {
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV++")) {
                 var replies = new ConcurrentHashMap<Long, Integer>();
-                List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
+                List<RequestDataList> dependencyGraph =  requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
                 if (dependencyGraph == null || dependencyGraph.isEmpty()) {
                     for (var request : requestBlock) {
                         replies.put(request.getRequestNum(), dataset.execute(request));

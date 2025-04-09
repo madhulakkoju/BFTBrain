@@ -314,10 +314,81 @@ public abstract class Entity {
         }
     }
 
+    public String getArchitectureFromMessage(MessageData message){
+        String curr_architecture = "";
+        try{
+            if(!message.getRequestsList().isEmpty()){
+                curr_architecture = message.getRequestsList().getFirst().getCurrArchitecture();
+                return curr_architecture;
+            }
+        }catch(Exception e){
+            System.out.println(e+ " exception  entity 325");
+            System.exit(0);
+        }
+        return curr_architecture;
+    }
+
+    public void endorseMessage(MessageData message){
+        // Here requests in the message gets executed by Endorsers
+        String curr_architecture = getArchitectureFromMessage(message);
+        if (!this.isClient() && curr_architecture.contains("XOV")) {
+            //Here, it is an endorsement. so execute ahead and send back to client
+            try {
+                var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList());
+                var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
+                sendMessage(messageToClient);
+            }catch (Exception e){
+                System.out.println("Exception in Entity 355 "+e);
+                System.exit(0);
+            }
+        }
+    }
+
+    public void sendEndorsedMessageToClient(MessageData message){
+        String curr_architecture = getArchitectureFromMessage(message);
+        if (this.isClient() && curr_architecture.contains("XOV") && message.getXovState() == 2) {
+            //Endorsement Policy: atleast 1 endorsed response needed to pass on
+            //Endorsement Response
+            try {
+                for (var req : message.getRequestsList()) {
+                    if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
+                        int endorsersCount = this.getEndorsementCounts().getOrDefault(req.getRequestNum(),0);
+                        this.getEndorsementCounts().put(req.getRequestNum(), endorsersCount+ 1);
+                        if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
+                            //Remove the request from the queue
+                            this.getEndorsementQueue().remove(req.getRequestNum());
+                            this.getEndorsementCounts().remove(req.getRequestNum());
+                            // Send message to state 3 to Leader
+                            if (requestGenerator != null) {
+                                //Send the request to the client
+                                requestGenerator.sendRequest(req);
+                            }
+                        }
+                        else{
+                            return;
+                        }
+                    }
+                }
+            }catch (Exception e){
+                System.out.println("Exception in Entity 379 "+e);
+                System.exit(0);
+            }
+        }
+    }
+
+    public void sendEndorsedMessageToLeader(MessageData message){
+        //This function happens in Client
+        // Client-gets the endorsed message and sends it to leader for consensus
+        for (var req : message.getRequestsList()) {
+            // Send message to state 3 to Leader
+            if (requestGenerator != null) {
+                requestGenerator.sendRequest(req);
+            }
+        }
+    }
+
     public void handleMessage(MessageData message) {
         try {
-            //logger.write("all .. Message received: " + message.toString());
-
             if (Printer.verbosity >= Verbosity.VVV) {
                 Printer.print(Verbosity.VVV, prefix, "Processing ", message);
             }
@@ -331,84 +402,6 @@ public abstract class Entity {
                 logger.errors("Invalid message received: " + message.getFlagsList().toString());
                 //return;
             }
-
-
-
-//            logger.write("First Condition check: " + !this.isClient() + " " + this.getArchManager().getCurrentArchitectureKey().contains("XOV") + " " + message.getIsEndorsementRequest());
-//            logger.write("IS Endorsement Req: " + message.getIsEndorsementRequest());
-//            logger.write("XOV State: " + message.getXovState());
-            String curr_architecture = "";
-            try{
-                if(!message.getRequestsList().isEmpty()){
-                    curr_architecture = message.getRequestsList().getFirst().getCurrArchitecture();
-                }
-            }catch(Exception e){
-                System.out.println(e+ " exception  entity 346");
-                System.exit(0);
-            }
-            if (!this.isClient() && curr_architecture.contains("XOV") && message.getXovState() == 1) {
-                //Here, it is an endorsement. so execute ahead and send back to client
-                try {
-                    var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList());
-                    var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
-                    sendMessage(messageToClient);
-                }catch (Exception e){
-                    System.out.println("Exception in Entity 355 "+e);
-                    System.exit(0);
-                }
-                return;
-            }
-            if (this.isClient() && curr_architecture.contains("XOV") && message.getXovState() == 2) {
-                //Endorsement Policy: atleast 1 endorsed response needed to pass on
-                //Endorsement Response
-                try {
-                    for (var req : message.getRequestsList()) {
-                        if (this.getEndorsementQueue().containsKey(req.getRequestNum()) && this.getEndorsementCounts().containsKey(req.getRequestNum())) {
-                            int endorsersCount = this.getEndorsementCounts().getOrDefault(req.getRequestNum(),0);
-                            this.getEndorsementCounts().put(req.getRequestNum(), endorsersCount+ 1);
-                            if (this.getEndorsementCounts().get(req.getRequestNum()) >= Architecture.EndorsementPolicy) {
-                                //Remove the request from the queue
-                                this.getEndorsementQueue().remove(req.getRequestNum());
-                                this.getEndorsementCounts().remove(req.getRequestNum());
-                                // Send message to state 3 to Leader
-                                if (requestGenerator != null) {
-                                    //Send the request to the client
-                                    requestGenerator.sendRequest(req);
-                                }
-                            }
-                            else{
-                                return;
-                            }
-                        }
-                    }
-                }catch (Exception e){
-                    System.out.println("Exception in Entity 379 "+e);
-                    System.exit(0);
-                }
-                return;
-            }
-
-            if(curr_architecture.contains("OX")){
-                var a = message.getReqListsList();
-                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
-                if(!message.getReqListsList().isEmpty()){
-                    Long seqnum = message.getSequenceNum();
-                    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-                    checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
-                }
-            }
-            if(curr_architecture.contains("XOV")){ // xov++
-                var a = message.getReqListsList();
-                //logger.write("message type : "+message.getMessageType()+"  seq num "+message.getSequenceNum()+" req size "+a.size());
-                if(!message.getReqListsList().isEmpty()){
-                    Long seqnum = message.getSequenceNum();
-                    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-                    checkpoint.setDependencyGraph(seqnum,message.getReqListsList());
-                }
-            }
-
-
-            // old code rom here
 
             var type = message.getMessageType();
             if (type == StateMachine.REQUEST) {
@@ -593,32 +586,30 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
-                                        System.out.println("Block Created with size :"+block.size()+" seqnum : "+seqnum+" arch: "+block.getFirst().getCurrArchitecture());
+//                                        System.out.println("Block Created with size :"+block.size()+" seqnum : "+seqnum+" arch: "+block.getFirst().getCurrArchitecture());
                                         String curr_architecture = "";
                                         try{
                                             if(block != null && !block.isEmpty()){
                                                 curr_architecture = block.getFirst().getCurrArchitecture();
                                             }
-                                        }catch(Exception e){
-                                            System.out.println(e+ " exception");
-                                            System.exit(0);
-                                        }
-                                        try {
                                             if (curr_architecture.equals("OXII")) {
                                                 List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                                block.set(0,req);
                                                 dg.setDependencyGraph(dependencyList);
                                                 checkpoint.setDependencyGraph(seqnum, dependencyList);
                                             }
                                             if (curr_architecture.equals("XOV++")) {
                                                 //logger.write("creating dag");
                                                 List<RequestDataList> dependencyList = dg.earlyAbort(block);
+                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                                block.set(0,req);
                                                 dg.setDependencyGraph(dependencyList);
                                                 // logger.write("dep list size "+dependencyList.size());
                                                 checkpoint.setDependencyGraph(seqnum, dependencyList);
                                             }
-                                        }
-                                        catch (Exception e){
-                                            System.out.println("Exception entity 612 "+e);
+                                        }catch(Exception e){
+                                            System.out.println(e+ " exception");
                                             System.exit(0);
                                         }
                                     }
@@ -1110,21 +1101,6 @@ catch (Exception e){
 //    ToDo call convert this to message data builder as intermediatery function call
     public MessageData createMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
             List<Integer> targets) {
-
-        List<RequestDataList> dependencyList = new ArrayList<>();
-        String curr_architecture = "";
-        try{
-            if(block != null && !block.isEmpty()){
-                curr_architecture = block.getFirst().getCurrArchitecture();
-            }
-        }catch(Exception e){
-            System.out.println(e+ " exception");
-            System.exit(0);
-        }
-        dependencyList = dg.getDependencyGraph();
-//        if(curr_architecture.equals("OXII") || curr_architecture.equals("XOV++")){
-//
-//        }
         ByteString digest = null;
         Map<Long, Integer> replies = null;
         MessageData message;
@@ -1153,10 +1129,10 @@ catch (Exception e){
 
         var hasblock = StateMachine.messages.get(type).hasRequestBlock;
         if (hasblock) {
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest,dependencyList);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
         } else {
             var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest,dependencyList);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
         }
 
         // carry aggregation values if exist
@@ -1210,10 +1186,10 @@ catch (Exception e){
 
         var hasblock = StateMachine.messages.get(type).hasRequestBlock;
         if (hasblock) {
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest,dependencyList);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
         } else {
             var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest,dependencyList);
+            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
         }
 
         // carry aggregation values if exist
