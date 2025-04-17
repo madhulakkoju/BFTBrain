@@ -235,8 +235,11 @@ public class CoordinatorUnit extends CoordinatorBase {
                             if( message.getXovState() == 1) entities.get(target).endorseMessage(message);
                             else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
                             else entities.get(target).handleMessage(message);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+						} catch (Exception e) {
+                            e.printStackTrace(System.err);
+                            System.out.println("Exception "+e);
+                            System.exit(1);
+
 						}
 					}).start();
                 }
@@ -283,8 +286,10 @@ public class CoordinatorUnit extends CoordinatorBase {
                                             if(message.getXovState() == 1) entities.get(target).endorseMessage(message);
                                             else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
                                             else entities.get(target).handleMessage(message);
-										} catch (InterruptedException e) {
-											e.printStackTrace();
+										} catch (Exception e) {
+                                            System.out.println("[Run coordination Unit] Exception "+e);
+                                            System.exit(1);
+
 										}
 									}).start();
                                 }

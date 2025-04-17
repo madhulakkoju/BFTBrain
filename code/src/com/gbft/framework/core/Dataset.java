@@ -118,7 +118,7 @@ public class Dataset {
 //                System.out.print("" +rec + "->" + records.get(rec) +" " );
 //            }
 //            System.out.println(records.keySet().stream().toArray().toString());
-            System.exit(0);
+            System.exit(1);
         }
         return 0;
     }

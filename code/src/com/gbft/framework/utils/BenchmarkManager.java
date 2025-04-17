@@ -111,7 +111,7 @@ public class BenchmarkManager {
           }
       }catch (Exception e){
           System.out.println("BM 112 Exception "+e);
-          System.exit(0);
+          System.exit(1);
       }
     }
 

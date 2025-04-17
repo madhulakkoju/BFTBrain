@@ -136,4 +136,8 @@ public class CheckpointManager {
         return getCheckpoint(seqnum / checkpointSize - 1);
     }
 
+    public int getCheckpointSize(){
+        return checkpoints.size();
+    }
+
 }

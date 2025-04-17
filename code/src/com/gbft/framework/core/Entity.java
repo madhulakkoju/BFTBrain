@@ -323,7 +323,7 @@ public abstract class Entity {
             }
         }catch(Exception e){
             System.out.println(e+ " exception  entity 325");
-            System.exit(0);
+            System.exit(1);
         }
         return curr_architecture;
     }
@@ -339,7 +339,7 @@ public abstract class Entity {
                 sendMessage(messageToClient);
             }catch (Exception e){
                 System.out.println("Exception in Entity 355 "+e);
-                System.exit(0);
+                System.exit(1);
             }
         }
     }
@@ -371,7 +371,7 @@ public abstract class Entity {
                 }
             }catch (Exception e){
                 System.out.println("Exception in Entity 379 "+e);
-                System.exit(0);
+                System.exit(1);
             }
         }
     }
@@ -452,8 +452,8 @@ public abstract class Entity {
             benchmarkManager.messageProcessed(start, System.nanoTime());
         }
         catch (Exception e){
-            System.out.println("Error in handling message: " + e.getMessage());
-            System.exit(0);
+            System.out.println("Error in handling message: " + e);
+            System.exit(1);
         }
     }
 
@@ -593,36 +593,30 @@ public abstract class Entity {
                                                 curr_architecture = block.getFirst().getCurrArchitecture();
                                             }
                                             if (curr_architecture.equals("OXII")) {
+//                                                System.out.println("dg oxii seqnum went in "+seqnum);
                                                 List<RequestDataList> dependencyList = dg.CreateGraph(block);
+//                                                System.out.println("dg oxii seqnum out ---> "+seqnum);
                                                 RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
-                                                block.set(0,req);
-                                                dg.setDependencyGraph(dependencyList);
-                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
+                                                block.set(0,req); // adding dependency graph to the first request.
+//                                                dg.setDependencyGraph(dependencyList);
+//                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
                                             }
                                             if (curr_architecture.equals("XOV++")) {
-                                                //logger.write("creating dag");
+//                                                System.out.println("dg xov++ seqnum went in "+seqnum);
                                                 List<RequestDataList> dependencyList = dg.earlyAbort(block);
+//                                                System.out.println("dg Xov++ seqnum out ---> "+seqnum);
                                                 RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
                                                 block.set(0,req);
-                                                dg.setDependencyGraph(dependencyList);
-                                                // logger.write("dep list size "+dependencyList.size());
-                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
+//                                                dg.setDependencyGraph(dependencyList);
+//                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
                                             }
                                         }catch(Exception e){
-                                            System.out.println(e+ " exception");
-                                            System.exit(0);
+                                            System.out.println(e+ " exception[statusUpdate]");
+                                            System.exit(1);
                                         }
                                     }
                                 }
-//                                logger.write("arch "+this.getArchManager().getCurrentArchitectureKey());
-//                                if(this.getArchManager().getCurrentArchitectureKey().contains("OX")){
-//                                    DependencyGraph dg = new DependencyGraph(this);
-//                                    List<RequestDataList> dependencyList = dg.CreateGraph(block);
-//                                    var message = createMessage(seqnum, currentViewNum, block, StateMachine.REQUEST, id,
-//                                            List.of(id),dependencyList);
-//                                    logger.write("depen list "+dependencyList);
-//                                    checkpoint.tally(message);
-//                                }
+
                                 var message = createMessage(seqnum, currentViewNum, block, StateMachine.REQUEST, id,
                                         List.of(id));
                                 checkpoint.tally(message);
@@ -795,126 +789,122 @@ public abstract class Entity {
         }
     }
 
-//    public void endorser(){
-//        while (running){
-//
-//        }
-//    }
-
     private void checkSwitching(long seqnum) {
         if (protocols.isEmpty() && !learning) {
             return;
         }
-try {
-    var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+        try {
+            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
 
-    // Switch to the next episode
-    if (seqnum == getEndOfEpisode(seqnum)) {
-        var episodeDuration = (System.nanoTime() - checkpoint.beginTimestamp) / 1e9f;
-        cumulativeDuration += (double) episodeDuration;
-        var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
-                .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
+            // Switch to the next episode
+            if (seqnum == getEndOfEpisode(seqnum)) {
+                var episodeDuration = (System.nanoTime() - checkpoint.beginTimestamp) / 1e9f;
+                cumulativeDuration += (double) episodeDuration;
+                var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
+                        .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
 
-        var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
-                + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
+                var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
+                        + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
 
-        if(this.isClient()){
-            CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);
-        }
-//        logger.write(episodeReport);
-        System.out.println(episodeReport);
-        Printer.print(Verbosity.V, prefix, episodeReport);
-        Printer.flush();
-        checkpoint.throughput = throughput;
+                if (this.isClient()) {
+                    CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);
+                }
+    //        logger.write(episodeReport);
+                System.out.println(episodeReport);
+                Printer.print(Verbosity.V, prefix, episodeReport);
+                Printer.flush();
+                checkpoint.throughput = throughput;
 
-        String nextProtocol;
-        String nextArchitecture;
-        if (!isClient() && !protocols.isEmpty()) {
-            // static switching in debug mode
-            nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
-            nextArchitecture = archManager.getCurrentArchitectureKey();
+                String nextProtocol;
+                String nextArchitecture;
+                if (!isClient() && !protocols.isEmpty()) {
+                    // static switching in debug mode
+                    nextProtocol = protocols.get(currentEpisodeNum.get() % protocols.size());
+                    nextArchitecture = archManager.getCurrentArchitectureKey();
 
 
-        } else {
+                } else {
 
-            // dynamic switching via learning agent
-            // or client
-          //  this.logger.write("Getting next Decision");
-            Decision nextDecision = checkpoint.getDecision();
-            nextProtocol = nextDecision.getNextProtocol();
+                    // dynamic switching via learning agent
+                    // or client
+                    //  this.logger.write("Getting next Decision");
+                    Decision nextDecision = checkpoint.getDecision();
+                    nextProtocol = nextDecision.getNextProtocol();
 
-            // architecture from LEARNING AGENT
-            nextArchitecture = nextDecision.getNextArchitecture();
+                    // architecture from LEARNING AGENT
+                    nextArchitecture = nextDecision.getNextArchitecture();
 
-            //TODO: temporary code
-            // architecture from CONDITIONS
-//            List<String> archList = new ArrayList<>(archManager.architectures);
-//            long episodeNum = currentEpisodeNum.get();
-//            int index = (int) (episodeNum % archList.size());
-//            nextArchitecture = archList.get(index);
+                    //TODO: temporary code
+                    // architecture from CONDITIONS
+    //            List<String> archList = new ArrayList<>(archManager.architectures);
+    //            long episodeNum = currentEpisodeNum.get();
+    //            int index = (int) (episodeNum % archList.size());
+    //            nextArchitecture = archList.get(index);
 
-            archManager.setCurrentArchitectureKey(nextArchitecture);
+                    archManager.setCurrentArchitectureKey(nextArchitecture);
 
-        }
+                }
 
-        // warm up episodes
-        if (nextProtocol.equals("repeat")) {
-            nextProtocol = checkpoint.getProtocol();
-            nextArchitecture = checkpoint.getArchitecture();
-        }
-        System.out.println(prefix + "nextProtocol = " + nextProtocol);
-        System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
-        Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
-        Printer.print(Verbosity.V, prefix, "nextArchitecture = " + nextArchitecture);
-        Printer.flush();
+                // warm up episodes
+                if (nextProtocol.equals("repeat")) {
+                    nextProtocol = checkpoint.getProtocol();
+                    nextArchitecture = checkpoint.getArchitecture();
+                }
+                System.out.println(prefix + "nextProtocol = " + nextProtocol);
+                System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
+                Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
+                Printer.print(Verbosity.V, prefix, "nextArchitecture = " + nextArchitecture);
+                Printer.flush();
 
-        var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
-        checkpointNew.setProtocol(nextProtocol);
-        checkpointNew.setArchitecture(nextArchitecture);
+                var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
+                checkpointNew.setProtocol(nextProtocol);
+                checkpointNew.setArchitecture(nextArchitecture);
 
-        // Record start of the next episode
-        checkpointNew.beginTimestamp = System.nanoTime();
+                // Record start of the next episode
+                checkpointNew.beginTimestamp = System.nanoTime();
 
-        // Reload special knobs in protocol.config file
-        slowProposalFault.reloadProtocol(nextProtocol);
-        indarkFault.reloadProtocol(nextProtocol);
+                // Reload special knobs in protocol.config file
+                slowProposalFault.reloadProtocol(nextProtocol);
+                indarkFault.reloadProtocol(nextProtocol);
 
-        // Update localSeq for Prime
-        if (nextProtocol.equals("prime")) {
-            synchronized (aggregationBuffer) {
-                lastLocalSeq = seqnum;
+                // Update localSeq for Prime
+                if (nextProtocol.equals("prime")) {
+                    synchronized (aggregationBuffer) {
+                        lastLocalSeq = seqnum;
+                    }
+                }
+
+                // Update epoch to leader mode mapping
+                Config.setCurrentProtocol(nextProtocol);
+                Config.setCurrentArchitecture(nextArchitecture);
+
+                rolePlugin.roleWriteLock.lock();
+                try {
+                    rolePlugin.episodeLeaderMode.put(currentEpisodeNum.get() + 1,
+                            Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
+                    System.out.println("leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
+                    Printer.print(Verbosity.V, prefix, "leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
+                    Printer.flush();
+                    // signal that leader mode for a new episode is available
+                    rolePlugin.roleCondition.signalAll();
+                } finally {
+                    rolePlugin.roleWriteLock.unlock();
+                }
+
+                // Update report and exchange sequence
+                reportSequence += EPISODE_SIZE;
+                exchangeSequence += EPISODE_SIZE;
+
+                currentEpisodeNum.incrementAndGet();
+
             }
         }
-
-        // Update epoch to leader mode mapping
-        Config.setCurrentProtocol(nextProtocol);
-        Config.setCurrentArchitecture(nextArchitecture);
-
-        rolePlugin.roleWriteLock.lock();
-        try {
-            rolePlugin.episodeLeaderMode.put(currentEpisodeNum.get() + 1,
-                    Config.string("protocol.general.leader").equals("stable") ? 0 : 1);
-            System.out.println("leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
-            Printer.print(Verbosity.V, prefix, "leader mode set to be " + Config.string("protocol.general.leader") + " for the next episode");
-            Printer.flush();
-            // signal that leader mode for a new episode is available
-            rolePlugin.roleCondition.signalAll();
-        } finally {
-            rolePlugin.roleWriteLock.unlock();
+        catch (Exception e){
+            System.out.println("Error in checkSwitching: " + e.getMessage());
+            e.printStackTrace(System.err);
+            logger.write("Error in checkSwitching" + e);
+            System.exit(1);
         }
-
-        // Update report and exchange sequence
-        reportSequence += EPISODE_SIZE;
-        exchangeSequence += EPISODE_SIZE;
-
-        currentEpisodeNum.incrementAndGet();
-
-    }
-}
-catch (Exception e){
-    System.out.println("Error in checkSwitching: " + e.getMessage());
-    System.exit(0);
-}
     }
 
     public void setServiceState(Map<Integer, Integer> service_state, long lastExecutedSequenceNum) {
@@ -1155,63 +1145,63 @@ catch (Exception e){
         return processMessage(message);
     }
 
-    public MessageData createMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
-                                     List<Integer> targets,List<RequestDataList> dependencyList) {
-
-        ByteString digest = null;
-        Map<Long, Integer> replies = null;
-        MessageData message;
-        Set<Long> aggregationValues = null;
-
-        if (seqnum != null) {
-            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-
-            if (block == null) {
-                block = checkpoint.getRequestBlock(seqnum);
-            }
-
-            digest = checkpoint.getMessageTally().getQuorumDigest(seqnum, viewNum);
-            if (digest == null) {
-                digest = DataUtils.getDigest(block);
-            }
-
-            if (type == StateMachine.REPLY) {
-                replies = checkpoint.getReplies(seqnum);
-            }
-
-            if (!checkpoint.getAggregationValues(seqnum).isEmpty()) {
-                aggregationValues = checkpoint.getAggregationValues(seqnum);
-            }
-        }
-
-        var hasblock = StateMachine.messages.get(type).hasRequestBlock;
-        if (hasblock) {
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
-        } else {
-            var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
-            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
-        }
-
-        // carry aggregation values if exist
-        if (aggregationValues != null) {
-            message = message.toBuilder().addAllAggregationValues(aggregationValues).build();
-        }
-
-        // notify client about the next protocol inside REPLY message
-        if (seqnum != null && seqnum == getEndOfEpisode(seqnum) && type == StateMachine.REPLY) {
-            var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
-            var protocol = checkpointNew.getProtocol();
-            var architecture = checkpointNew.getArchitecture();
-
-            var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
-            switchingDataBuilder.setNextArchitecture(architecture);
-
-            message = message.toBuilder().setSwitch(switchingDataBuilder).build();
-            // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");
-        }
-
-        return processMessage(message);
-    }
+//    public MessageData createMessage(Long seqnum, long viewNum, List<RequestData> block, int type, int source,
+//                                     List<Integer> targets,List<RequestDataList> dependencyList) {
+//
+//        ByteString digest = null;
+//        Map<Long, Integer> replies = null;
+//        MessageData message;
+//        Set<Long> aggregationValues = null;
+//
+//        if (seqnum != null) {
+//            var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+//
+//            if (block == null) {
+//                block = checkpoint.getRequestBlock(seqnum);
+//            }
+//
+//            digest = checkpoint.getMessageTally().getQuorumDigest(seqnum, viewNum);
+//            if (digest == null) {
+//                digest = DataUtils.getDigest(block);
+//            }
+//
+//            if (type == StateMachine.REPLY) {
+//                replies = checkpoint.getReplies(seqnum);
+//            }
+//
+//            if (!checkpoint.getAggregationValues(seqnum).isEmpty()) {
+//                aggregationValues = checkpoint.getAggregationValues(seqnum);
+//            }
+//        }
+//
+//        var hasblock = StateMachine.messages.get(type).hasRequestBlock;
+//        if (hasblock) {
+//            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, null, block, replies, digest);
+//        } else {
+//            var reqnums = block.stream().map(req -> req.getRequestNum()).toList();
+//            message = DataUtils.createMessage(seqnum, viewNum, type, source, targets, reqnums, null, replies, digest);
+//        }
+//
+//        // carry aggregation values if exist
+//        if (aggregationValues != null) {
+//            message = message.toBuilder().addAllAggregationValues(aggregationValues).build();
+//        }
+//
+//        // notify client about the next protocol inside REPLY message
+//        if (seqnum != null && seqnum == getEndOfEpisode(seqnum) && type == StateMachine.REPLY) {
+//            var checkpointNew = checkpointManager.getCheckpointForSeq(seqnum + 1);
+//            var protocol = checkpointNew.getProtocol();
+//            var architecture = checkpointNew.getArchitecture();
+//
+//            var switchingDataBuilder = SwitchingData.newBuilder().setNextProtocol(protocol);
+//            switchingDataBuilder.setNextArchitecture(architecture);
+//
+//            message = message.toBuilder().setSwitch(switchingDataBuilder).build();
+//            // System.out.println("createMessage: attach nextProtocol = " + protocol + " to REPLY message");
+//        }
+//
+//        return processMessage(message);
+//    }
 
     public MessageData processMessage(MessageData message) {
         try{
@@ -1220,6 +1210,7 @@ catch (Exception e){
                 message = plugin.processOutgoingMessage(message);
             }
         }catch (Exception e){
+            e.printStackTrace();
             System.out.println("Exception in Entity 1222 "+e);
         }
 

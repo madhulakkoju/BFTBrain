@@ -72,8 +72,8 @@ public abstract class CoordinatorBase {
             Config.load(yamlData, defaultProtocol, defaultArchitecture);
 
             AdvanceConfig.load(yamlData.get("framework"));
-        } catch (IOException e) {
-            System.err.println("Error loading config.");
+        } catch (Exception e) {
+            System.err.println("Error loading config." + e);
             System.exit(1);
         }
 

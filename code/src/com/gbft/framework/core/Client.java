@@ -326,8 +326,8 @@ public class Client extends Entity {
 
 
             }catch (Exception e){
-                System.out.println("Exception in client 320 "+e);
-                System.exit(0);
+                System.out.println("[SendEndorserRequest] Exception in client 320 "+e);
+                System.exit(1);
             }
 
         }

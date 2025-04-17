@@ -96,8 +96,7 @@ public class ClientDataset extends Dataset {
             return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
         }catch (Exception e){
             System.out.println("Client dataset 100 "+e);
-            e.printStackTrace();
-            System.exit(0);
+            System.exit(1);
             return null;
         }
     }

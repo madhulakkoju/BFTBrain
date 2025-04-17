@@ -38,8 +38,8 @@ public class Node extends Entity {
                 this.executeTransaction(replies, requestDataList);
             }
         } catch (Exception e) {
-            System.out.println("Node 41 Exception :"+e);
-            System.exit(0);
+            System.out.println("[Executeparallel]Node 41 Exception :"+e);
+            System.exit(1);
         }
     }
 
@@ -77,8 +77,8 @@ public class Node extends Entity {
             // Wait for all tasks to complete
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         } catch (Exception e) {
-            System.out.println("Exception node 75"+e);
-            System.exit(0);
+            System.out.println("[Exception Validate parallel] 75"+e);
+            System.exit(1);
         }
     }
 
@@ -88,6 +88,7 @@ public class Node extends Entity {
     protected void execute(long seqnum) {
        // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+       // System.out.println("size : "+checkpointManager.getCheckpointSize());
         var requestBlock = checkpoint.getRequestBlock(seqnum);
         String curr_architecture = "";
         try{
@@ -110,7 +111,7 @@ public class Node extends Entity {
                 } catch (Exception e) {
                     System.out.println("node 107 " + e.toString());
                     System.out.println("Exception node " + e);
-                    System.exit(0);
+                    System.exit(1);
                 }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OX")) {
@@ -132,7 +133,7 @@ public class Node extends Entity {
 
                 catch (Exception e){
                 System.out.println("Node 130 "+e);
-                System.exit(0);
+                System.exit(1);
             }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OXII")) { // make true for oxii
@@ -151,7 +152,7 @@ public class Node extends Entity {
 
                 catch (Exception e){
                     System.out.println("Node 163 "+e);
-                    System.exit(0);
+                    System.exit(1);
                 }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV++")) {
@@ -168,7 +169,7 @@ public class Node extends Entity {
             }
         }catch (Exception e){
             System.out.println("Node 180 "+e);
-            System.exit(0);
+            System.exit(1);
         }
 
         // checkpoint
@@ -309,7 +310,7 @@ public class Node extends Entity {
                         .setNextBlocksize(100)
                         .setNextArchitecture(checkpoint.getArchitecture())
                         .build();
-                System.out.println("BEFORE Sending to learning agent" + learningData);
+               // System.out.println("BEFORE Sending to learning agent" + learningData);
                 new Thread(() -> agentStub.sendData(learningData)).start(); 
                 System.out.println("notify learning agent for episode " + currentEpisodeNum.get() + ", exchangeSequence=" + exchangeSequence);
             }

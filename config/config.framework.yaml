@@ -10,7 +10,7 @@ general:
   f: 1
   max-active-requests: 1000
   verbosity: v
-  logfile: False # true -> file, false -> stdout
+  logfile: true # true -> file, false -> stdout
   learning: true
   report-sequence: 250
   exchange-sequence: 300
