@@ -35,6 +35,13 @@ public class Dataset {
 //        recordLatVersion = new TreeMap<>();
     }
 
+    public Dataset(Entity entity) {
+        records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
+        recordCurrentVersion = new TreeMap<>();
+        recordLatestVersion = new TreeMap<>();
+        this.entity = entity;
+    }
+
     // use this for copying service state
     public Dataset(Dataset dataset) {
         records = new ConcurrentHashMap<>();
@@ -59,6 +66,10 @@ public class Dataset {
 
     public int execute(RequestData request) {
         //runComputeDummy(request);
+
+        //TODO: use this for write ratio
+        this.entity.addWriteTransactionsCount(request.getWriteSetCount());
+        this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
 
         List<Integer> values = new ArrayList<>();
 
@@ -199,6 +210,12 @@ public class Dataset {
           request = request.toBuilder().setIsTnxValid(val).build();
           newblock.add(request);
 
+          //TODO: for write ratio for XOV
+                if(val) {
+                    //updating counts for both valid transactions ONLY
+                    this.entity.addWriteTransactionsCount(request.getWriteSetCount());
+                    this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
+                }
         }
         return newblock;
     }

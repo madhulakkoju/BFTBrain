@@ -128,6 +128,21 @@ public abstract class Entity {
     protected Map<Integer, Map<Integer, Map<Integer, Float>>> reports;
     protected MessageTally reportTally;
 
+
+    // Write ratio features
+    public ConcurrentHashMap<Integer, Integer> numberOfWriteTransactionsByEpisode = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, Integer> numberOfTotalTransactionsByEpisode = new ConcurrentHashMap<>();
+
+    public void addWriteTransactionsCount(int count){
+        this.numberOfWriteTransactionsByEpisode.put( this.currentEpisodeNum.get() ,
+                this.numberOfWriteTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 0) + count );
+    }
+
+    public void addTotalTransactionsCount(int count){
+        this.numberOfTotalTransactionsByEpisode.put( this.currentEpisodeNum.get() ,
+                this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 0) + count );
+    }
+
     protected FeatureManager featureManager;
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
@@ -175,7 +190,7 @@ public abstract class Entity {
         needsUpdate = new TreeSet<>();
         stateLock = new ReentrantLock();
 
-        dataset = new Dataset();
+        dataset = new Dataset(this);
 
         threads = new ArrayList<>();
         timekeeper = new Timekeeper(this);
@@ -428,6 +443,9 @@ public abstract class Entity {
                 }
             } else {
                 Long seqnum = message.getSequenceNum();
+                if(!isClient()) {
+                    System.out.println("seq num came " + seqnum);
+                }
                 if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
                     return;
                 }
@@ -896,12 +914,10 @@ public abstract class Entity {
                 exchangeSequence += EPISODE_SIZE;
 
                 currentEpisodeNum.incrementAndGet();
-
             }
         }
         catch (Exception e){
-            System.out.println("Error in checkSwitching: " + e.getMessage());
-            e.printStackTrace(System.err);
+            System.out.println("Error in checkSwitching: " + e);
             logger.write("Error in checkSwitching" + e);
             System.exit(1);
         }
