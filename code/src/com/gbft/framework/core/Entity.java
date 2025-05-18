@@ -825,7 +825,7 @@ public abstract class Entity {
                         .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
 
                 var episodeReport = "[EPISODE REPORT] episode " + currentEpisodeNum.get() + ": protocol = " + checkpoint.getProtocol() + " , architecture = " + checkpoint.getArchitecture()
-                        + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s";
+                        + " , throughput = " + String.format("%.2freq/s", throughput) + " , episode time = " + episodeDuration + "s, overall time = " + cumulativeDuration + "s" + ", total-committed-tnxs = " + this.totalCommittedTransactions;
 
                 if (this.isClient()) {
                     CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);

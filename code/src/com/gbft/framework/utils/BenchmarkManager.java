@@ -103,10 +103,12 @@ public class BenchmarkManager {
                   duration = timestamp - DataUtils.toLong(request.getTimestamp());
                   add(REQUEST_EXECUTE, duration, timestamp);
                   addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+                  this.entity.totalCommittedTransactions++;
               } else if (!curr_arch.contains("XOV")) {
                   duration = timestamp - DataUtils.toLong(request.getTimestamp());
                   add(REQUEST_EXECUTE, duration, timestamp);
                   addByEpisode(REQUEST_EXECUTE, duration, entity.currentEpisodeNum.get());
+                  this.entity.totalCommittedTransactions++;
               }
           }
       }catch (Exception e){

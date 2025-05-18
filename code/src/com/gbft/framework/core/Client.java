@@ -121,6 +121,7 @@ public class Client extends Entity {
         var timeoutCount = benchmark.count(BenchmarkManager.TIMEOUT);
         report.put("slow-path", String.format("ratio: %.2f",  (double) timeoutCount / (double) blockCount));
 
+        report.put("total-committed-transactions", String.valueOf(this.totalCommittedTransactions));
         String benchmarkLogString = ""+
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getProtocol()+","+
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
@@ -279,7 +280,7 @@ public class Client extends Entity {
                 var targetsList = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, nodesTargetRole);
 
                 List<Integer> targets = new ArrayList<>();
-                LogUtils.LogCommon("SEND ENDORSER REQ " + targetsList.toString());
+               // LogUtils.LogCommon("SEND ENDORSER REQ " + targetsList.toString());
                 int noOfEndorsers = targetsList.size();
                 targets.add((int)reqnum % noOfEndorsers);
 //                targets.add(0);
@@ -296,16 +297,16 @@ public class Client extends Entity {
 //                    }
 //                }
 
-                LogUtils.LogCommon("SEND ENDORSER REQ TARGETSLIST " + targetsList.toString());
-                LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
+//                LogUtils.LogCommon("SEND ENDORSER REQ TARGETSLIST " + targetsList.toString());
+//                LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
 
 
                 if ( RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
                     targets = rolePlugin.getRoleEntities(seqnum, view, StateMachine.NORMAL_PHASE, StateMachine.NODE);
-                    LogUtils.LogCommon("TARGETS CHANGED with roleplugin because Operation READ_ONLY " + targets.toString());
+                  //  LogUtils.LogCommon("TARGETS CHANGED with roleplugin because Operation READ_ONLY " + targets.toString());
                 }
 
-                LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
+              //  LogUtils.LogCommon("SEND ENDORSER REQ TARGETS " + targets.toString());
 
                 var message = createEndorsementMessage(null, view, List.of(request), StateMachine.REQUEST, id, targets);
 
