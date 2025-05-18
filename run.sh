@@ -77,7 +77,7 @@ fi
 if [ -d "scripts" ]; then
   pushd scripts > /dev/null
     if [ -x "./local_exp.sh" ]; then
-      ./local_exp.sh pbft XOV learning
+      ./local_exp.sh pbft learning
     else
       echo "local_exp.sh is not executable or not found." >&2
       exit 1

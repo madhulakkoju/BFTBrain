@@ -14,9 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
-    protected Map<Integer, Long> recordCurrVersion;
-
-    public Map<Integer, Long> recordLatVersion;
 
     protected Map<Integer, Long> recordCurrentVersion;
 
@@ -31,8 +28,6 @@ public class Dataset {
         records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
         recordCurrentVersion = new TreeMap<>();
         recordLatestVersion = new TreeMap<>();
-//        recordCurrVersion = new TreeMap<>();
-//        recordLatVersion = new TreeMap<>();
     }
 
     public Dataset(Entity entity) {
@@ -70,6 +65,8 @@ public class Dataset {
         //TODO: use this for write ratio
         this.entity.addWriteTransactionsCount(request.getWriteSetCount());
         this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
+
+        this.entity.totalCommittedTransactions ++;
 
         List<Integer> values = new ArrayList<>();
 
@@ -215,6 +212,7 @@ public class Dataset {
                     //updating counts for both valid transactions ONLY
                     this.entity.addWriteTransactionsCount(request.getWriteSetCount());
                     this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
+                    this.entity.totalCommittedTransactions++;
                 }
         }
         return newblock;

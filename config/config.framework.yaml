@@ -31,7 +31,7 @@ benchmark:
   aggregation-delay-ms: 200
 workload:
   # lower for more contention
-  contention-level: 10
+  contention-level: 100
   dataset-size: 100
   payload:
     request-size: 1000000
@@ -48,7 +48,7 @@ fault:
     # the affected entities will always be excluded from leader rotation
     # set it to be a `non-existing` node (e.g., 100) to avoid this
     affected-entities:
-      - 1
+      - 100
     generator:
       advance: true
       init: false
@@ -61,7 +61,7 @@ fault:
           - 10000
   timeout:
     affected-entities:
-      - 2
+      - 200
     generator:
       advance: true
       init: 0
@@ -72,7 +72,7 @@ fault:
     # affected entities here are the malicious leaders
     # instead of victims of malicious leaders
     affected-entities:
-      - 0
+      - 100
     attacking: false
     timer: 100
     

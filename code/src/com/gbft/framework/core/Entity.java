@@ -143,6 +143,8 @@ public abstract class Entity {
                 this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 0) + count );
     }
 
+
+    public long totalCommittedTransactions = 0;
     protected FeatureManager featureManager;
     protected EntityCommServer entityCommServer;
     protected AgentCommBlockingStub agentStub;
@@ -443,9 +445,9 @@ public abstract class Entity {
                 }
             } else {
                 Long seqnum = message.getSequenceNum();
-                if(!isClient()) {
-                    System.out.println("seq num came " + seqnum);
-                }
+//                if(!isClient()) {
+//                    System.out.println("seq num came " + seqnum +" type "+type);
+//                }
                 if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
                     return;
                 }
@@ -470,6 +472,7 @@ public abstract class Entity {
             benchmarkManager.messageProcessed(start, System.nanoTime());
         }
         catch (Exception e){
+            e.printStackTrace();
             System.out.println("Error in handling message: " + e);
             System.exit(1);
         }
@@ -808,7 +811,7 @@ public abstract class Entity {
     }
 
     private void checkSwitching(long seqnum) {
-        if (protocols.isEmpty() && !learning) {
+        if (protocols.isEmpty() && !learning ) {
             return;
         }
         try {
@@ -832,7 +835,7 @@ public abstract class Entity {
                 Printer.print(Verbosity.V, prefix, episodeReport);
                 Printer.flush();
                 checkpoint.throughput = throughput;
-
+//-----------------------
                 String nextProtocol;
                 String nextArchitecture;
                 if (!isClient() && !protocols.isEmpty()) {
@@ -859,15 +862,15 @@ public abstract class Entity {
     //            int index = (int) (episodeNum % archList.size());
     //            nextArchitecture = archList.get(index);
 
-                    archManager.setCurrentArchitectureKey(nextArchitecture);
 
                 }
 
                 // warm up episodes
-                if (nextProtocol.equals("repeat")) {
+                if (nextProtocol.equals("repeat") && nextArchitecture.equals("repeat")) {
                     nextProtocol = checkpoint.getProtocol();
                     nextArchitecture = checkpoint.getArchitecture();
                 }
+                archManager.setCurrentArchitectureKey(nextArchitecture);
                 System.out.println(prefix + "nextProtocol = " + nextProtocol);
                 System.out.println(prefix + "nextArchitecture= " + nextArchitecture);
                 Printer.print(Verbosity.V, prefix, "nextProtocol = " + nextProtocol);
@@ -917,6 +920,7 @@ public abstract class Entity {
             }
         }
         catch (Exception e){
+            e.printStackTrace();
             System.out.println("Error in checkSwitching: " + e);
             logger.write("Error in checkSwitching" + e);
             System.exit(1);

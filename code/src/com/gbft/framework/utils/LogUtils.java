@@ -15,7 +15,7 @@ public class LogUtils{
     HashMap<Integer,String> hm=new HashMap<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSSSSS");
 
-    private static String folderPath = "/home/msiddhu/IdeaProjects/BFTBrain/log/";
+    private static String folderPath =  System.getProperty("user.home") + "/BFTBrain/log/";
 
     public static LogUtils errorLog = new LogUtils();
     public static LogUtils commonLog = new LogUtils();

@@ -159,7 +159,7 @@ def deploy_single_worker(worker_node):
                 "22",
                 "-o",
                 "StrictHostKeyChecking no",
-                "wget -O - https://gist.githubusercontent.com/anon-osdi-24/e4d388dd56a63dcd7100662855b50d71/raw/c9575bbfc51f296e716d7634a4594c52267b7535/BFTBrain-deploy.sh > setup.sh && " + 
+                "wget -O - https://gist.githubusercontent.com/msiddhu/632c7b6b7420afd1d8002a5054253ad0/raw/1dacd140c4bb46735cbb40955881159ca2039442/BFTBrain-deploy.sh > setup.sh && " +
                 "chmod +x setup.sh && source setup.sh &> setup.log"
             ], 
             stdout = subprocess.DEVNULL,
@@ -202,7 +202,7 @@ def deploy_master(master, servers_list_str):
         "22",
         "-o",
         "StrictHostKeyChecking no",
-        "git clone https://github.com/anon-osdi-24/BFTBrain && " + 
+        "git clone https://github.com/madhulakkoju/BFTBrain && " +
         f"echo \"{servers_list_str}\" > BFTBrain/scripts/servers.txt && " +
         f"echo \"IdentityFile /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab\" >> /users/{os.environ['USER']}/.ssh/config && " +
         f"chmod 600 /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab && " +

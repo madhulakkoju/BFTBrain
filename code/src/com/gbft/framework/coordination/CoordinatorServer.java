@@ -249,13 +249,13 @@ public class CoordinatorServer extends CoordinatorBase {
 
         var portOption = new Option("p", "port", true, "the coordination server port");
         var protocolOption = new Option("r", "protocol", true, "the benchmark protocol");
-        var architectureOption = new Option("a","architecture", true,"the benchmark architecture");
+        var architectureOption = new Option("a","architecture", true, "the benchmark architecture");
 
 
         portOption.setType(Number.class);
         portOption.setRequired(true);
         protocolOption.setRequired(true);
-        architectureOption.setRequired(true);
+        architectureOption.setRequired(false);
 
         options.addOption(portOption);
         options.addOption(protocolOption);
@@ -265,8 +265,12 @@ public class CoordinatorServer extends CoordinatorBase {
         try {
             CommandLine cmd = parser.parse(options, args);
             Number port = (Number) cmd.getParsedOptionValue("port");
-            var protocol = cmd.getOptionValue("protocol");
-            var architecture = cmd.getOptionValue("architecture");
+
+            // parse protocol, defaulting to "pbft" if not provided
+            var protocol = cmd.getOptionValue("protocol", "pbft");
+
+            // parse architecture, defaulting to "XOV" if not provided
+            var architecture = cmd.getOptionValue("architecture", "OX");
 
             System.out.println("[coordination server]: "+ architecture);
 

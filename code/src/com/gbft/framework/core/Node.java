@@ -7,10 +7,14 @@ import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.RequestDataList;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
-import com.gbft.framework.utils.*;
+import com.gbft.framework.utils.AdvanceConfig;
+import com.gbft.framework.utils.BenchmarkManager;
+import com.gbft.framework.utils.DataUtils;
+import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,7 +90,7 @@ public class Node extends Entity {
         System.out.println("seq num executed "+seqnum);
        // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-       // System.out.println("size : "+checkpointManager.getCheckpointSize());
+//        System.out.println("size : "+checkpointManager.getCheckpointSize());
         var requestBlock = checkpoint.getRequestBlock(seqnum);
         String curr_architecture = "";
         try{
@@ -233,8 +237,6 @@ public class Node extends Entity {
                     report.put(FeatureManager.HAS_LEADER_ROTATION, PollutionFault.randomOnehot());
 
                     report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
-                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
-                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
                     report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
                 } else {
                     // request
@@ -255,27 +257,16 @@ public class Node extends Entity {
                     report.put(FeatureManager.HAS_LEADER_ROTATION, (float) featureManager.hasLeaderRotation.get(checkpoint.getProtocol()));
                     float numofWriteTransactions= this.numberOfWriteTransactionsByEpisode.getOrDefault(this.currentEpisodeNum.get(), 1);
                     float numOfTransactions= this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 1);
-                    float writeRatio = numofWriteTransactions/numOfTransactions;
-                    logger.write("[NODE] writeRatio: "+writeRatio);
+
+                    final DecimalFormat decimalFormat = new DecimalFormat( "##.##" );
+
+                    float writeRatio = Float.parseFloat(decimalFormat.format(numofWriteTransactions/numOfTransactions));
+
 
                     var benchmark = benchmarkManager.getBenchmarkById(this.reportnum);
-                    float executionDelay = benchmark.average(BenchmarkManager.REQUEST_EXECUTE);
-                    logger.write("[NODE] execution delay: "+executionDelay);
-
-
-                    var episodeDuration = (System.nanoTime() - checkpoint.beginTimestamp) / 1e9f;
-                    var throughput = benchmarkManager.getBenchmarkByEpisode(currentEpisodeNum.get())
-                            .count(BenchmarkManager.REQUEST_EXECUTE) / episodeDuration;
-
-                    logger.write("[NODE] throughput: "+throughput);
-
-
-                    report.put(FeatureManager.THROUGHPUT, throughput);
+                    float executionDelay = Float.parseFloat(decimalFormat.format(benchmark.average(BenchmarkManager.REQUEST_EXECUTE)));
                     report.put(FeatureManager.EXECUTION_DELAY, executionDelay);
                     report.put(FeatureManager.WRITE_RATIO, writeRatio);
-                    report.put(FeatureManager.HOT_KEY_RATIO, 0.05f);
-                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 1200f);
-
 
 //                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
 //                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
