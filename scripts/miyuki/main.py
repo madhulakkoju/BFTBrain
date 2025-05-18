@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description='Start a BFTBrain experiment.')
 parser.add_argument('--experiment', '-e', type=str, required=True, help='Cloudlab experiment name')
 parser.add_argument('--profile', '-p', type=str, required=True, help='Cloudlab profile to use')
 parser.add_argument('--profile2', '-p2', type=str, required=False, default='', help='Second Cloudlab profile to use (optional)')
-parser.add_argument('--project', '-j', type=str, default='bft-evaluation', help='Cloudlab project to use')
+parser.add_argument('--project', '-j', type=str, default='AdaptTnx24Blockc', help='Cloudlab project to use')
 
 subparsers = parser.add_subparsers(dest='action', required=True, help='Action to perform.')
 
