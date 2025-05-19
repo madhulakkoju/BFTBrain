@@ -25,6 +25,9 @@ public class Node extends Entity {
 
 
     Random random;
+    float prevTotalCount = 0;
+    float prevTotalTime = 0;
+    int prevReportNum = 0;
 
     public Node(int id, CoordinatorUnit coordinator) {
 
@@ -87,7 +90,7 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        System.out.println("seq num executed "+seqnum);
+      //  System.out.println("seq num executed "+seqnum);
        // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
 //        System.out.println("size : "+checkpointManager.getCheckpointSize());
@@ -263,8 +266,8 @@ public class Node extends Entity {
                     float writeRatio = Float.parseFloat(decimalFormat.format(numofWriteTransactions/numOfTransactions));
 
 
-                    var benchmark = benchmarkManager.getBenchmarkById(this.reportnum);
-                    float executionDelay = Float.parseFloat(decimalFormat.format(benchmark.average(BenchmarkManager.REQUEST_EXECUTE)));
+                    float executionDelay = Float.parseFloat(decimalFormat.format(getExecutionDelay()));
+
                     report.put(FeatureManager.EXECUTION_DELAY, executionDelay);
                     report.put(FeatureManager.WRITE_RATIO, writeRatio);
 
@@ -322,6 +325,35 @@ public class Node extends Entity {
                 System.out.println("notify learning agent for episode " + currentEpisodeNum.get() + ", exchangeSequence=" + exchangeSequence);
             }
         }
+    }
+
+    double getExecutionDelay() {
+        var bm = benchmarkManager.getBenchmarkById(this.reportnum);
+
+        double totalTimeSec = bm.total(BenchmarkManager.REQUEST_EXECUTE) / 1_000_000_000.0;
+        long    totalCount   = bm.count(BenchmarkManager.REQUEST_EXECUTE);
+
+        double deltaTime = (this.prevReportNum == this.reportnum)
+                ? (totalTimeSec - this.prevTotalTime)
+                : totalTimeSec;
+        long   deltaCount = (this.prevReportNum == this.reportnum)
+                ? (long) (totalCount - this.prevTotalCount)
+                : totalCount;
+
+        double avgDelay;
+        if (deltaCount > 0) {
+            avgDelay = deltaTime / deltaCount;
+        } else {
+            avgDelay = 0.0; // no transactions
+        }
+
+        // update state
+        this.prevTotalTime   = (float) totalTimeSec;
+        this.prevTotalCount  = totalCount;
+        this.prevReportNum   = this.reportnum;
+
+       // System.out.printf("Execution Delay: %.6f sec (report %d)%n", avgDelay, this.reportnum);
+        return avgDelay;
     }
 
     @Override
