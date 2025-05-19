@@ -127,8 +127,9 @@ public class Client extends Entity {
                     checkpointManager.getCheckpoint(currentEpisodeNum.get()).getArchitecture() + ","+
                     AdvanceConfig.integer("workload.contention-level") + "," +
                     AdvanceConfig.integer("benchmark.block-size")  + "," +
-                    String.format("%.2f", throughput); 
+                    String.format("%.2f", throughput);
 
+        CustomBenchmarks.LogTotalCommittedTnxs(this.totalCommittedTransactions);
         logger.write("[Client]: "+ benchmarkLogString);
 
         reportnum += 1;

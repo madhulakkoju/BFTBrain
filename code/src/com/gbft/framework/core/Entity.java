@@ -576,6 +576,7 @@ public abstract class Entity {
                                 var block = checkpoint.getRequestBlock(seqnum);
                                 if (block == null || block.isEmpty()) {
                                     synchronized (pendingLock) {
+                                      //  System.out.println("[Entity] Pending Requests: "+ pendingRequests.size());
                                         if (pendingRequests.size() < blockSize) {
                                             continue;
                                         }
@@ -829,6 +830,7 @@ public abstract class Entity {
 
                 if (this.isClient()) {
                     CustomBenchmarks.LogBenchmark("" + currentEpisodeNum.get() + "," + checkpoint.getProtocol() + "," + checkpoint.getArchitecture() + "," + throughput + "," + episodeDuration);
+                    //CustomBenchmarks.LogTotalCommittedTnxs(this.totalCommittedTransactions);
                 }
     //        logger.write(episodeReport);
                 System.out.println(episodeReport);
