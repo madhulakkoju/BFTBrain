@@ -66,8 +66,6 @@ public class Dataset {
         this.entity.addWriteTransactionsCount(request.getWriteSetCount());
         this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
 
-        this.entity.totalCommittedTransactions ++;
-
         List<Integer> values = new ArrayList<>();
 
         for (var op: request.getWriteSetList()){
@@ -76,7 +74,6 @@ public class Dataset {
         }
 
         for (var op: request.getReadSetList()){
-            runComputeDummy(request);
             values.add( processRequest(op));
         }
 
@@ -154,7 +151,6 @@ public class Dataset {
         }
 
         for (var op: request.getReadSetList()){
-            runComputeDummy(request);
             values.add( processRequest(op));
         }
 
@@ -212,7 +208,6 @@ public class Dataset {
                     //updating counts for both valid transactions ONLY
                     this.entity.addWriteTransactionsCount(request.getWriteSetCount());
                     this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
-                    this.entity.totalCommittedTransactions++;
                 }
         }
         return newblock;

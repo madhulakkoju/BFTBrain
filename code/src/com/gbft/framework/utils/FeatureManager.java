@@ -26,7 +26,6 @@ public class FeatureManager {
     public static final int HOT_KEY_RATIO=7;
     public static final int TRANS_ARRIVAL_RATE=8;
     public static final int EXECUTION_DELAY=9;
-    public static final int THROUGHPUT = 10;
 
 
     public static final int FAST = 1;

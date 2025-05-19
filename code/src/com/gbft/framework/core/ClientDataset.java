@@ -89,7 +89,7 @@ public class ClientDataset extends Dataset {
 
             // generate read only optimization
             if (Config.stringList("plugins.message").contains("read-only")) {
-                if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
+                if (random.nextDouble( Config.integer("workload.dataset-size") ) <= AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
                     operation = Operation.READ_ONLY;
                 }
             }

@@ -15,7 +15,7 @@ general:
   report-sequence: 250
   exchange-sequence: 300
 benchmark:
-  block-size: 10
+  block-size: 30
   checkpoint-size: 500
   catch-up-k: 2
   request-interval-micros: 100
@@ -31,7 +31,7 @@ benchmark:
   aggregation-delay-ms: 200
 workload:
   # lower for more contention
-  contention-level: 100
+  contention-level: 70
   dataset-size: 100
   payload:
     request-size: 1000000
@@ -42,7 +42,7 @@ workload:
     - 0 # 04
     - 0 # 40
     - 0 # 44
-  read-only-ratio: 0
+  read-only-ratio: 30
 fault:
   in-dark:
     # the affected entities will always be excluded from leader rotation
