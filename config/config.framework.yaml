@@ -42,7 +42,7 @@ workload:
     - 0 # 04
     - 0 # 40
     - 0 # 44
-  read-only-ratio: 30
+  read-only-ratio: 0
 fault:
   in-dark:
     # the affected entities will always be excluded from leader rotation
