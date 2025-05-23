@@ -54,6 +54,13 @@ public abstract class Entity {
     // Protocol Data
 
     protected ConcurrentLinkedQueue<RequestData> pendingRequests;
+    protected ConcurrentLinkedQueue<RequestData> pendingRequestsOX;
+    protected ConcurrentLinkedQueue<RequestData> pendingRequestsOXII;
+    protected ConcurrentLinkedQueue<RequestData> pendingRequestsXOV;
+    protected ConcurrentLinkedQueue<RequestData> pendingRequestsXOVPlus;
+    protected ConcurrentHashMap<String,ConcurrentLinkedQueue<RequestData>> archMap;
+          
+
     protected Map<Long, Long> reqnumToSeqnumMap;
     protected CheckpointManager checkpointManager;
 
@@ -123,6 +130,8 @@ public abstract class Entity {
     public final int EPISODE_SIZE;
     public AtomicInteger currentEpisodeNum;
     public List<String> protocols;
+    public String prevArchitecture = "";
+    public String present_Architecture = "";
 
     // episode -> node -> feature-type -> feature-value
     protected Map<Integer, Map<Integer, Map<Integer, Float>>> reports;
@@ -185,6 +194,15 @@ public abstract class Entity {
         executionQueue = new HashMap<>();
 
         pendingRequests = new ConcurrentLinkedQueue<>();
+        pendingRequestsOX = new ConcurrentLinkedQueue<>();
+        pendingRequestsOXII = new ConcurrentLinkedQueue<>();
+        pendingRequestsXOV = new ConcurrentLinkedQueue<>();
+        pendingRequestsXOVPlus = new ConcurrentLinkedQueue<>();
+        archMap = new ConcurrentHashMap<>();
+        archMap.put("OX", pendingRequestsOX);
+        archMap.put("OXII", pendingRequestsOXII);
+        archMap.put("XOV", pendingRequestsXOV);
+        archMap.put("XOV++", pendingRequestsXOVPlus);
         reqnumToSeqnumMap = new ConcurrentHashMap<>();
         checkpointManager = new CheckpointManager(this);
 
@@ -350,8 +368,9 @@ public abstract class Entity {
         String curr_architecture = getArchitectureFromMessage(message);
         if (!this.isClient() && curr_architecture.contains("XOV")) {
             //Here, it is an endorsement. so execute ahead and send back to client
+            List<RequestData> requests = new ArrayList<>(message.getRequestsList());
             try {
-                var aheadExecutedReqs = this.dataset.executeRequestsAhead(this, message.getRequestsList());
+                var aheadExecutedReqs = this.dataset.executeRequestsAhead(this,requests);
                 var messageToClient = this.getArchManager().createEndorsedMessageToClient(message, aheadExecutedReqs);
                 sendMessage(messageToClient);
             }catch (Exception e){
@@ -416,8 +435,8 @@ public abstract class Entity {
             }
 
             if (message.getFlagsList().contains(DataUtils.INVALID)) {
-                logger.errors("Invalid message received: " + message.getFlagsList().toString());
-                //return;
+                // logger.errors("Invalid message received: " + message.getFlagsList().toString());
+                return;
             }
 
             var type = message.getMessageType();
@@ -445,9 +464,6 @@ public abstract class Entity {
                 }
             } else {
                 Long seqnum = message.getSequenceNum();
-//                if(!isClient()) {
-//                    System.out.println("seq num came " + seqnum +" type "+type);
-//                }
                 if (checkpointManager.getCheckpointNum(seqnum) < checkpointManager.getMinCheckpoint()) {
                     return;
                 }
@@ -576,8 +592,8 @@ public abstract class Entity {
                                 var block = checkpoint.getRequestBlock(seqnum);
                                 if (block == null || block.isEmpty()) {
                                     synchronized (pendingLock) {
-                                      //  System.out.println("[Entity] Pending Requests: "+ pendingRequests.size());
-                                        if (pendingRequests.size() < blockSize) {
+
+                                        if(pendingRequests.size() < blockSize){
                                             continue;
                                         }
 
@@ -588,15 +604,73 @@ public abstract class Entity {
                                             }
                                         }
 
+
+
+                                        String current_architecture = this.getArchManager().getCurrentArchitectureKey();
+                                        ConcurrentLinkedQueue<RequestData> tempPendingRequests = null;
+                                        if(prevArchitecture.equals("")){
+                                            prevArchitecture = current_architecture;
+                                        }
+                                        if(!prevArchitecture.equals(current_architecture)){
+                                            prevArchitecture = current_architecture;
+                                        }
+                                       
+                                        int ind = 0;
+                                        while(ind < blockSize ) { 
+                                            ind++;
+                                            if(pendingRequests.size() != 0) {
+                                                var request = pendingRequests.poll();
+                                                // System.out.println("Req num "+ request.getRequestNum());
+                                                if (request == null) break;
+                                                String architecture = request.getCurrArchitecture();
+                                                switch (architecture) {
+                                                    case "OXII" -> pendingRequestsOXII.offer(request);
+                                                    case "XOV" -> pendingRequestsXOV.offer(request);
+                                                    case "XOV++" -> pendingRequestsXOVPlus.offer(request);
+                                                    default -> pendingRequestsOX.offer(request);
+                                                }
+                                            }
+
+                                            if(pendingRequests.size() == 0){
+                                                break;
+                                            }
+                                        }
+
+                                        if(archMap.get(current_architecture).size() >= blockSize){
+                                            tempPendingRequests = archMap.get(current_architecture);
+                                        }
+                                        else if (archMap.get("OX").size() >= blockSize) {
+                                            tempPendingRequests = archMap.get("OX");
+                                        }
+                                        else if (archMap.get("OXII").size() >= blockSize) {
+                                            tempPendingRequests = archMap.get("OXII");
+                                        }
+                                        else if (archMap.get("XOV").size() >= blockSize) {
+                                            tempPendingRequests = archMap.get("XOV");
+                                        }
+                                        else if (archMap.get("XOV++").size() >= blockSize) {
+                                            tempPendingRequests = archMap.get("XOV++");
+                                        }
+                                        else if(archMap.get(prevArchitecture).size() > 0){
+                                            tempPendingRequests = archMap.get(prevArchitecture);
+                                        }
+                                        else {
+                                            continue;
+                                        }
+                                        
+                                        // System.out.println("Pending Requests " + pendingRequests.size());
+                                        // System.out.println("OX " + archMap.get("OX").size());
+                                        // System.out.println("OXII " + archMap.get("OXII").size());
+                                        // System.out.println("XOV " + archMap.get("XOV").size());
+                                        // System.out.println("XOV++ " + archMap.get("XOV++").size());
+
                                         block = new ArrayList<RequestData>();
                                         String prev_arch = "";
                                         for (var i = 0; i < blockSize; i++) {
-                                            var request = pendingRequests.remove();
-                                            if(!prev_arch.isEmpty() && !prev_arch.equals(request.getCurrArchitecture())){
-                                                pendingRequests.offer(request);
+                                            if (tempPendingRequests.size() == 0) {
                                                 break;
                                             }
-                                            prev_arch = request.getCurrArchitecture();
+                                            var request = tempPendingRequests.poll();
                                             // carry the report quorum in the first request of this reserved block
                                             if (learning && seqnum == exchangeSequence && isPrimary(seqnum) && i == 0) {
                                                 var reportQuorum = new ArrayList<LearningData>(REPORT_QUORUM);
@@ -608,33 +682,76 @@ public abstract class Entity {
                                             }
                                             block.add(request);
                                         }
-//                                        System.out.println("Block Created with size :"+block.size()+" seqnum : "+seqnum+" arch: "+block.getFirst().getCurrArchitecture());
+                                        while(block.size() < blockSize) {
+                                            RequestData req = block.getFirst();
+                                            block.add(req.toBuilder().build());
+                                        }
+
                                         String curr_architecture = "";
-                                        try{
-                                            if(block != null && !block.isEmpty()){
-                                                curr_architecture = block.getFirst().getCurrArchitecture();
+                                        // try{
+                                        //     if(block != null && !block.isEmpty()){
+                                        //         curr_architecture = block.getFirst().getCurrArchitecture();
+                                        //     }
+                                        //     if (curr_architecture.equals("OXII")) {
+                                        //         List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                        //         RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                        //         block.set(0,req); 
+                                        //     }
+                                        //     if (curr_architecture.equals("XOV++")) {
+                                        //         List<RequestDataList> dependencyList = dg.earlyAbort(block);
+                                        //         RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                        //         block.set(0,req);
+                                        //     }
+                                        // }catch(Exception e){
+                                        //     System.out.println(e+ " exception[statusUpdate]");
+                                        //     System.exit(1);
+                                        // }
+                                        if(block != null && !block.isEmpty()){
+                                            curr_architecture = block.getFirst().getCurrArchitecture();
+                                        }
+                                        final String  archKey = curr_architecture;
+                                        final List<RequestData> blockRef = block;
+                                        final var     dgRef   = dg;
+
+                                        Thread computeThread = new Thread(() -> {
+                                            try {
+                                                if (archKey.equals("OXII")) {
+                                                    List<RequestDataList> dependencyList = dgRef.CreateGraph(blockRef);
+                                                    RequestData req = blockRef.get(0)
+                                                        .toBuilder()
+                                                        .addAllReqLists(dependencyList)
+                                                        .build();
+                                                    blockRef.set(0, req);
+                                                }
+                                                if (archKey.equals("XOV++")) {
+                                                    List<RequestDataList> dependencyList = dgRef.earlyAbort(blockRef);
+                                                    RequestData req = blockRef.get(0)
+                                                        .toBuilder()
+                                                        .addAllReqLists(dependencyList)
+                                                        .build();
+                                                    blockRef.set(0, req);
+                                                }
+                                            } catch (Exception e) {
+                                                System.out.println(e + " exception[statusUpdate]");
+                                                System.exit(1);
                                             }
-                                            if (curr_architecture.equals("OXII")) {
-//                                                System.out.println("dg oxii seqnum went in "+seqnum);
-                                                List<RequestDataList> dependencyList = dg.CreateGraph(block);
-//                                                System.out.println("dg oxii seqnum out ---> "+seqnum);
-                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
-                                                block.set(0,req); // adding dependency graph to the first request.
-//                                                dg.setDependencyGraph(dependencyList);
-//                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
+                                        });
+
+                                        // 2) Start it
+                                        computeThread.start();
+
+                                        // 3) In the main thread, wait in 20s increments and print
+                                        try {
+                                            while (computeThread.isAlive()) {
+                                                // wait up to 20 seconds for it to finish
+                                                computeThread.join(20_000);
+                                                if (computeThread.isAlive()) {
+                                                    System.out.println("Waiting for dependency computation to complete...");
+                                                }
                                             }
-                                            if (curr_architecture.equals("XOV++")) {
-//                                                System.out.println("dg xov++ seqnum went in "+seqnum);
-                                                List<RequestDataList> dependencyList = dg.earlyAbort(block);
-//                                                System.out.println("dg Xov++ seqnum out ---> "+seqnum);
-                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
-                                                block.set(0,req);
-//                                                dg.setDependencyGraph(dependencyList);
-//                                                checkpoint.setDependencyGraph(seqnum, dependencyList);
-                                            }
-                                        }catch(Exception e){
-                                            System.out.println(e+ " exception[statusUpdate]");
-                                            System.exit(1);
+                                        } catch (InterruptedException ie) {
+                                            Thread.currentThread().interrupt();
+                                            System.err.println("Interrupted while waiting for dependency thread");
                                         }
                                     }
                                 }
@@ -972,6 +1089,10 @@ public abstract class Entity {
         checkpoint.setState(seqnum, transition.toState);
         if (transition.updateMode == UpdateMode.VIEW) {
             pendingRequests.clear();
+            pendingRequestsOX.clear();
+            pendingRequestsOXII.clear();
+            pendingRequestsXOV.clear();
+            pendingRequestsXOVPlus.clear();
             currentViewNum += 1;
         }
 

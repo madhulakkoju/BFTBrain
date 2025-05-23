@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Client extends Entity {
@@ -341,6 +342,7 @@ public class Client extends Entity {
 
     public class ClosedLoopRequestGenerator extends RequestGenerator {
         protected final Semaphore semaphore = new Semaphore(Config.integer("benchmark.closed-loop.num-client"));
+        protected static final AtomicInteger totalRequestCount = new AtomicInteger(0);
         protected final int block_size = Config.integer("benchmark.block-size");
 
         protected AtomicLong nextRequestNum = new AtomicLong(0l);
@@ -390,10 +392,14 @@ public class Client extends Entity {
 
                         var read_only_buf = 0;
 
+                        String curr_architecture = this.client.getArchManager().getCurrentArchitectureKey();
                         for (int i = 0; i < block_size + read_only_buf; i ++) {
                             var reqnum = nextRequestNum.getAndIncrement();
-                            var request = dataset.createRequest(reqnum);
-
+                            var request = dataset.createRequest(reqnum,curr_architecture);
+                            if(request == null) {
+                                i--;
+                                continue;
+                            }
                             if (  RequestUtils.getOperation(request).getNumber() == Operation.READ_ONLY_VALUE) {
                                 read_only_buf ++;
                             }
@@ -404,8 +410,7 @@ public class Client extends Entity {
                             if(request != null){
                                 curr_arch = request.getCurrArchitecture();
                             }
-                            if( this.client != null &&
-                                this.client.getArchManager() != null && curr_arch.contains("XOV")) {
+                            if( this.client != null && this.client.getArchManager() != null && curr_arch.contains("XOV")) {
                                 sendEndorserRequest(request);
                             }
                             else {

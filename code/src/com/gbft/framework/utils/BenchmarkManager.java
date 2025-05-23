@@ -93,6 +93,9 @@ public class BenchmarkManager {
             add(TIMEOUT, 0, timestamp);
         }
         var replies = checkpoint.getReplies(seqnum);
+        if (replies == null) {
+            replies = new ConcurrentHashMap<>();
+        }
       try {
           for (var request : requests) {
               String curr_arch = "";

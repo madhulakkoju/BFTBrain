@@ -497,13 +497,17 @@ def sync_single_worker(worker_node):
                 "22",
                 "-o",
                 "StrictHostKeyChecking no",
-                # extract BFTBrain-Sync.tar.gz
-                "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && " +
-                # compile
-                "cd BFTBrain/code && mvn clean &> sync.log && " +
-                "mvn package &> sync.log && " +
-                "mvn dependency:copy-dependencies &> sync.log"
-            ], 
+                "export JAVA_HOME=/opt/jdk-21.0.7 && "
+                "export M2_HOME=/opt/apache-maven-3.9.9 && "
+                "export PATH=$M2_HOME/bin:$JAVA_HOME/bin:$PATH && "
+                "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && "
+                "cd BFTBrain/code && "
+                "mvn clean &>> sync.log && "
+                "mvn package &>> sync.log && "
+                "mvn dependency:copy-dependencies &>> sync.log"
+            
+            ],
+
             stdout = subprocess.DEVNULL,
             stderr = subprocess.DEVNULL
         ).check_returncode()

@@ -90,10 +90,8 @@ public class Node extends Entity {
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-      //  System.out.println("seq num executed "+seqnum);
-       // this.logger.write("execute seqnum: "+seqnum + "report seq: " + reportSequence + "exchangeSequence: "+ exchangeSequence);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
-//        System.out.println("size : "+checkpointManager.getCheckpointSize());
+        //        System.out.println("size : "+checkpointManager.getCheckpointSize());
         var requestBlock = checkpoint.getRequestBlock(seqnum);
         String curr_architecture = "";
         try{
@@ -104,15 +102,12 @@ public class Node extends Entity {
             logger.write(e+ " exception");
         }
         try {
+            var replies = new ConcurrentHashMap<Long, Integer>();
             if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV")) {
                 //   logger.write("came inside");
                 try {
-                    var replies = new HashMap<Long, Integer>();
                     List<RequestData> newblock = new ArrayList<>();
                     newblock = dataset.validateRequests(requestBlock, replies);
-                    checkpoint.addReplies(seqnum, replies);
-//                checkpoint.setValidatedBlock(seqnum,replies);
-                    //logger.write("came here "+replies);
                 } catch (Exception e) {
                     System.out.println("node 107 " + e.toString());
                     System.out.println("Exception node " + e);
@@ -120,30 +115,18 @@ public class Node extends Entity {
                 }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OX")) {
-
                 try{
-
-                var replies = new HashMap<Long, Integer>();
-                for (var request : requestBlock) {
-                    replies.put(request.getRequestNum(), dataset.execute(request));
+                    for (var request : requestBlock) {
+                        replies.put(request.getRequestNum(), dataset.execute(request));
+                    }
                 }
-                if (checkpoint.getRequestBlock(seqnum) == null) {
-                    // logger.write("block is null");
-                    // logger.write("replies "+replies);
-                }
-
-                checkpoint.addReplies(seqnum, replies);
-
-            }
-
                 catch (Exception e){
-                System.out.println("Node 130 "+e);
-                System.exit(1);
-            }
+                    System.out.println("Node 130 "+e);
+                    System.exit(1);
+                }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OXII")) { // make true for oxii
                 try {
-                    var replies = new ConcurrentHashMap<Long, Integer>();
                     List<RequestDataList> dependencyGraph = requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
                     if (dependencyGraph == null || dependencyGraph.isEmpty()) {
                         for (var request : requestBlock) {
@@ -152,16 +135,13 @@ public class Node extends Entity {
                     } else {
                         executeParallel(replies, dependencyGraph);
                     }
-                    checkpoint.addReplies(seqnum, replies);
                 }
-
                 catch (Exception e){
                     System.out.println("Node 163 "+e);
                     System.exit(1);
                 }
             }
             else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV++")) {
-                var replies = new ConcurrentHashMap<Long, Integer>();
                 List<RequestDataList> dependencyGraph =  requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
                 if (dependencyGraph == null || dependencyGraph.isEmpty()) {
                     for (var request : requestBlock) {
@@ -170,8 +150,12 @@ public class Node extends Entity {
                 } else {
                     validateParallel(replies, dependencyGraph);
                 }
-                checkpoint.addReplies(seqnum, replies);
             }
+            else{
+                System.out.println("Requestblock "+requestBlock.toString());
+                System.exit(1);
+            }
+            checkpoint.addReplies(seqnum, replies);
         }catch (Exception e){
             System.out.println("Node 180 "+e);
             System.exit(1);

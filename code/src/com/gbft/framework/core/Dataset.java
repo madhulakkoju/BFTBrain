@@ -14,11 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Dataset {
 
     protected Map<Integer, AtomicInteger> records;
-
     protected Map<Integer, Long> recordCurrentVersion;
-
     public Map<Integer, Long> recordLatestVersion;
-
     public Entity entity;
 
     public static final int DEFAULT_VALUE = 1000;
@@ -31,237 +28,206 @@ public class Dataset {
     }
 
     public Dataset(Entity entity) {
-        records = DataUtils.concurrentMapWithDefaults(RECORD_COUNT, x -> new AtomicInteger(DEFAULT_VALUE));
-        recordCurrentVersion = new TreeMap<>();
-        recordLatestVersion = new TreeMap<>();
+        this();
         this.entity = entity;
     }
 
-    // use this for copying service state
+    // Copy constructor
     public Dataset(Dataset dataset) {
         records = new ConcurrentHashMap<>();
         for (var entry : dataset.records.entrySet()) {
-            this.records.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
+            records.put(entry.getKey(), new AtomicInteger(entry.getValue().get()));
         }
         recordCurrentVersion = new TreeMap<>();
         recordLatestVersion = new TreeMap<>();
-
     }
 
-    public void setRecords(Map<Integer, Integer> records) {
-        this.records.clear();
-        for (var entry : records.entrySet()) {
-            this.records.put(entry.getKey(), new AtomicInteger(entry.getValue()));
+    public void setRecords(Map<Integer, Integer> map) {
+        records.clear();
+        for (var entry : map.entrySet()) {
+            records.put(entry.getKey(), new AtomicInteger(entry.getValue()));
         }
     }
-    
+
     public Map<Integer, AtomicInteger> getRecords() {
         return records;
     }
 
     public int execute(RequestData request) {
-        //runComputeDummy(request);
-
-        //TODO: use this for write ratio
-        this.entity.addWriteTransactionsCount(request.getWriteSetCount());
-        this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
+        // Track stats
+        entity.addWriteTransactionsCount(request.getWriteSetCount());
+        entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
 
         List<Integer> values = new ArrayList<>();
 
-        for (var op: request.getWriteSetList()){
+        for (var op : request.getWriteSetList()) {
             runComputeDummy(request);
-            values.add( processRequest(op) );
+            values.add(processRequest(op));
         }
 
-        for (var op: request.getReadSetList()){
-            values.add( processRequest(op));
+        for (var op : request.getReadSetList()) {
+            values.add(processRequest(op));
         }
 
-        return values.getFirst();
+        return values.get(0);
     }
 
-    public void runComputeDummy(RequestData request){
-        // dummy computation
-        // try {
-        //     Thread.sleep(2);
-        // } catch (InterruptedException e) {
-        //     throw new RuntimeException(e);
-        // }
+    public void runComputeDummy(RequestData request) {
         if (request.getComputeFactor() > 0) {
-            var dummy_counter = 0;
+            int dummyCounter = 0;
             var random = new Random();
-            for (int i = 0; i < request.getComputeFactor(); i ++) {
-                dummy_counter += random.nextInt();
+            for (int i = 0; i < request.getComputeFactor(); i++) {
+                dummyCounter += random.nextInt();
             }
             try {
-                OutputStream.nullOutputStream().write(dummy_counter);
-            } catch (IOException e) {}
+                OutputStream.nullOutputStream().write(dummyCounter);
+            } catch (IOException ignored) {}
         }
     }
-
 
     public int processRequest(OperationSet operation) {
+        AtomicInteger counter = records.computeIfAbsent(
+            operation.getRecord(),
+            x -> new AtomicInteger(DEFAULT_VALUE)
+        );
 
-        try {
-            records.computeIfAbsent(operation.getRecord(),x -> new AtomicInteger(DEFAULT_VALUE));
-            AtomicInteger recordValue = records.get(operation.getRecord());
-            if (recordValue == null) {
-                records.put(operation.getRecord(), new AtomicInteger(DEFAULT_VALUE));
-            }
-            return switch (operation.getOp()) {
-                case ADD -> records.get(operation.getRecord()).addAndGet(operation.getValue());
-                case SUB -> records.get(operation.getRecord()).addAndGet(-operation.getValue());
-                case INC -> records.get(operation.getRecord()).incrementAndGet();
-                case DEC -> records.get(operation.getRecord()).decrementAndGet();
-                default -> records.get(operation.getRecord()).get();
-            };
-        }
-        catch (Exception e){
-            System.out.println("Exception 112 "+e+"\n\n"+ operation.toString() );
-//            System.out.println( "EEERRRRROOOORRRR Operation Record: "+operation.getRecord() +"\n" + e.getMessage() );
-//            for ( var rec:  records.keySet()){
-//                System.out.print("" +rec + "->" + records.get(rec) +" " );
-//            }
-//            System.out.println(records.keySet().stream().toArray().toString());
-            System.exit(1);
-        }
-        return 0;
-    }
-
-    public void update(RequestData request, int value) {
-
-        if(request.getWriteSetList().isEmpty()) return;
-
-        var record = request.getWriteSetList().getFirst().getRecord();
-        records.get(record).set(value);
-
-        this.recordCurrentVersion.put(record, recordCurrentVersion.getOrDefault(record, 0L) + 1);
-    }
-
-    public RequestData executeAhead(Entity entity,RequestData request) {
-        this.entity = entity;
-        List<Integer> values = new ArrayList<>();
-//        HashSet<Integer> tempRecords = new HashSet<>();
-
-        for (var op: request.getWriteSetList()){
-            runComputeDummy(request);
-            values.add( processRequest(op) );
-//            long latestVersion = this.recordLatVersion.getOrDefault(op.getRecord(),Long.valueOf(0));
-//            this.recordCurrVersion.put(op.getRecord(),latestVersion);
-        }
-
-        for (var op: request.getReadSetList()){
-            values.add( processRequest(op));
-        }
-
-        RequestData rr = null;
-        try {
-
-//            entity.logger.write( recordCurrentVersion.getOrDefault(
-//                    !request.getWriteSetList().isEmpty() ?
-//                            request.getWriteSetList().getFirst().getRecord() :
-//                                (!request.getReadSetList().isEmpty() ?
-//                                        request.getReadSetList().getFirst().getRecord() :
-//                                        -1 )
-//                    , 0L).toString() );
-
-
-            rr = request.toBuilder().setEarlyExecResult(values.getFirst())
-                    .setCurrentVersion(
-                            recordCurrentVersion.getOrDefault(
-                                    !request.getWriteSetList().isEmpty() ?
-                                            request.getWriteSetList().getFirst().getRecord() :
-                                            (!request.getReadSetList().isEmpty() ?
-                                                    request.getReadSetList().getFirst().getRecord() :
-                                                    -1 )
-                                    , 0L)
-                    )
-                    .build();
-
-            return  rr;
-        }
-        catch (Exception e){
-           // entity.logger.write("dataset 160 "+e.getMessage());
-        }
-        return null;
-    }
-
-    public List<RequestData> executeRequestsAhead(Entity entity,List<RequestData> block){
-        List<RequestData> executeAheadBlock = new ArrayList<>(block.size());
-
-        for (RequestData request : block) {
-            executeAheadBlock.add(this.executeAhead(entity,request));
-        }
-        return executeAheadBlock;
-    }
-
-    public List<RequestData> validateRequests(List<RequestData> block,HashMap<Long, Integer> replies){
-        Map<Integer, Long> recordVersion= new TreeMap<>();
-        List<RequestData> newblock = new ArrayList<>();
-        for (RequestData request : block) {
-          boolean val = validate(request,replies,recordVersion);
-          request = request.toBuilder().setIsTnxValid(val).build();
-          newblock.add(request);
-
-          //TODO: for write ratio for XOV
-                if(val) {
-                    //updating counts for both valid transactions ONLY
-                    this.entity.addWriteTransactionsCount(request.getWriteSetCount());
-                    this.entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
-                }
-        }
-        return newblock;
-    }
-
-    public void writeData(RequestData request){
-        for (var op: request.getWriteSetList()){
-            int record = op.getRecord();
-            records.get(record).set(request.getEarlyExecResult());
-        }
-
-    }
-
-    public boolean validate(RequestData request,HashMap<Long, Integer> replies,Map<Integer, Long> recordVersion){
-        for (var op: request.getWriteSetList()){
-            int record = op.getRecord();
-            if(recordVersion.getOrDefault(record,Long.valueOf(0)) != 0){
-                replies.put(request.getRequestNum(),0);
-                return false;
-            }
-        }
-
-        for(var op: request.getReadSetList()){
-            int record = op.getRecord();
-            if(recordVersion.getOrDefault(record,Long.valueOf(0)) != 0){
-                replies.put(request.getRequestNum(),0);
-                return false;
-            }
-            replies.put(request.getRequestNum(),1000);
-        }
-
-        for (var op: request.getWriteSetList()){
-            int record = op.getRecord();
-            replies.put(request.getRequestNum(),request.getEarlyExecResult());
-            records.get(record).set(request.getEarlyExecResult());
-//            long currVersion = this.recordCurrVersion.getOrDefault(record,Long.valueOf(0))+1;
-//            this.recordLatVersion.put(record,currVersion+1);
-            recordVersion.put(record,Long.valueOf(1));
-        }
-
-       return true;
-    }
-
-    public int processRequestAhead(OperationSet operation){
         return switch (operation.getOp()) {
-            case ADD -> records.get(operation.getRecord()).get()+ operation.getValue();
-            case SUB -> records.get(operation.getRecord()).get()-operation.getValue();
-            case INC -> records.get(operation.getRecord()).get()+1;
-            case DEC -> records.get(operation.getRecord()).get() - 1;
-            default -> records.get(operation.getRecord()).get();
+            case ADD -> counter.addAndGet(operation.getValue());
+            case SUB -> counter.addAndGet(-operation.getValue());
+            case INC -> counter.incrementAndGet();
+            case DEC -> counter.decrementAndGet();
+            default -> counter.get();
         };
     }
 
+    /**
+     * Sets a single record to a specific value and bumps its version.
+     */
+    public void update(RequestData request, int value) {
+        if (request.getWriteSetList().isEmpty()) {
+            return;
+        }
 
+        int record = request.getWriteSetList().getFirst().getRecord();
+        AtomicInteger counter = records.computeIfAbsent(
+            record,
+            x -> new AtomicInteger(DEFAULT_VALUE)
+        );
+        counter.set(value);
+
+        recordCurrentVersion.merge(record, 1L, Long::sum);
+    }
+
+    public RequestData executeAhead(Entity entity, RequestData request) {
+        this.entity = entity;
+        List<Integer> values = new ArrayList<>();
+
+        for (var op : request.getWriteSetList()) {
+            runComputeDummy(request);
+            values.add(processRequest(op));
+        }
+        for (var op : request.getReadSetList()) {
+            values.add(processRequest(op));
+        }
+
+        try {
+            return request.toBuilder()
+                .setEarlyExecResult(values.get(0))
+                .setCurrentVersion(
+                    recordCurrentVersion.getOrDefault(
+                        request.getWriteSetList().isEmpty()
+                            ? (request.getReadSetList().isEmpty() ? -1 : request.getReadSetList().getFirst().getRecord())
+                            : request.getWriteSetList().getFirst().getRecord(),
+                        0L
+                    )
+                )
+                .build();
+        } catch (Exception e) {
+            // log or rethrow as needed
+            return null;
+        }
+    }
+
+    public List<RequestData> executeRequestsAhead(Entity entity, List<RequestData> block) {
+        List<RequestData> result = new ArrayList<>(block.size());
+        for (RequestData req : block) {
+            result.add(this.executeAhead(entity, req));
+        }
+        return result;
+    }
+
+    public List<RequestData> validateRequests(List<RequestData> block, Map<Long, Integer> replies) {
+        Map<Integer, Long> versionMap = new TreeMap<>();
+        List<RequestData> validated = new ArrayList<>();
+
+        for (RequestData req : block) {
+            boolean isValid = validate(req, replies, versionMap);
+            if (isValid) {
+                entity.addWriteTransactionsCount(req.getWriteSetCount());
+                entity.addTotalTransactionsCount(req.getWriteSetCount() + req.getReadSetCount());
+            }
+            validated.add(req.toBuilder().setIsTnxValid(isValid).build());
+        }
+
+        return validated;
+    }
+
+    public void writeData(RequestData request) {
+        for (var op : request.getWriteSetList()) {
+            int record = op.getRecord();
+            // computeIfAbsent returns a non-null AtomicInteger
+            AtomicInteger counter = records.computeIfAbsent(
+                record,
+                x -> new AtomicInteger(DEFAULT_VALUE)
+            );
+            // safely overwrite with the early-exec result
+            counter.set(request.getEarlyExecResult());
+        }
+    }
+
+
+    private boolean validate(RequestData request, Map<Long, Integer> replies, Map<Integer, Long> versionMap) {
+        for (var op : request.getWriteSetList()) {
+            int rec = op.getRecord();
+            if (versionMap.getOrDefault(rec, 0L) != 0) {
+                replies.put(request.getRequestNum(), 0);
+                return false;
+            }
+        }
+        for (var op : request.getReadSetList()) {
+            int rec = op.getRecord();
+            if (versionMap.getOrDefault(rec, 0L) != 0) {
+                replies.put(request.getRequestNum(), 0);
+                return false;
+            }
+            replies.put(request.getRequestNum(), DEFAULT_VALUE);
+        }
+        for (var op : request.getWriteSetList()) {
+            int rec = op.getRecord();
+            replies.put(request.getRequestNum(), request.getEarlyExecResult());
+            AtomicInteger counter = records.computeIfAbsent(
+                rec,
+                x -> new AtomicInteger(DEFAULT_VALUE)
+            );
+            counter.set(request.getEarlyExecResult());
+            versionMap.put(rec, 1L);
+        }
+        return true;
+    }
+
+    public int processRequestAhead(OperationSet operation) {
+        AtomicInteger counter = records.get(operation.getRecord());
+        if (counter == null) {
+            counter = new AtomicInteger(DEFAULT_VALUE);
+        }
+        return switch (operation.getOp()) {
+            case ADD -> counter.get() + operation.getValue();
+            case SUB -> counter.get() - operation.getValue();
+            case INC -> counter.get() + 1;
+            case DEC -> counter.get() - 1;
+            default -> counter.get();
+        };
+    }
 
     public Map<Integer, Long> getRecordCurrentVersion() {
         return recordCurrentVersion;
