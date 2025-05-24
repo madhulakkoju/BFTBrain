@@ -68,6 +68,13 @@ public class Node extends Entity {
             var requestData = requestDataList.getReqDataListList();
             var futures = requestData.stream()
                     .map(request -> CompletableFuture.runAsync(() -> {
+                        if(request.getWriteSetCount() > 0) {
+                            addWriteTransactionsCount(1);
+                            addTotalTransactionsCount(1);
+                        }
+                        else{
+                            addTotalTransactionsCount(1);
+                        }
                         boolean valid = request.getIsTnxValid();
                         if (!request.getIsTnxValid()) {
                             replies.put(request.getRequestNum(), 0);

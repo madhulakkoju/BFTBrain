@@ -88,11 +88,11 @@ public class ClientDataset extends Dataset {
             }
 
             // generate read only optimization
-            if (Config.stringList("plugins.message").contains("read-only")) {
-                if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
-                    operation = Operation.READ_ONLY;
-                }
-            }
+            // if (Config.stringList("plugins.message").contains("read-only")) {
+            //     if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
+            //         operation = Operation.READ_ONLY;
+            //     }
+            // }
             return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
         }catch (Exception e){
             System.out.println("Client dataset 100 "+e);
@@ -133,11 +133,11 @@ public class ClientDataset extends Dataset {
             }
 
             // generate read only optimization
-            if (Config.stringList("plugins.message").contains("read-only")) {
-                if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
-                    operation = Operation.READ_ONLY;
-                }
-            }
+            // if (Config.stringList("plugins.message").contains("read-only")) {
+            //     if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
+            //         operation = Operation.READ_ONLY;
+            //     }
+            // }
             return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
         }catch (Exception e){
             System.out.println("Client dataset 100 "+e);

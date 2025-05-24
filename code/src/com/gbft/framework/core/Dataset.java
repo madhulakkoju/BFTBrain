@@ -55,8 +55,15 @@ public class Dataset {
 
     public int execute(RequestData request) {
         // Track stats
-        entity.addWriteTransactionsCount(request.getWriteSetCount());
-        entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
+        if(request.getWriteSetCount() > 0) {
+            entity.addWriteTransactionsCount(1);
+            entity.addTotalTransactionsCount(1);
+        }
+        else{
+            entity.addTotalTransactionsCount(1);
+        }
+        // entity.addWriteTransactionsCount(request.getWriteSetCount());
+        // entity.addTotalTransactionsCount(request.getWriteSetCount() + request.getReadSetCount());
 
         List<Integer> values = new ArrayList<>();
 
@@ -162,9 +169,12 @@ public class Dataset {
 
         for (RequestData req : block) {
             boolean isValid = validate(req, replies, versionMap);
-            if (isValid) {
-                entity.addWriteTransactionsCount(req.getWriteSetCount());
-                entity.addTotalTransactionsCount(req.getWriteSetCount() + req.getReadSetCount());
+            if(req.getWriteSetCount() > 0) {
+                entity.addWriteTransactionsCount(1);
+                entity.addTotalTransactionsCount(1);
+            }
+            else{
+                entity.addTotalTransactionsCount(1);
             }
             validated.add(req.toBuilder().setIsTnxValid(isValid).build());
         }

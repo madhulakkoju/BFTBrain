@@ -196,21 +196,47 @@ public class DataUtils {
         var builder = RequestData.newBuilder();
 
         try {
-
-            OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
-
-            if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
-                builder.addReadSet(opset);
-            }
-            else{
-                builder.addWriteSet(opset);
-                builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
-                for (int j = 1; j < numTotal; j++) {
-                    int randOperation = random.nextInt(5);
-                    builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(
-                        random.nextInt(AdvanceConfig.integer("workload.contention-level"))).build() );
+            if(random.nextInt(100) < AdvanceConfig.integer("workload.read-only-ratio")) {
+                for(int j = 0; j <= numTotal; j++){
+                    Operation new_operation = Operation.NOP;
+                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
+                    builder.addReadSet(opset);
                 }
             }
+            else{
+                int rand = random.nextInt(50);
+                if(rand % 2 == 0){
+                    Operation new_operation = Operation.NOP;
+                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
+                    builder.addReadSet(opset);
+                }
+                for(int j = 0; j <= numTotal; j++) {
+                    int new_operation = random.nextInt(5);
+                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    int new_value = 0;
+                    new_value = random.nextInt(100);
+                    OperationSet opset = OperationSet.newBuilder().setOp(Operation.forNumber(new_operation)).setRecord(new_record).setValue(new_value).build();
+                    builder.addWriteSet(opset);
+                }
+
+            }
+
+            // OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
+
+            // if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
+            //     builder.addReadSet(opset);
+            // }
+            // else{
+            //     builder.addWriteSet(opset);
+            //     builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
+            //     for (int j = 1; j < numTotal; j++) {
+            //         int randOperation = random.nextInt(5);
+            //         builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(
+            //             random.nextInt(AdvanceConfig.integer("workload.contention-level"))).build() );
+            //     }
+            // }
 
             builder.setRequestNum(reqnum)
                    .setClient(clientId)
