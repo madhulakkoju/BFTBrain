@@ -326,12 +326,19 @@ def run_agent(agent_stub):
             # Also log to CSV
             prev_row = model.get_prev_state(prev_action, action)
             if prev_row is not None:
+                # Format floating point values to 4 decimal places to avoid excessive precision
+                formatted_row = []
+                for val in prev_row:
+                    if isinstance(val, float):
+                        formatted_row.append(round(val, 4))
+                    else:
+                        formatted_row.append(val)
+                
                 # Append [prev_action_protocol, ..., action_protocol, ..., throughput, overheads...]
-                row = (prev_row
+                row = (formatted_row
                        + list(prev_action)
                        + list(action)
-                       + [data[REWARD]]
-                       + time_record)
+                       + [round(data[REWARD], 4), round(time_record[0], 6), round(time_record[1], 6)])
                 csv_writer.writerow(row)
 
         # Discard warm-up episodes
