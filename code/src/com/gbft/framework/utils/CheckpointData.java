@@ -153,7 +153,7 @@ public class CheckpointData {
                     .filter(entry -> (entry.getValue().longValue() >= decisionQuorumSize)).map(entry -> entry.getKey())
                     .findAny();
 
-        } while (nextProtocol.isEmpty());
+        } while (nextProtocol.isEmpty() && nextArchitecture.isEmpty());
 
 //        this.entity.logger.write("Architecture decision matching: " + architectureDecisionMatching.toString());
 //        this.entity.logger.write("Protocol decision matching: " + decisionMatching.toString());

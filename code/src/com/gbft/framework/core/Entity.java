@@ -150,7 +150,101 @@ public abstract class Entity {
     public void addTotalTransactionsCount(int count){
         this.numberOfTotalTransactionsByEpisode.put( this.currentEpisodeNum.get() ,
                 this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 0) + count );
+
+
+        //TODO: garbage collection
+        //Update the time in episode transactions
+        this.updateTimeStampsInEpisode( this.currentEpisodeNum.get(), System.currentTimeMillis() );
     }
+
+
+
+
+
+
+
+    public static class TimeAndCountFeaturesOfEpisode{
+        public Long initialTransactionTime;
+        public Long finalTransactionTime;
+
+        public HashMap<Integer, Integer> keyAccessFrequencies = new HashMap<>(); // for Hot Key Ratio
+
+        public void updateTimeStamp(long timeStamp){
+            if( initialTransactionTime == null ){
+                initialTransactionTime = timeStamp;
+                finalTransactionTime = timeStamp;
+            }
+            else{
+                finalTransactionTime = timeStamp;
+            }
+        }
+
+        public long getTimeDiff(){
+            if(initialTransactionTime == null) return 0;
+            return finalTransactionTime - initialTransactionTime;
+        }
+
+
+        // Hot Key Ratio feature
+        public void updateKeyAccesses( List<OperationSet> ops ){
+            for (OperationSet op : ops) {
+                this.keyAccessFrequencies.put(op.getRecord(),
+                        this.keyAccessFrequencies.getOrDefault(op.getRecord(), 0) + 1);
+            }
+        }
+
+        // Hot Key Ratio
+        // sorted keys = TreeMap of Keys and counts sorted in descending order.
+        // Hot Key ratio = key access count[sorted keys[0]] / sum( key access count.values() )
+        public float getHotKeyRatioInfo(){
+
+            int highestFreq = 0;
+            int totalFreq = 1;
+
+            for(int c : this.keyAccessFrequencies.values() ){
+                totalFreq += c;
+                highestFreq = Math.max(highestFreq, c);
+            };
+
+            return (float) (highestFreq / (1.0* totalFreq));
+        }
+    }
+
+    public ConcurrentHashMap<Integer, TimeAndCountFeaturesOfEpisode> timeTrackerInEpisode = new ConcurrentHashMap<>();
+
+    public void updateTimeStampsInEpisode( int episode, long timeStamp ){
+        TimeAndCountFeaturesOfEpisode ob;
+        if(timeTrackerInEpisode.containsKey(episode)){
+            ob = timeTrackerInEpisode.get(episode);
+        }
+        else{
+            ob = new TimeAndCountFeaturesOfEpisode();
+            timeTrackerInEpisode.put(episode, ob);
+        }
+        ob.updateTimeStamp(timeStamp);
+    }
+
+    public long getTransactionArrivalTimeDiff(){
+        return timeTrackerInEpisode.getOrDefault(currentEpisodeNum.get(), new TimeAndCountFeaturesOfEpisode()).getTimeDiff();
+    }
+
+    // Hot Key Ratio
+
+    public void updateKeyAccessesInEpisode(List<OperationSet> operationSets){
+        TimeAndCountFeaturesOfEpisode ob;
+        if(timeTrackerInEpisode.containsKey(currentEpisodeNum.get())){
+            ob = timeTrackerInEpisode.get(currentEpisodeNum.get());
+        }
+        else{
+            ob = new TimeAndCountFeaturesOfEpisode();
+            timeTrackerInEpisode.put(currentEpisodeNum.get(), ob);
+        }
+        ob.updateKeyAccesses(operationSets);
+    }
+    public float getHotKeyRatio(){
+        return timeTrackerInEpisode.getOrDefault(currentEpisodeNum.get(), new TimeAndCountFeaturesOfEpisode()).getHotKeyRatioInfo();
+    }
+
 
 
     public long totalCommittedTransactions = 0;

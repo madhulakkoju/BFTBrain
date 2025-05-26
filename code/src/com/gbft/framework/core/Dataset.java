@@ -55,6 +55,9 @@ public class Dataset {
 
     public int execute(RequestData request) {
         // Track stats
+        entity.updateKeyAccessesInEpisode(request.getReadSetList());
+        entity.updateKeyAccessesInEpisode(request.getWriteSetList());
+
         if(request.getWriteSetCount() > 0) {
             entity.addWriteTransactionsCount(1);
             entity.addTotalTransactionsCount(1);

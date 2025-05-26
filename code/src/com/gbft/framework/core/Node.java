@@ -68,6 +68,10 @@ public class Node extends Entity {
             var requestData = requestDataList.getReqDataListList();
             var futures = requestData.stream()
                     .map(request -> CompletableFuture.runAsync(() -> {
+
+                        updateKeyAccessesInEpisode(request.getReadSetList());
+                        updateKeyAccessesInEpisode(request.getWriteSetList());
+
                         if(request.getWriteSetCount() > 0) {
                             addWriteTransactionsCount(1);
                             addTotalTransactionsCount(1);
@@ -266,6 +270,24 @@ public class Node extends Entity {
 //                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
 //                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
 //                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
+
+
+                    // Transaction Arrival Rate = Num of transactions in episode / ( last tnx arrived time - first transaction arrived time )
+
+                    int totalTransactionsInEpisode = this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get(), 0 ) ;
+                    double timeDiff = this.getTransactionArrivalTimeDiff();
+
+                    float transactionArrivalRate = (float) (totalTransactionsInEpisode / (timeDiff >0 ? timeDiff : 1 ));
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, transactionArrivalRate);
+
+
+                    // Hot Key Ratio
+                    report.put(FeatureManager.HOT_KEY_RATIO, this.getHotKeyRatio());
+
+//                    System.out.printf("\n\n\n\nHK  : %f%n  Trans Arr  %f%n",
+//                            report.get(FeatureManager.HOT_KEY_RATIO),
+//                            transactionArrivalRate);
+
 
                 }
 
