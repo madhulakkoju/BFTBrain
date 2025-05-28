@@ -31,18 +31,62 @@ benchmark:
   aggregation-delay-ms: 200
 workload:
   # lower for more contention
-  contention-level: 70
+#  contention-level: 10
+  contention-level:
+    advance: true
+    init: 30
+    delay: 0
+    schedule:
+      values:
+        - 10
+        - 100
+        - 50
+      intervals:
+        - 120000   # 3 min in ms
+        - 180000   # next 3 min
+
   dataset-size: 100
   payload:
     request-size: 1000000
     reply-size: 1000000
-  compute-factor: 0
+#  compute-factor: 0
+
+  compute-factor:
+    advance: true
+    init: 300000
+    delay: 0
+    schedule:
+      values:
+        - 20000
+        - 300000
+        - 10000
+        - 1000
+        - 0
+      intervals:
+        - 180000
+        - 120000
+        - 120000
+        - 120000
   distribution:
     - 1 # 00
     - 0 # 04
     - 0 # 40
     - 0 # 44
-  read-only-ratio: 0
+#  read-only-ratio: 0
+  read-only-ratio:
+    advance: true
+    init: 10
+    delay: 0
+    schedule:
+      values:
+        - 10
+        - 70
+        - 30
+        - 100
+      intervals:
+        - 60000
+        - 240000
+        - 120000
 fault:
   in-dark:
     # the affected entities will always be excluded from leader rotation

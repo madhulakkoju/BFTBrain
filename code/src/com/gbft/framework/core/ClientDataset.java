@@ -1,9 +1,8 @@
 package com.gbft.framework.core;
 
-import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.Operation;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.AdvanceConfig;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
 import com.gbft.framework.utils.RequestUtils;
 
@@ -95,6 +94,7 @@ public class ClientDataset extends Dataset {
             // }
             return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
         }catch (Exception e){
+            e.printStackTrace();
             System.out.println("Client dataset 100 "+e);
             System.exit(1);
             return null;
