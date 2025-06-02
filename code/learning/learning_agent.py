@@ -17,8 +17,43 @@ from threading import Condition, Lock
 from sklearn.ensemble import RandomForestRegressor
 from constants import *
 
-# Ensure constants.py defines HOT_KEY_RATIO and TRANS_ARRIVAL_RATE indices
-# e.g., HOT_KEY_RATIO = 8, TRANS_ARRIVAL_RATE = 9 (following existing order)
+""" Learning Agent for BFTBrain
+This agent learns to select the best BFT protocol and architecture
+based on the state of the system.
+It uses a reinforcement learning approach with different predictive models. (Random Forest, Neural Network, etc.)
+It communicates with the BFTBrain entity via gRPC.
+
+reinforcement learning loop:
+1. Wait for state and reward (throughput) from BFTBrain.
+2. Update model with new experience (state, action, reward).
+3. Decide next action based on current state.
+4. Send decision back to BFTBrain.
+5. Log data for offline analysis.
+
+ML Model: 
+INPUT: state (10 features) + action (protocol, architecture)
+OUTPUT: predicted reward (throughput)
+
+State features:
+- FAST_PATH_FREQUENCY: Frequency of fast path proposals
+- SLOWNESS_OF_PROPOSAL: Slowness of proposal in the system
+- REQUEST_SIZE: Size of requests in the system
+- RECEIVED_MESSAGE_PER_SLOT: Number of messages received per slot
+- HAS_FAST_PATH: Whether the system has a fast path
+- HAS_LEADER_ROTATION: Whether the system has leader rotation
+- WRITE_RATIO: Ratio of write operations in the system
+- EXECUTION_DELAY: Delay in execution of requests
+- HOT_KEY_RATIO: Ratio of hot keys in the system
+- TRANS_ARRIVAL_RATE: Transaction arrival rate in the system
+
+Reward:
+- throughput: Throughput of the system (reward for the agent) (Transactions per second)
+
+Action features:
+- action_protocol: Selected BFT protocol (one-hot encoded)
+- action_architecture: Selected architecture (one-hot encoded)
+"""
+
 
 parser = argparse.ArgumentParser(description='Start a learning agent.')
 parser.add_argument('--unit', '-u', type=int, required=True, help='Unit id of the corresponding bedrock entity')
@@ -34,13 +69,18 @@ parser.add_argument('--replay-buffer', '-r', type=int, default=-1,
                     help="Limit of size of replay buffer, less than 1 will mean no limit. [Optional]: -1 as no limit")
 parser.add_argument('--multi-onehot', '-o', type=bool, default=False,
                     help="Whether to use one-hot encoding for multi model [Optional]")
+parser.add_argument('--epsilon', type=float, default=0.9, 
+                    help="Exploration rate for epsilon-greedy strategy [Optional]")
+parser.add_argument('--epsilon-decay', type=float, default=0.95, 
+                    help="Rate at which epsilon decreases after each episode [Optional]")
+parser.add_argument('--min-epsilon', type=float, default=0.2, 
+                    help="Minimum value of epsilon [Optional]")
 args = parser.parse_args()
 
 request_queue = queue.Queue()
 protocol_pool = ["pbft", "cheapbft", "sbft", "prime"]
 architecture_pool = ['OX', 'XOV', 'OXII', "XOV++"]
 
-# Number of state features has increased from 8 to 10
 NUM_STATE_FEATURES = 10
 
 
@@ -58,7 +98,6 @@ class AgentCommServicer(gbft_pb2_grpc.AgentCommServicer):
     Receives data from the Bedrock entity (via gRPC) and puts it into request_queue.
     """
     def send_data(self, request, context):
-        logging.info(f"Received data from BFTBrain UNIT {request}")
         request_queue.put(request)
         return gbft_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
 
@@ -104,10 +143,11 @@ def init_single_experience_buffer(experiences_X, experiences_y):
         # Actions: protocol (index), architecture (index)
         actions = df.loc[:, ['action_protocol', 'action_architecture']].values
 
-        # One-hot encode protocol
+        # One-hot encode protocol and architecture
         protocol_one_hot = np.eye(len(protocol_pool))[actions[:, 0].astype(int)]
-        # Remaining columns: architecture
-        action_features = np.hstack((protocol_one_hot, actions[:, 1:]))
+        architecture_one_hot = np.eye(len(architecture_pool))[actions[:, 1].astype(int)]
+        # Combine both one-hot encodings
+        action_features = np.hstack((protocol_one_hot, architecture_one_hot))
 
         # Rewards
         rewards = df['throughput'].values
@@ -132,6 +172,11 @@ class SingleRF:
         self.experiences_X = []
         self.experiences_y = []
         self.model = RandomForestRegressor()
+        
+        # Add epsilon-greedy parameters (without epsilon_delay)
+        self.epsilon = args.epsilon
+        self.epsilon_decay = args.epsilon_decay
+        self.min_epsilon = args.min_epsilon
 
         # Generate all possible action combinations: (protocol, architecture)
         self.action_combinations = list(
@@ -156,17 +201,17 @@ class SingleRF:
     def create_actions_matrix(self):
         """
         Creates a NumPy array containing the features for each possible (protocol, architecture).
-        Protocol is one-hot, architecture is an index.
+        Both protocol and architecture are one-hot encoded.
         """
         action_features = []
         for action in self.action_combinations:
             protocol, architecture = action
             # One-hot protocol
             protocol_one_hot = np.eye(len(protocol_pool))[protocol_pool.index(protocol)]
-            # Architecture index
-            architecture_idx = architecture_pool.index(architecture)
-            # Combine protocol + architecture
-            action_feature = np.concatenate((protocol_one_hot, [architecture_idx]))
+            # One-hot architecture (changed from index)
+            architecture_one_hot = np.eye(len(architecture_pool))[architecture_pool.index(architecture)]
+            # Combine protocol + architecture one-hot vectors
+            action_feature = np.concatenate((protocol_one_hot, architecture_one_hot))
             action_features.append(action_feature)
         return np.array(action_features)
 
@@ -187,11 +232,12 @@ class SingleRF:
     def get_action_feature(self, action):
         """
         Convert action tuple to numeric feature vector.
+        Both protocol and architecture are one-hot encoded.
         """
         protocol, architecture = action
         protocol_one_hot = np.eye(len(protocol_pool))[protocol_pool.index(protocol)]
-        arch_idx = architecture_pool.index(architecture)
-        return np.concatenate((protocol_one_hot, [arch_idx]))
+        architecture_one_hot = np.eye(len(architecture_pool))[architecture_pool.index(architecture)]
+        return np.concatenate((protocol_one_hot, architecture_one_hot))
 
     def get_prev_state(self, prev_prev_action, prev_action):
         """
@@ -216,45 +262,64 @@ class SingleRF:
     def retrain_and_predict(self, state, prev_action):
         """
         Retrain model, predict for all actions, return best action.
+        includes epsilon-greedy exploration.
         """
         training_overhead = 0
         inference_overhead = 0
 
         # Update state portion of enumeration matrix
         self.enumeration_matrix[:, 0:NUM_STATE_FEATURES] = state
-
-        if len(self.experiences_y):
-            training_start = time.time()
-            self.train()
-            training_overhead = round(time.time() - training_start, 6)
-
-            inference_start = time.time()
-            prediction = self.model.predict(self.enumeration_matrix)
-            inference_overhead = round(time.time() - inference_start, 6)
-
-            best_idx = np.random.choice(
-                np.flatnonzero(np.isclose(prediction, prediction.max())),
-                replace=True
-            )
-            best_action = self.action_combinations[best_idx]
-        else:
+        
+        # Apply epsilon decay 
+        self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+        
+        # Epsilon-greedy strategy
+        if random.random() < self.epsilon:
+            # Exploration: choose random action
             best_action = random.choice(self.action_combinations)
+            logging.info(f"Exploring with epsilon={self.epsilon:.4f}, random action: {best_action}")
+        else:
+            # Exploitation: choose best action according to model
+            if len(self.experiences_y):
+                training_start = time.time()
+                self.train()
+                training_overhead = round(time.time() - training_start, 6)
+
+                inference_start = time.time()
+                prediction = self.model.predict(self.enumeration_matrix)
+                inference_overhead = round(time.time() - inference_start, 6)
+
+                best_idx = np.random.choice(
+                    np.flatnonzero(np.isclose(prediction, prediction.max())),
+                    replace=True
+                )
+                best_action = self.action_combinations[best_idx]
+                logging.info(f"Exploiting with epsilon={self.epsilon:.4f}, best action: {best_action}")
+            else:
+                best_action = random.choice(self.action_combinations)
+                logging.info(f"No data yet, choosing random action: {best_action}")
 
         return best_action, training_overhead, inference_overhead
 
 
 def run_agent(agent_stub):
     """
-    Main loop:
-      - Wait for state & reward
-      - Update model
-      - Decide next action
-      - Send decision
-      - Log data
+    Main agent loop that handles the RL workflow:
+      - Wait for state & reward from BFTBrain
+      - Update model with new experience
+      - Decide next action based on current state
+      - Send decision back to BFTBrain
+      - Log data for analysis
+      
+    Args:
+        agent_stub: gRPC stub for communicating with the BFTBrain entity
     """
+    # Store history of actions for reward assignment
     actions = []
+    # Store performance metrics for model training/inference
     time_records = []
 
+    # Initialize the appropriate model based on command line arguments
     if args.model == "random-forest":
         logging.info("Random Forest Model Initialized")
         model = SingleRF()
@@ -262,14 +327,15 @@ def run_agent(agent_stub):
         logging.error('Neural network model not implemented.')
         return
 
-    # Prepare CSV for offline analysis
+    # Set up CSV logging for offline analysis
     folder_name = "data/"
     os.makedirs(folder_name, exist_ok=True)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"{folder_name}{timestamp}_u{args.unit}.csv"
     data_store = open(filename, 'w', newline='')
     csv_writer = csv.writer(data_store)
-    # Header now includes two additional state columns
+    
+    # CSV header contains state features, actions, and performance metrics
     csv_writer.writerow([
         'FAST_PATH_FREQUENCY', 'SLOWNESS_OF_PROPOSAL', 'REQUEST_SIZE', 'MESSAGE_PER_SLOT',
         'HAS_FAST_PATH', 'HAS_LEADER_ROTATION', 'WRITE_RATIO', 'EXECUTION_DELAY',
@@ -280,11 +346,13 @@ def run_agent(agent_stub):
     ])
     logging.info('Learning agent has been initialized.')
 
+    # Main learning loop
     for episode in range(args.episodes):
+        # Wait for state and reward from BFTBrain
         request = request_queue.get()
         data = request.report
 
-        # Extract current state with 10 features
+        # Extract current state with all 10 features from environment data
         state = np.array([
             data[FAST_PATH_FREQUENCY], data[SLOWNESS_OF_PROPOSAL], data[REQUEST_SIZE],
             data[RECEIVED_MESSAGE_PER_SLOT], data[HAS_FAST_PATH], data[HAS_LEADER_ROTATION],

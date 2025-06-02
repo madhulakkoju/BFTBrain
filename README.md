@@ -55,6 +55,9 @@ This mode should be used when running final evaluations of the end-to-end BFTBra
 
 ### Miyuki Automation Tool Overview
 
+Miyuki is an orchestration tool designed to simplify the deployment and management of BFTBrain experiments on Cloudlab.
+It handles machine provisioning, software setup, experiment execution, and result collection through a unified command-line interface.
+
 Miyuki can be used on any machine to instantiate Cloudlab instances and launch experiments.
 
 Due to legacy issues, each experiment consist of a `master` node, i.e. `controller`, and some `workers` node. They are two different Cloudlab experiments.
