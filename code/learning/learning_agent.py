@@ -106,7 +106,7 @@ parser.add_argument('--multi-onehot', '-o', type=bool, default=False,
                     help="Whether to use one-hot encoding for multi model [Optional]")
 parser.add_argument('--epsilon', type=float, default=0.9, 
                     help="Exploration rate for epsilon-greedy strategy [Optional]")
-parser.add_argument('--epsilon-decay', type=float, default=0.95, 
+parser.add_argument('--epsilon-decay', type=float, default=0.99, 
                     help="Rate at which epsilon decreases after each episode [Optional]")
 parser.add_argument('--min-epsilon', type=float, default=0.2, 
                     help="Minimum value of epsilon [Optional]")
@@ -195,7 +195,7 @@ def init_single_experience_buffer(experiences_X, experiences_y):
         for i in range(states_actions.shape[0]):
             experiences_X.append(states_actions[i, :])
             experiences_y.append(reward_engineering(rewards[i]))
-        logging.info(f"Checkpoint retrieved:  experiences length: {len(experiences_X)}")
+        logging.debug(f"Checkpoint retrieved:  experiences length: {len(experiences_X)}")
 
 
 class SingleRF:
@@ -209,6 +209,9 @@ class SingleRF:
         self.experiences_X = []
         self.experiences_y = []
         self.model = RandomForestRegressor()
+        
+        # Track predictions for comparison with actual rewards
+        self.last_prediction = None
         
         # Add epsilon-greedy parameters (without epsilon_delay)
         self.epsilon = args.epsilon
@@ -303,6 +306,7 @@ class SingleRF:
         """
         training_overhead = 0
         inference_overhead = 0
+        self.last_prediction = None  # Reset last prediction
 
         # Update state portion of enumeration matrix
         self.enumeration_matrix[:, 0:NUM_STATE_FEATURES] = state
@@ -314,7 +318,7 @@ class SingleRF:
         if random.random() < self.epsilon:
             # Exploration: choose random action
             best_action = random.choice(self.action_combinations)
-            logging.info(f"Exploring with epsilon={self.epsilon:.4f}, random action: {best_action}")
+            logging.debug(f"Exploring with epsilon={self.epsilon:.4f}, random action: {best_action}")
         else:
             # Exploitation: choose best action according to model
             if len(self.experiences_y):
@@ -326,15 +330,29 @@ class SingleRF:
                 prediction = self.model.predict(self.enumeration_matrix)
                 inference_overhead = round(time.time() - inference_start, 6)
 
+                # Create a list of (prediction, action_index) tuples
+                prediction_action_pairs = [(pred, idx) for idx, pred in enumerate(prediction)]
+                
+                # Sort by prediction value (descending)
+                prediction_action_pairs.sort(key=lambda x: x[0], reverse=True)
+                
+                # Log top 5 predictions
+                logging.debug("Top 5 predicted throughput values:")
+                for i in range(min(5, len(prediction_action_pairs))):
+                    pred, action_idx = prediction_action_pairs[i]
+                    action = self.action_combinations[action_idx]
+                    logging.debug(f"  {i+1}. Action: {action}, Predicted throughput: {pred:.2f} transactions/sec")
+
                 best_idx = np.random.choice(
                     np.flatnonzero(np.isclose(prediction, prediction.max())),
                     replace=True
                 )
                 best_action = self.action_combinations[best_idx]
-                logging.info(f"Exploiting with epsilon={self.epsilon:.4f}, best action: {best_action}")
+                self.last_prediction = prediction[best_idx]  # Store the prediction for the chosen action
+                logging.debug(f"Exploiting with epsilon={self.epsilon:.4f}, best action: {best_action}, predicted throughput: {self.last_prediction:.2f} transactions/sec")
             else:
                 best_action = random.choice(self.action_combinations)
-                logging.info(f"No data yet, choosing random action: {best_action}")
+                logging.debug(f"No data yet, choosing random action: {best_action}")
 
         return best_action, training_overhead, inference_overhead
 
@@ -355,10 +373,12 @@ def run_agent(agent_stub):
     actions = []
     # Store performance metrics for model training/inference
     time_records = []
+    # Store prediction history
+    prediction_history = []
 
     # Initialize the appropriate model based on command line arguments
     if args.model == "random-forest":
-        logging.info("Random Forest Model Initialized")
+        logging.debug("Random Forest Model Initialized")
         model = SingleRF()
     elif args.model == "neural-network":
         logging.error('Neural network model not implemented.')
@@ -379,9 +399,10 @@ def run_agent(agent_stub):
         'HOT_KEY_RATIO', 'TRANS_ARRIVAL_RATE',
         'previous_action_protocol', 'previous_action_architecture',
         'action_protocol', 'action_architecture',
-        'throughput', 'training_overhead(s)', 'inference_overhead(s)'
+        'throughput', 'training_overhead(s)', 'inference_overhead(s)',
+        'predicted_throughput', 'prediction_error'
     ])
-    logging.info('Learning agent has been initialized.')
+    logging.debug('Learning agent has been initialized.')
 
     # Main learning loop
     for episode in range(args.episodes):
@@ -398,45 +419,97 @@ def run_agent(agent_stub):
 
         current_action = (request.next_protocol, request.next_architecture)
 
-        logging.info(f"Episode {episode}: Got state={state}, current_action={current_action}")
+        # logging.debug(f"Episode {episode}: Got state={state}, current_action={current_action}")
+        logging.debug(f"Episode {episode}: current_action={current_action}")
 
         # Record reward for previous step
         if len(actions) > 1:
             prev_action, action = actions.pop(0)
             time_record = time_records.pop(0)
-            model.record_reward(prev_action, action, data[REWARD])
+            predicted_reward = prediction_history.pop(0) if prediction_history else None
+            
+            # Log the actual reward and compare with prediction if available
+            actual_reward = data[REWARD]
+            model.record_reward(prev_action, action, actual_reward)
+            
+            if predicted_reward is not None:
+                prediction_error = actual_reward - predicted_reward
+                error_percentage = (prediction_error / actual_reward * 100) if actual_reward > 0 else float('inf')
+                logging.info(f"Reward comparison - Predicted: {predicted_reward:.2f}, Actual: {actual_reward:.2f}, " 
+                             f"Error: {prediction_error:.2f} ({error_percentage:.2f}%)")
+            else:
+                prediction_error = None
+                logging.debug(f"Actual reward: {actual_reward:.2f} (no prediction available)")
 
             # Log to CSV
             prev_row = model.get_prev_state(prev_action, action)
             if prev_row is not None:
                 formatted = [round(val,4) if isinstance(val, float) else val for val in prev_row]
                 row = (formatted + list(prev_action) + list(action) +
-                       [round(data[REWARD],4), round(time_record[0],6), round(time_record[1],6)])
+                       [round(actual_reward,4), round(time_record[0],6), round(time_record[1],6)])
+                
+                # Add prediction and error data if available
+                if predicted_reward is not None:
+                    row.extend([round(predicted_reward,4), round(prediction_error,4)])
+                else:
+                    row.extend([None, None])
+                    
                 csv_writer.writerow(row)
 
         # Warm-up discard episodes
         if episode < args.discard - 1:
             learningdata = gbft_pb2.LearningData(next_protocol="repeat", next_architecture="repeat")
-            logging.info("Warmup episode, repeating current bedrock action.")
+            logging.debug("Warmup episode, repeating current bedrock action.")
             agent_stub.send_decision(learningdata)
             continue
 
         # Retrain & predict best action
         best_action, training_overhead, inference_overhead = model.retrain_and_predict(state, current_action)
+        
+        # Store prediction for future comparison
+        prediction_history.append(model.last_prediction)
 
         actions.append((current_action, best_action))
         time_records.append([training_overhead, inference_overhead])
         model.record_state_and_action(current_action, best_action, state)
 
         learningdata = gbft_pb2.LearningData(next_protocol=best_action[0], next_architecture=best_action[1])
-        logging.info("Sending best_action decision back: %s", learningdata)
+        logging.debug("Sending best_action decision back: %s", learningdata)
         agent_stub.send_decision(learningdata)
         data_store.flush()
 
 
 if __name__ == '__main__':
     LOG_FORMAT = '%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+    
+    # Create a logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+    
+    # Create logs directory if it doesn't exist
+    logs_dir = "logs/"
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # Create timestamped log filename
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    log_filename = f"{logs_dir}{timestamp}_u{args.unit}.log"
+    
+    # Create file handler for logging to file
+    file_handler = logging.FileHandler(log_filename)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    
+    # Create console handler for logging to stdout
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    
+    # Add both handlers to the logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    # Set up root logger
+    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, handlers=[])
 
     random.seed(0)
     np.random.seed(0)
@@ -448,7 +521,7 @@ if __name__ == '__main__':
     gbft_pb2_grpc.add_AgentCommServicer_to_server(AgentCommServicer(), server)
     server.add_insecure_port(server_address)
     server.start()
-    logging.info('gRPC server running at %s.', server_address)
+    logging.debug('gRPC server running at %s.', server_address)
 
     try:
         entity_channel = grpc.insecure_channel(f'localhost:{bedrockRPCPort}')
