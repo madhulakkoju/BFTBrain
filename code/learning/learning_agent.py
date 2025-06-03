@@ -52,6 +52,41 @@ Reward:
 Action features:
 - action_protocol: Selected BFT protocol (one-hot encoded)
 - action_architecture: Selected architecture (one-hot encoded)
+
+Notes:
+
+State Features:
+    1. fast_path_frequency
+    2. slowness_of_proposal, 
+    3. request_size
+    4. received_message_per_slot
+    5. HAS_FAST_PATH
+    6. HAS_LEADER_ROTATION 
+
+will help to determine the best protocol.
+
+State Features 
+    1. write_ratio,
+    2. execution_delay
+    3. hot_key_ratio, 
+    4. trans_arrival_rate 
+will help to determine the best architecture.
+
+Senerios:
+
+For Workload A, which has high hot key ratio and high execution delay, 
+the best performing architecture combination is XOV++ or XOV.
+
+In Workload B, characterized by moderate trans arrival rate, 
+high hot key ratio, and moderate write ratio, 
+the OXII architecture performs the best.
+
+Workload C, featuring low contention and very high execution delay, 
+achieves the highest throughput with either XOV++ or XOV.
+
+For Workload D, which has very high hot key ratio, a high write ratio,
+ and low execution delay, the OXII architecture is the most effective choice.
+
 """
 
 
@@ -86,7 +121,9 @@ NUM_STATE_FEATURES = 10
 
 def reward_engineering(reward: float) -> float:
     """
-    Sample shaping function, can be modified as needed.
+    Applies reward engineering to the raw reward value.
+    If the reward is less than 1000, it applies a quadratic scaling to amplify small rewards.
+    
     """
     if reward < 1000:
         return (reward / 1000) ** 2 * 1000
