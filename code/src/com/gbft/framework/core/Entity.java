@@ -1,6 +1,7 @@
 package com.gbft.framework.core;
 
 import com.gbft.framework.coordination.CoordinatorUnit;
+import com.gbft.framework.core.Entity.TimeAndCountFeaturesOfEpisode;
 import com.gbft.framework.core.architecture.ArchManager;
 import com.gbft.framework.core.architecture.Architecture;
 import com.gbft.framework.core.architecture.DependencyGraph;
@@ -59,6 +60,7 @@ public abstract class Entity {
     protected ConcurrentLinkedQueue<RequestData> pendingRequestsXOV;
     protected ConcurrentLinkedQueue<RequestData> pendingRequestsXOVPlus;
     protected ConcurrentHashMap<String,ConcurrentLinkedQueue<RequestData>> archMap;
+    protected Deque<String> archQueue;
           
 
     protected Map<Long, Long> reqnumToSeqnumMap;
@@ -293,6 +295,7 @@ public abstract class Entity {
         pendingRequestsXOV = new ConcurrentLinkedQueue<>();
         pendingRequestsXOVPlus = new ConcurrentLinkedQueue<>();
         archMap = new ConcurrentHashMap<>();
+        archQueue = new LinkedList<>();
         archMap.put("OX", pendingRequestsOX);
         archMap.put("OXII", pendingRequestsOXII);
         archMap.put("XOV", pendingRequestsXOV);
@@ -701,6 +704,13 @@ public abstract class Entity {
 
 
                                         String current_architecture = this.getArchManager().getCurrentArchitectureKey();
+                                        if(archQueue.size() == 0 ){
+                                            archQueue.add(current_architecture);
+                                        }
+                                        else if(!archQueue.peekLast().equals(current_architecture)){
+                                            archQueue.add(current_architecture);
+                                        }
+
                                         ConcurrentLinkedQueue<RequestData> tempPendingRequests = null;
                                         if(prevArchitecture.equals("")){
                                             prevArchitecture = current_architecture;
@@ -730,33 +740,44 @@ public abstract class Entity {
                                             }
                                         }
 
-                                        if(archMap.get(current_architecture).size() >= blockSize){
-                                            tempPendingRequests = archMap.get(current_architecture);
+                                        if(archQueue.size() > 1 && archMap.get(archQueue.peek()).size() != 0){
+                                            tempPendingRequests = archMap.get(archQueue.peek());
                                         }
-                                        else if (archMap.get("OX").size() >= blockSize) {
-                                            tempPendingRequests = archMap.get("OX");
+                                        else{
+                                            if(archQueue.size() > 2 && archMap.get(archQueue.peek()).size() == 0){
+                                               archQueue.poll();
+                                            }
+
+                                            if(archMap.get(current_architecture).size() >= blockSize){
+                                                tempPendingRequests = archMap.get(current_architecture);
+                                            }
+                                            else if (archMap.get("OX").size() >= blockSize) {
+                                                tempPendingRequests = archMap.get("OX");
+                                            }
+                                            else if (archMap.get("OXII").size() >= blockSize) {
+                                                tempPendingRequests = archMap.get("OXII");
+                                            }
+                                            else if (archMap.get("XOV").size() >= blockSize) {
+                                                tempPendingRequests = archMap.get("XOV");
+                                            }
+                                            else if (archMap.get("XOV++").size() >= blockSize) {
+                                                tempPendingRequests = archMap.get("XOV++");
+                                            }
+                                            else if(archMap.get(prevArchitecture).size() > 0){
+                                                tempPendingRequests = archMap.get(prevArchitecture);
+                                            }
+                                            else {
+                                                continue;
+                                            }
                                         }
-                                        else if (archMap.get("OXII").size() >= blockSize) {
-                                            tempPendingRequests = archMap.get("OXII");
-                                        }
-                                        else if (archMap.get("XOV").size() >= blockSize) {
-                                            tempPendingRequests = archMap.get("XOV");
-                                        }
-                                        else if (archMap.get("XOV++").size() >= blockSize) {
-                                            tempPendingRequests = archMap.get("XOV++");
-                                        }
-                                        else if(archMap.get(prevArchitecture).size() > 0){
-                                            tempPendingRequests = archMap.get(prevArchitecture);
-                                        }
-                                        else {
-                                            continue;
-                                        }
-                                        
-                                        // System.out.println("Pending Requests " + pendingRequests.size());
-                                        // System.out.println("OX " + archMap.get("OX").size());
-                                        // System.out.println("OXII " + archMap.get("OXII").size());
-                                        // System.out.println("XOV " + archMap.get("XOV").size());
-                                        // System.out.println("XOV++ " + archMap.get("XOV++").size());
+
+                                       
+                                        System.out.println("arch " + archQueue);
+                                        System.out.println("Pending Requests " + pendingRequests.size());
+                                        System.out.println("OX " + archMap.get("OX").size());
+                                        System.out.println("OXII " + archMap.get("OXII").size());
+                                        System.out.println("XOV " + archMap.get("XOV").size());
+                                        System.out.println("XOV++ " + archMap.get("XOV++").size());
 
                                         block = new ArrayList<RequestData>();
                                         String prev_arch = "";
@@ -782,71 +803,71 @@ public abstract class Entity {
                                         }
 
                                         String curr_architecture = "";
-                                        // try{
-                                        //     if(block != null && !block.isEmpty()){
-                                        //         curr_architecture = block.getFirst().getCurrArchitecture();
-                                        //     }
-                                        //     if (curr_architecture.equals("OXII")) {
-                                        //         List<RequestDataList> dependencyList = dg.CreateGraph(block);
-                                        //         RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
-                                        //         block.set(0,req); 
-                                        //     }
-                                        //     if (curr_architecture.equals("XOV++")) {
-                                        //         List<RequestDataList> dependencyList = dg.earlyAbort(block);
-                                        //         RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
-                                        //         block.set(0,req);
-                                        //     }
-                                        // }catch(Exception e){
-                                        //     System.out.println(e+ " exception[statusUpdate]");
-                                        //     System.exit(1);
-                                        // }
-                                        if(block != null && !block.isEmpty()){
-                                            curr_architecture = block.getFirst().getCurrArchitecture();
-                                        }
-                                        final String  archKey = curr_architecture;
-                                        final List<RequestData> blockRef = block;
-                                        final var     dgRef   = dg;
-
-                                        Thread computeThread = new Thread(() -> {
-                                            try {
-                                                if (archKey.equals("OXII")) {
-                                                    List<RequestDataList> dependencyList = dgRef.CreateGraph(blockRef);
-                                                    RequestData req = blockRef.get(0)
-                                                        .toBuilder()
-                                                        .addAllReqLists(dependencyList)
-                                                        .build();
-                                                    blockRef.set(0, req);
-                                                }
-                                                if (archKey.equals("XOV++")) {
-                                                    List<RequestDataList> dependencyList = dgRef.earlyAbort(blockRef);
-                                                    RequestData req = blockRef.get(0)
-                                                        .toBuilder()
-                                                        .addAllReqLists(dependencyList)
-                                                        .build();
-                                                    blockRef.set(0, req);
-                                                }
-                                            } catch (Exception e) {
-                                                System.out.println(e + " exception[statusUpdate]");
-                                                System.exit(1);
+                                        try{
+                                            if(block != null && !block.isEmpty()){
+                                                curr_architecture = block.getFirst().getCurrArchitecture();
                                             }
-                                        });
+                                            if (curr_architecture.equals("OXII")) {
+                                                List<RequestDataList> dependencyList = dg.CreateGraph(block);
+                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                                block.set(0,req); 
+                                            }
+                                            if (curr_architecture.equals("XOV++")) {
+                                                List<RequestDataList> dependencyList = dg.earlyAbort(block);
+                                                RequestData req = block.getFirst().toBuilder().addAllReqLists(dependencyList).build();
+                                                block.set(0,req);
+                                            }
+                                        }catch(Exception e){
+                                            System.out.println(e+ " exception[statusUpdate]");
+                                            System.exit(1);
+                                        }
+                                        // if(block != null && !block.isEmpty()){
+                                        //     curr_architecture = block.getFirst().getCurrArchitecture();
+                                        // }
+                                        // final String  archKey = curr_architecture;
+                                        // final List<RequestData> blockRef = block;
+                                        // final var     dgRef   = dg;
 
-                                        // 2) Start it
-                                        computeThread.start();
+                                        // Thread computeThread = new Thread(() -> {
+                                        //     try {
+                                        //         if (archKey.equals("OXII")) {
+                                        //             List<RequestDataList> dependencyList = dgRef.CreateGraph(blockRef);
+                                        //             RequestData req = blockRef.get(0)
+                                        //                 .toBuilder()
+                                        //                 .addAllReqLists(dependencyList)
+                                        //                 .build();
+                                        //             blockRef.set(0, req);
+                                        //         }
+                                        //         if (archKey.equals("XOV++")) {
+                                        //             List<RequestDataList> dependencyList = dgRef.earlyAbort(blockRef);
+                                        //             RequestData req = blockRef.get(0)
+                                        //                 .toBuilder()
+                                        //                 .addAllReqLists(dependencyList)
+                                        //                 .build();
+                                        //             blockRef.set(0, req);
+                                        //         }
+                                        //     } catch (Exception e) {
+                                        //         System.out.println(e + " exception[statusUpdate]");
+                                        //         System.exit(1);
+                                        //     }
+                                        // });
+
+                                        // // 2) Start it
+                                        // computeThread.start();
 
                                         // 3) In the main thread, wait in 20s increments and print
-                                        try {
-                                            while (computeThread.isAlive()) {
-                                                // wait up to 20 seconds for it to finish
-                                                computeThread.join(20_000);
-                                                if (computeThread.isAlive()) {
-                                                    System.out.println("Waiting for dependency computation to complete...");
-                                                }
-                                            }
-                                        } catch (InterruptedException ie) {
-                                            Thread.currentThread().interrupt();
-                                            System.err.println("Interrupted while waiting for dependency thread");
-                                        }
+                                        // try {
+                                        //     while (computeThread.isAlive()) {
+                                        //         // wait up to 20 seconds for it to finish
+                                        //         computeThread.join(20_000);
+                                        //         if (computeThread.isAlive()) {
+                                        //             System.out.println("Waiting for dependency computation to complete...");
+                                        //         }
+                                        //     }
+                                        // } catch (InterruptedException ie) {
+                                        //     Thread.currentThread().interrupt();
+                                        //     System.err.println("Interrupted while waiting for dependency thread");
+                                        // }
                                     }
                                 }
 

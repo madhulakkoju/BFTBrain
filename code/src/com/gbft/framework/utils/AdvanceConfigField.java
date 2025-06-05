@@ -87,9 +87,17 @@ public class AdvanceConfigField {
                 this.config_type = CONFIG_SCHEDULE;
                 var intervals = Config.intList(getProperty("schedule.intervals"));
 
-                for (var i = 0; i < intervals.size(); i ++) {
+                // for (var i = 0; i < intervals.size(); i ++) {
+                //     Thread.sleep(intervals.get(i));
+                //     schedule_index ++;
+                // }
+                int i = 0;
+                while (true) {
                     Thread.sleep(intervals.get(i));
-                    schedule_index ++;
+                    synchronized (this) {
+                        schedule_index = (schedule_index + 1) % intervals.size();
+                    }
+                    i = (i + 1) % intervals.size();
                 }
             } else {
                 System.err.println("No such advance config strategy!");

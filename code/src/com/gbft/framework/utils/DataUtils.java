@@ -199,7 +199,7 @@ public class DataUtils {
             if(random.nextInt(100) < AdvanceConfig.integer("workload.read-only-ratio")) {
                 for(int j = 0; j <= numTotal; j++){
                     Operation new_operation = Operation.NOP;
-                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
                     OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
                     builder.addReadSet(opset);
                 }
@@ -208,13 +208,13 @@ public class DataUtils {
                 int rand = random.nextInt(50);
                 if(rand % 2 == 0){
                     Operation new_operation = Operation.NOP;
-                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
                     OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
                     builder.addReadSet(opset);
                 }
                 for(int j = 0; j <= numTotal; j++) {
                     int new_operation = random.nextInt(5);
-                    var new_record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
                     int new_value = 0;
                     new_value = random.nextInt(100);
                     OperationSet opset = OperationSet.newBuilder().setOp(Operation.forNumber(new_operation)).setRecord(new_record).setValue(new_value).build();

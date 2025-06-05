@@ -10,6 +10,7 @@ import queue
 import random
 import time
 import csv
+import yaml
 import os
 from datetime import datetime
 from concurrent import futures
@@ -106,7 +107,7 @@ parser.add_argument('--multi-onehot', '-o', type=bool, default=False,
                     help="Whether to use one-hot encoding for multi model [Optional]")
 parser.add_argument('--epsilon', type=float, default=0.9, 
                     help="Exploration rate for epsilon-greedy strategy [Optional]")
-parser.add_argument('--epsilon-decay', type=float, default=0.99, 
+parser.add_argument('--epsilon-decay', type=float, default=0.95, 
                     help="Rate at which epsilon decreases after each episode [Optional]")
 parser.add_argument('--min-epsilon', type=float, default=0.2, 
                     help="Minimum value of epsilon [Optional]")
@@ -114,7 +115,10 @@ args = parser.parse_args()
 
 request_queue = queue.Queue()
 protocol_pool = ["pbft", "cheapbft", "sbft", "prime"]
-architecture_pool = ['OX', 'XOV', 'OXII', "XOV++"]
+with open("../../config/config.framework.yaml", "r") as file:
+    config = yaml.safe_load(file)
+architecture_pool = config["switching"]["architecture-pool"]
+# 'OX', 'XOV', 'OXII', "XOV++"
 
 NUM_STATE_FEATURES = 10
 
