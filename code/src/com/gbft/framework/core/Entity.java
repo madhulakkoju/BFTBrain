@@ -772,12 +772,12 @@ public abstract class Entity {
                                         }
 
                                        
-                                        System.out.println("arch " + archQueue);
-                                        System.out.println("Pending Requests " + pendingRequests.size());
-                                        System.out.println("OX " + archMap.get("OX").size());
-                                        System.out.println("OXII " + archMap.get("OXII").size());
-                                        System.out.println("XOV " + archMap.get("XOV").size());
-                                        System.out.println("XOV++ " + archMap.get("XOV++").size());
+                                        // System.out.println("arch " + archQueue);
+                                        // System.out.println("Pending Requests " + pendingRequests.size());
+                                        // System.out.println("OX " + archMap.get("OX").size());
+                                        // System.out.println("OXII " + archMap.get("OXII").size());
+                                        // System.out.println("XOV " + archMap.get("XOV").size());
+                                        // System.out.println("XOV++ " + archMap.get("XOV++").size());
 
                                         block = new ArrayList<RequestData>();
                                         String prev_arch = "";
