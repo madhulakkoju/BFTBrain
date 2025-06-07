@@ -285,6 +285,16 @@ Cloudlab API from https://gitlab.flux.utah.edu/powder-profiles/powder-control/-/
 * Make sure to use Miyuki's `--public` (`-u`) parameter to start any experiment!!!
 
 set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 single pbft --config ./BFTBrain/config/config.framework.yaml --public
+
 set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 sync
+
 scp -i ~/BFTBrain/scripts/miyuki/id_cloudlab "ksp20@node-5.testw.adapttnx24blockc-PG0.utah.cloudlab.us:/users/ksp20/BFTBrain/log/csv/test/8000.csv" /users/ksp20/BFTBrain
+
 ssh node-0.testm.adapttnx24blockc-PG0.utah.cloudlab.us
+
+
+set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 reproduce ./BFTBrain/test --public --trial 1 --duration 3700
+
+chmod 600 ./scripts/miyuki/id_cloudlab
+
+scp -i ~/BFTBrain/scripts/miyuki/id_cloudlab "ksp20@node-5.testw.adapttnx24blockc-PG0.utah.cloudlab.us:/users/ksp20/BFTBrain/code/learning/data/learning2.csv" /users/ksp20/BFTBrain
