@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description='Start a BFTBrain experiment.')
 parser.add_argument('--experiment', '-e', type=str, required=True, help='Cloudlab experiment name')
 parser.add_argument('--profile', '-p', type=str, required=True, help='Cloudlab profile to use')
 parser.add_argument('--profile2', '-p2', type=str, required=False, default='', help='Second Cloudlab profile to use (optional)')
-parser.add_argument('--project', '-j', type=str, default='bft-evaluation', help='Cloudlab project to use')
+parser.add_argument('--project', '-j', type=str, default='AdaptTnx24Blockc', help='Cloudlab project to use')
 
 subparsers = parser.add_subparsers(dest='action', required=True, help='Action to perform.')
 
@@ -159,7 +159,7 @@ def deploy_single_worker(worker_node):
                 "22",
                 "-o",
                 "StrictHostKeyChecking no",
-                "wget -O - https://gist.githubusercontent.com/anon-osdi-24/e4d388dd56a63dcd7100662855b50d71/raw/c9575bbfc51f296e716d7634a4594c52267b7535/BFTBrain-deploy.sh > setup.sh && " + 
+                "wget -O - https://gist.githubusercontent.com/msiddhu/632c7b6b7420afd1d8002a5054253ad0/raw/677f3726567ff0a0d75d8edb868d27aa158e1694/BFTBrain-deploy.sh > setup.sh && " +
                 "chmod +x setup.sh && source setup.sh &> setup.log"
             ], 
             stdout = subprocess.DEVNULL,
@@ -202,7 +202,7 @@ def deploy_master(master, servers_list_str):
         "22",
         "-o",
         "StrictHostKeyChecking no",
-        "git clone https://github.com/anon-osdi-24/BFTBrain && " + 
+        "git clone https://github.com/madhulakkoju/BFTBrain && " +
         f"echo \"{servers_list_str}\" > BFTBrain/scripts/servers.txt && " +
         f"echo \"IdentityFile /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab\" >> /users/{os.environ['USER']}/.ssh/config && " +
         f"chmod 600 /users/{os.environ['USER']}/BFTBrain/scripts/miyuki/id_cloudlab && " +
@@ -497,13 +497,17 @@ def sync_single_worker(worker_node):
                 "22",
                 "-o",
                 "StrictHostKeyChecking no",
-                # extract BFTBrain-Sync.tar.gz
-                "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && " +
-                # compile
-                "cd BFTBrain/code && mvn clean &> sync.log && " +
-                "mvn package &> sync.log && " +
-                "mvn dependency:copy-dependencies &> sync.log"
-            ], 
+                "export JAVA_HOME=/opt/jdk-21.0.7 && "
+                "export M2_HOME=/opt/apache-maven-3.9.9 && "
+                "export PATH=$M2_HOME/bin:$JAVA_HOME/bin:$PATH && "
+                "tar -xzvf BFTBrain-Sync.tar.gz &> sync.log && "
+                "cd BFTBrain/code && "
+                "mvn clean &>> sync.log && "
+                "mvn package &>> sync.log && "
+                "mvn dependency:copy-dependencies &>> sync.log"
+            
+            ],
+
             stdout = subprocess.DEVNULL,
             stderr = subprocess.DEVNULL
         ).check_returncode()

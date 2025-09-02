@@ -8,35 +8,42 @@ import com.gbft.framework.data.RequestDataList;
 import com.gbft.framework.fault.PollutionFault;
 import com.gbft.framework.statemachine.StateMachine;
 import com.gbft.framework.utils.AdvanceConfig;
+import com.gbft.framework.utils.BenchmarkManager;
 import com.gbft.framework.utils.DataUtils;
 import com.gbft.framework.utils.FeatureManager;
 import com.gbft.plugin.message.CheckpointMessagePlugin;
 import com.gbft.plugin.message.LearningMessagePlugin;
 
-import java.beans.Expression;
-import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-
-
-
-
 
 public class Node extends Entity {
 
 
 
-
+    Random random;
+    float prevTotalCount = 0;
+    float prevTotalTime = 0;
+    int prevReportNum = 0;
 
     public Node(int id, CoordinatorUnit coordinator) {
+
         super(id, coordinator);
+
+        random = new Random();
     }
 
     public void executeParallel(ConcurrentHashMap<Long, Integer> replies, List<RequestDataList> dependencyGraph) {
-        for (RequestDataList requestDataList : dependencyGraph) {
-            this.executeTransaction(replies, requestDataList);
+        try {
+            for (RequestDataList requestDataList : dependencyGraph) {
+                this.executeTransaction(replies, requestDataList);
+            }
+        } catch (Exception e) {
+            System.out.println("[Executeparallel]Node 41 Exception :"+e);
+            System.exit(1);
         }
     }
 
@@ -56,118 +63,114 @@ public class Node extends Entity {
 
     public void validateParallel(ConcurrentHashMap<Long, Integer> replies,List<RequestDataList> dependencyGraph){
        // logger.write("validate parallel");
-        var requestDataList = dependencyGraph.get(0);
-        var requestData = requestDataList.getReqDataListList();
-        var futures = requestData.stream()
-                .map(request -> CompletableFuture.runAsync(() -> {
-                    boolean valid = request.getIsTnxValid();
+        try {
+            var requestDataList = dependencyGraph.get(0);
+            var requestData = requestDataList.getReqDataListList();
+            var futures = requestData.stream()
+                    .map(request -> CompletableFuture.runAsync(() -> {
 
+                        updateKeyAccessesInEpisode(request.getReadSetList());
+                        updateKeyAccessesInEpisode(request.getWriteSetList());
 
-                    if(!request.getIsTnxValid()) {
-                       // logger.write("request "+ request.getIsTnxValid());
-                        replies.put(request.getRequestNum(), 0);
-                    }
-                    else{
-                       // logger.write("request "+ request.getIsTnxValid());
-                        dataset.writeData(request);
-                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
-                    }
-                })).toList();
+                        if(request.getWriteSetCount() > 0) {
+                            addWriteTransactionsCount(1);
+                            addTotalTransactionsCount(1);
+                        }
+                        else{
+                            addTotalTransactionsCount(1);
+                        }
+                        boolean valid = request.getIsTnxValid();
+                        if (!request.getIsTnxValid()) {
+                            replies.put(request.getRequestNum(), 0);
+                        } else {
+                            // logger.write("request "+ request.getIsTnxValid());
+                            dataset.writeData(request);
+                            replies.put(request.getRequestNum(), request.getEarlyExecResult());
+                        }
+                    })).toList();
 
-        // Wait for all tasks to complete
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            // Wait for all tasks to complete
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        } catch (Exception e) {
+            System.out.println("[Exception Validate parallel] 75"+e);
+            System.exit(1);
+        }
     }
 
 
     // TODO: Update this to use Architecture based Execution
     @Override
     protected void execute(long seqnum) {
-        //logger.write("execute seqnum "+seqnum);
         var checkpoint = checkpointManager.getCheckpointForSeq(seqnum);
+        //        System.out.println("size : "+checkpointManager.getCheckpointSize());
         var requestBlock = checkpoint.getRequestBlock(seqnum);
-
-        if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV")){
-         //   logger.write("came inside");
-            try {
-                var replies = new HashMap<Long, Integer>();
-                List<RequestData> newblock = new ArrayList<>();
-                newblock = dataset.validateRequests(requestBlock, replies);
-                checkpoint.addReplies(seqnum, replies);
-//                checkpoint.setValidatedBlock(seqnum,replies);
-                //logger.write("came here "+replies);
-            } catch (Exception e) {
-               // logger.write("node 75 "+e.toString());
+        String curr_architecture = "";
+        try{
+            if(requestBlock != null && !requestBlock.isEmpty()){
+                curr_architecture = requestBlock.getFirst().getCurrArchitecture();
             }
+        }catch(Exception e){
+            logger.write(e+ " exception");
         }
-
-        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OX")) {
-            var replies = new HashMap<Long, Integer>();
-            for (var request : requestBlock) {
-//                if(this.getArchManager().getCurrentArchitectureKey().contains("XOV")){
-//                    if(this.getArchManager().getCurrentArchitecture().isValidRequest(request)){
-//
-//                        //TODO: something seems odd in this type of validation and updation
-//                        logger.write("Node:: Request is validated amd updated with "+ request.getEarlyExecResult());
-//                        replies.put(request.getRequestNum(), request.getEarlyExecResult());
-//                        logger.write("Node:: Dataset is updated with value "+ request.getEarlyExecResult());
-//                        //update value on node dataset
-//                        dataset.update(request, request.getEarlyExecResult());
-//                    }
-//                }
-//                else{
-//                      replies.put(request.getRequestNum(), dataset.execute(request));
-//                }
-
-                replies.put(request.getRequestNum(), dataset.execute(request));
-
-            }
-            if(checkpoint.getRequestBlock(seqnum) == null){
-                // logger.write("block is null");
-                // logger.write("replies "+replies);
-            }
-
-            checkpoint.addReplies(seqnum, replies);
-        }
-
-        else if (checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("OXII")) { // make true for oxii
+        try {
             var replies = new ConcurrentHashMap<Long, Integer>();
-            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
-            if(checkpoint.getDependencyGraph(seqnum) == null) {
-                if(checkpoint.getRequestBlock(seqnum) == null){
-                   // logger.write("block is null");
+            if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV")) {
+                //   logger.write("came inside");
+                try {
+                    List<RequestData> newblock = new ArrayList<>();
+                    newblock = dataset.validateRequests(requestBlock, replies);
+                } catch (Exception e) {
+                    System.out.println("node 107 " + e.toString());
+                    System.out.println("Exception node " + e);
+                    System.exit(1);
+                }
+            }
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OX")) {
+                try{
                     for (var request : requestBlock) {
                         replies.put(request.getRequestNum(), dataset.execute(request));
                     }
                 }
-                else{
-                 //   logger.write("null block " + checkpoint.getRequestBlock(seqnum));
+                catch (Exception e){
+                    System.out.println("Node 130 "+e);
+                    System.exit(1);
                 }
-
-            }else{
-//                logger.write("printing dag "+checkpoint.getDependencyGraph(seqnum));
-              //  logger.write("node dag "+checkpoint.getDependencyGraph(seqnum).size() +" seq num "+ seqnum + " protocol "+ checkpoint.getProtocol());
-                executeParallel(replies,dependencyGraph);
             }
-
-
-//            logger.write("replies"+ replies);
-            checkpoint.addReplies(seqnum, replies);
-        }
-
-        else if(checkpoint.getReplies(seqnum) == null && this.getArchManager().getCurrentArchitectureKey().equals("XOV++")){
-            var replies = new ConcurrentHashMap<Long, Integer>();
-            List<RequestDataList> dependencyGraph = checkpoint.getDependencyGraph(seqnum);
-            if(checkpoint.getDependencyGraph(seqnum) == null) {
-                for (var request : requestBlock) {
-                    replies.put(request.getRequestNum(), dataset.execute(request));
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("OXII")) { // make true for oxii
+                try {
+                    List<RequestDataList> dependencyGraph = requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
+                    if (dependencyGraph == null || dependencyGraph.isEmpty()) {
+                        for (var request : requestBlock) {
+                            replies.put(request.getRequestNum(), dataset.execute(request));
+                        }
+                    } else {
+                        executeParallel(replies, dependencyGraph);
+                    }
+                }
+                catch (Exception e){
+                    System.out.println("Node 163 "+e);
+                    System.exit(1);
+                }
+            }
+            else if (checkpoint.getReplies(seqnum) == null && curr_architecture.equals("XOV++")) {
+                List<RequestDataList> dependencyGraph =  requestBlock.getFirst().getReqListsList(); //checkpoint.getDependencyGraph(seqnum);
+                if (dependencyGraph == null || dependencyGraph.isEmpty()) {
+                    for (var request : requestBlock) {
+                        replies.put(request.getRequestNum(), dataset.execute(request));
+                    }
+                } else {
+                    validateParallel(replies, dependencyGraph);
                 }
             }
             else{
-                validateParallel(replies,dependencyGraph);
+                System.out.println("Requestblock "+requestBlock.toString());
+                System.exit(1);
             }
             checkpoint.addReplies(seqnum, replies);
+        }catch (Exception e){
+            System.out.println("Node 180 "+e);
+            System.exit(1);
         }
-
 
         // checkpoint
         if ((seqnum + 1) % checkpointSize == 0) {
@@ -230,6 +233,9 @@ public class Node extends Entity {
                     report.put(FeatureManager.RECEIVED_MESSAGE_PER_SLOT, (float) Math.round(PollutionFault.randomFeatureGenerator(100f)));
                     report.put(FeatureManager.HAS_FAST_PATH, PollutionFault.randomOnehot());
                     report.put(FeatureManager.HAS_LEADER_ROTATION, PollutionFault.randomOnehot());
+
+                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
+                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
                 } else {
                     // request
                     report.put(FeatureManager.REQUEST_SIZE, (float) extractor.average(FeatureManager.REQUEST_SIZE));
@@ -247,6 +253,42 @@ public class Node extends Entity {
                     // protocol encodings
                     report.put(FeatureManager.HAS_FAST_PATH, (float) featureManager.hasFastPath.get(checkpoint.getProtocol()));
                     report.put(FeatureManager.HAS_LEADER_ROTATION, (float) featureManager.hasLeaderRotation.get(checkpoint.getProtocol()));
+                    float numofWriteTransactions= this.numberOfWriteTransactionsByEpisode.getOrDefault(this.currentEpisodeNum.get(), 1);
+                    float numOfTransactions= this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get() , 1);
+
+                    final DecimalFormat decimalFormat = new DecimalFormat( "##.##" );
+
+                    float writeRatio = Float.parseFloat(decimalFormat.format(numofWriteTransactions/numOfTransactions));
+
+
+                    float executionDelay = Float.parseFloat(decimalFormat.format(getExecutionDelay()));
+
+                    report.put(FeatureManager.EXECUTION_DELAY, executionDelay);
+                    report.put(FeatureManager.WRITE_RATIO, writeRatio);
+
+//                    report.put(FeatureManager.WRITE_RATIO, 0 + (1) * random.nextFloat() );
+//                    report.put(FeatureManager.HOT_KEY_RATIO, (float) (0 + (0.1 - 0) * random.nextFloat()));
+//                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, 0 + (2000) * random.nextFloat());
+//                    report.put(FeatureManager.EXECUTION_DELAY, 1000 + (1500 - 1000) * random.nextFloat());
+
+
+                    // Transaction Arrival Rate = Num of transactions in episode / ( last tnx arrived time - first transaction arrived time )
+
+                    int totalTransactionsInEpisode = this.numberOfTotalTransactionsByEpisode.getOrDefault( this.currentEpisodeNum.get(), 0 ) ;
+                    double timeDiff = this.getTransactionArrivalTimeDiff();
+
+                    float transactionArrivalRate = (float) (totalTransactionsInEpisode / (timeDiff >0 ? timeDiff : 1 ));
+                    report.put(FeatureManager.TRANS_ARRIVAL_RATE, transactionArrivalRate);
+
+
+                    // Hot Key Ratio
+                    report.put(FeatureManager.HOT_KEY_RATIO, this.getHotKeyRatio());
+
+//                    System.out.printf("\n\n\n\nHK  : %f%n  Trans Arr  %f%n",
+//                            report.get(FeatureManager.HOT_KEY_RATIO),
+//                            transactionArrivalRate);
+
+
                 }
 
                 var learningDataBuilder = LearningData.newBuilder().putAllReport(report);
@@ -283,11 +325,48 @@ public class Node extends Entity {
                                 entry -> entry.getKey(),
                                 entry -> calculateMedian(entry.getValue())));
                 // reuse the proto field `next_protocol` to store the current protocol just for convenience
-                var learningData = LearningData.newBuilder().putAllReport(featureToMedian).setNextProtocol(checkpoint.getProtocol()).build();
+
+                // TODO: GET THE REAL BLOCK SIZE
+                var learningData = LearningData.newBuilder()
+                        .putAllReport(featureToMedian)
+                        .setNextProtocol(checkpoint.getProtocol())
+                        .setNextBlocksize(100)
+                        .setNextArchitecture(checkpoint.getArchitecture())
+                        .build();
+               // System.out.println("BEFORE Sending to learning agent" + learningData);
                 new Thread(() -> agentStub.sendData(learningData)).start(); 
                 System.out.println("notify learning agent for episode " + currentEpisodeNum.get() + ", exchangeSequence=" + exchangeSequence);
             }
         }
+    }
+
+    double getExecutionDelay() {
+        var bm = benchmarkManager.getBenchmarkById(this.reportnum);
+
+        double totalTimeSec = bm.total(BenchmarkManager.REQUEST_EXECUTE) / 1_000_000_000.0;
+        long    totalCount   = bm.count(BenchmarkManager.REQUEST_EXECUTE);
+
+        double deltaTime = (this.prevReportNum == this.reportnum)
+                ? (totalTimeSec - this.prevTotalTime)
+                : totalTimeSec;
+        long   deltaCount = (this.prevReportNum == this.reportnum)
+                ? (long) (totalCount - this.prevTotalCount)
+                : totalCount;
+
+        double avgDelay;
+        if (deltaCount > 0) {
+            avgDelay = deltaTime / deltaCount;
+        } else {
+            avgDelay = 0.0; // no transactions
+        }
+
+        // update state
+        this.prevTotalTime   = (float) totalTimeSec;
+        this.prevTotalCount  = totalCount;
+        this.prevReportNum   = this.reportnum;
+
+       // System.out.printf("Execution Delay: %.6f sec (report %d)%n", avgDelay, this.reportnum);
+        return avgDelay;
     }
 
     @Override

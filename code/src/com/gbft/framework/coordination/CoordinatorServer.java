@@ -34,16 +34,18 @@ import com.gbft.framework.utils.Printer;
 
 public class CoordinatorServer extends CoordinatorBase {
     private String protocol;
+    private String architecture;
     private Map<String, String> configContent;
 
     private Map<EventType, Integer> responseCounter;
 
     private Benchmarker benchmarker;
 
-    public CoordinatorServer(String protocol, int port) {
+    public CoordinatorServer(String protocol, String architecture, int port) {
         super(port);
 
         this.protocol = protocol;
+        this.architecture = architecture;
 
         responseCounter = new HashMap<>();
         configContent = new HashMap<>();
@@ -58,8 +60,8 @@ public class CoordinatorServer extends CoordinatorBase {
                 var protocolConfig = Files.readString(Path.of("../config/config." + pname + ".yaml"));
                 configContent.put(pname, protocolConfig);
             }
-
-            initFromConfig(configContent, protocol);
+            System.out.println("[CoordinatorServer]: INIT FROM CONFIG DATA" + protocol + architecture);
+            initFromConfig(configContent, protocol, architecture);
         } catch (IOException e) {
             System.err.println("Error reading config files.");
             System.exit(1);
@@ -78,7 +80,7 @@ public class CoordinatorServer extends CoordinatorBase {
 
         var units = EntityMapUtils.getAllUnits();
 
-        var configData = DataUtils.createConfigData(configContent, protocol, EntityMapUtils.allUnitData());
+        var configData = DataUtils.createConfigData(configContent, protocol, architecture, EntityMapUtils.allUnitData());
         var configEvent = DataUtils.createEvent(configData);
 
         sendEvent(units, configEvent);
@@ -247,20 +249,32 @@ public class CoordinatorServer extends CoordinatorBase {
 
         var portOption = new Option("p", "port", true, "the coordination server port");
         var protocolOption = new Option("r", "protocol", true, "the benchmark protocol");
+        var architectureOption = new Option("a","architecture", true, "the benchmark architecture");
+
+
         portOption.setType(Number.class);
         portOption.setRequired(true);
         protocolOption.setRequired(true);
+        architectureOption.setRequired(false);
 
         options.addOption(portOption);
         options.addOption(protocolOption);
+        options.addOption(architectureOption);
 
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
             Number port = (Number) cmd.getParsedOptionValue("port");
-            var protocol = cmd.getOptionValue("protocol");
 
-            new CoordinatorServer(protocol, port.intValue()).run();
+            // parse protocol, defaulting to "pbft" if not provided
+            var protocol = cmd.getOptionValue("protocol", "pbft");
+
+            // parse architecture, defaulting to "XOV" if not provided
+            var architecture = cmd.getOptionValue("architecture", "OX");
+
+            System.out.println("[coordination server]: "+ architecture);
+
+            new CoordinatorServer(protocol, architecture ,port.intValue()).run();
         } catch (ParseException e) {
             System.err.println("Command parsing error: " + e.getMessage());
             var formatter = new HelpFormatter();

@@ -1,9 +1,8 @@
 package com.gbft.framework.core;
 
-import com.gbft.framework.data.RequestData;
 import com.gbft.framework.data.Operation;
+import com.gbft.framework.data.RequestData;
 import com.gbft.framework.utils.AdvanceConfig;
-import com.gbft.framework.utils.Config;
 import com.gbft.framework.utils.DataUtils;
 import com.gbft.framework.utils.RequestUtils;
 
@@ -18,11 +17,13 @@ public class ClientDataset extends Dataset {
     private int clientId;
     private Random random;
     private Map<Integer, LongAdder> lookahead;
+    public Client client;
 
-    public ClientDataset(int clientId) {
+    public ClientDataset(int clientId, Client client) {
         super();
 
         this.clientId = clientId;
+        this.client = client;
 
         random = new Random();
         lookahead = new HashMap<>();
@@ -55,42 +56,94 @@ public class ClientDataset extends Dataset {
 
     public RequestData createRequest(long reqnum) {
         //generate record and operation randomly
-        var record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
-        var operation = Operation.values()[random.nextInt(5)];
-        int value = 0;
+        try {
+            String curr_architecture = this.client.getArchManager().getCurrentArchitectureKey();
+            var record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+            var operation = Operation.values()[random.nextInt(5)];
+            int value = 0;
 
-        switch (operation) {
-        case ADD:
-            value = random.nextInt(DEFAULT_VALUE);
-            break;
-        case SUB:
-            var max = Math.min(DEFAULT_VALUE, lookahead.get(record).intValue());
-            if (max <= 0) { // < 0 to fix #47
-                operation = Operation.NOP;
-            } else {
-                value = random.nextInt(max);
-                lookahead.get(record).add(-value);
+            switch (operation) {
+                case ADD:
+                    value = random.nextInt(DEFAULT_VALUE);
+                    break;
+                case SUB:
+                    var max = Math.min(DEFAULT_VALUE, lookahead.get(record).intValue());
+                    if (max <= 0) { // < 0 to fix #47
+                        operation = Operation.NOP;
+                    } else {
+                        value = random.nextInt(max);
+                        lookahead.get(record).add(-value);
+                    }
+                    break;
+                case DEC:
+                    if (lookahead.get(record).intValue() < 1) {
+                        operation = Operation.NOP;
+                    } else {
+                        lookahead.get(record).decrement();
+                    }
+                    break;
+                default:
+                    break;
             }
-            break;
-        case DEC:
-            if (lookahead.get(record).intValue() < 1) {
-                operation = Operation.NOP;
-            } else {
-                lookahead.get(record).decrement();
-            }
-            break;
-        default:
-            break;
+
+            // generate read only optimization
+            // if (Config.stringList("plugins.message").contains("read-only")) {
+            //     if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
+            //         operation = Operation.READ_ONLY;
+            //     }
+            // }
+            return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("Client dataset 100 "+e);
+            System.exit(1);
+            return null;
         }
+    }
 
-        // generate read only optimization
-        if (Config.stringList("plugins.message").contains("read-only")) {
-            if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
-                operation = Operation.READ_ONLY;
+    public RequestData createRequest(long reqnum, String curr_architecture) {
+        //generate record and operation randomly
+        try {
+            var record = random.nextInt(AdvanceConfig.integer("workload.contention-level"));
+            var operation = Operation.values()[random.nextInt(5)];
+            int value = 0;
+
+            switch (operation) {
+                case ADD:
+                    value = random.nextInt(DEFAULT_VALUE);
+                    break;
+                case SUB:
+                    var max = Math.min(DEFAULT_VALUE, lookahead.get(record).intValue());
+                    if (max <= 0) { // < 0 to fix #47
+                        operation = Operation.NOP;
+                    } else {
+                        value = random.nextInt(max);
+                        lookahead.get(record).add(-value);
+                    }
+                    break;
+                case DEC:
+                    if (lookahead.get(record).intValue() < 1) {
+                        operation = Operation.NOP;
+                    } else {
+                        lookahead.get(record).decrement();
+                    }
+                    break;
+                default:
+                    break;
             }
-        }
 
-        return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3) );
+            // generate read only optimization
+            // if (Config.stringList("plugins.message").contains("read-only")) {
+            //     if (random.nextDouble() < AdvanceConfig.doubleNumber("workload.read-only-ratio")) {
+            //         operation = Operation.READ_ONLY;
+            //     }
+            // }
+            return DataUtils.createRequest(reqnum, record, operation, value, clientId, random.nextInt(3), curr_architecture);
+        }catch (Exception e){
+            System.out.println("Client dataset 100 "+e);
+            System.exit(1);
+            return null;
+        }
     }
 
 }

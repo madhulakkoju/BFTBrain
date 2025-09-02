@@ -60,6 +60,8 @@ message RequestData {
 
     repeated OperationSet read_set = 15;
     repeated OperationSet write_set = 16;
+
+    string curr_architecture = 17;
 }
 message MessageData {
     int64 sequence_num = 1;
@@ -89,7 +91,7 @@ message MessageData {
 
     bool is_endorsement_request = 20;
 
-    int32 xov_state = 21;// 0: DO_ENDORSE -> all nodes, 1: ENDORSED -> client .........OX........ 3: Validate on all nodes
+    int32 xov_state = 21;// 1: DO_ENDORSE -> all nodes, 2: ENDORSED -> client .........OX........ 3: Validate on all nodes
     repeated RequestDataList reqLists = 22;
     int32 oxii_state = 23;
 }
@@ -97,11 +99,15 @@ message MessageData {
 message SwitchingData {
     bool switch_ready = 1;
     string next_protocol = 2;
+    uint64 next_blocksize = 3;
+    string next_architecture = 4;
 }
 
 message LearningData {
     map<int32, float> report = 1;
     string next_protocol = 2;
+    uint64 next_blocksize = 3;
+    string next_architecture = 4;
 }
 
 message FetchData {
@@ -156,7 +162,8 @@ message UnitData {
 message ConfigData {
     map<string, string> data = 1;
     string defaultProtocol = 2;
-    repeated UnitData units = 3;
+    string defaultArchitecture = 3;
+    repeated UnitData units = 4;
 }
 
 message PluginData {

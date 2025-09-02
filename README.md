@@ -55,6 +55,9 @@ This mode should be used when running final evaluations of the end-to-end BFTBra
 
 ### Miyuki Automation Tool Overview
 
+Miyuki is an orchestration tool designed to simplify the deployment and management of BFTBrain experiments on Cloudlab.
+It handles machine provisioning, software setup, experiment execution, and result collection through a unified command-line interface.
+
 Miyuki can be used on any machine to instantiate Cloudlab instances and launch experiments.
 
 Due to legacy issues, each experiment consist of a `master` node, i.e. `controller`, and some `workers` node. They are two different Cloudlab experiments.
@@ -280,3 +283,18 @@ Cloudlab API from https://gitlab.flux.utah.edu/powder-profiles/powder-control/-/
     xxxxxx@node-3.2-sitew.bft-evaluation-PG0.utah.cloudlab.us
     ```
 * Make sure to use Miyuki's `--public` (`-u`) parameter to start any experiment!!!
+
+set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 single pbft --config ./BFTBrain/config/config.framework.yaml --public
+
+set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 sync
+
+scp -i ~/BFTBrain/scripts/miyuki/id_cloudlab "ksp20@node-5.testw.adapttnx24blockc-PG0.utah.cloudlab.us:/users/ksp20/BFTBrain/log/csv/test/8000.csv" /users/ksp20/BFTBrain
+
+ssh node-0.testm.adapttnx24blockc-PG0.utah.cloudlab.us
+
+
+set +o history && USER='ksp20' PWORD='Sai@123' ./BFTBrain/scripts/miyuki/main.py -e test -p m510-f-1 reproduce ./BFTBrain/test --public --trial 1 --duration 3700
+
+chmod 600 ./scripts/miyuki/id_cloudlab
+
+scp -i ~/BFTBrain/scripts/miyuki/id_cloudlab "ksp20@node-5.testw.adapttnx24blockc-PG0.utah.cloudlab.us:/users/ksp20/BFTBrain/code/learning/data/learning2.csv" /users/ksp20/BFTBrain

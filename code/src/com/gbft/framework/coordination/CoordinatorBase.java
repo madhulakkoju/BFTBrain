@@ -68,11 +68,12 @@ public abstract class CoordinatorBase {
 
     protected void initFromConfig(Map<String, String> yamlData, String defaultProtocol, String defaultArchitecture) {
         try {
+            System.out.println("INSIDE INIT FROM CONFIG :" +defaultProtocol + defaultArchitecture);
             Config.load(yamlData, defaultProtocol, defaultArchitecture);
 
             AdvanceConfig.load(yamlData.get("framework"));
-        } catch (IOException e) {
-            System.err.println("Error loading config.");
+        } catch (Exception e) {
+            System.err.println("Error loading config." + e);
             System.exit(1);
         }
 

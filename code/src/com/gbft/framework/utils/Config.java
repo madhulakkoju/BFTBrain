@@ -24,6 +24,7 @@ public class Config {
             if (entry.getKey().equals("framework")) continue;
             configs.put(entry.getKey(), new ConfigObject(framework, entry.getValue()));
         }
+        System.out.println("LOGGER ONLY default protocol called");
         setCurrentProtocol(defaultProtocol);
     }
 
@@ -33,6 +34,7 @@ public class Config {
             if (entry.getKey().equals("framework")) continue;
             configs.put(entry.getKey(), new ConfigObject(framework, entry.getValue()));
         }
+        System.out.println("LOGGER ONLY default protocol and architecture  called Protocol: "+defaultProtocol+ " architecture: "+ defaultArchitecture );
         setCurrentProtocol(defaultProtocol);
         setCurrentArchitecture(defaultArchitecture);
     }
@@ -52,6 +54,7 @@ public class Config {
         return currentArchitecture;
     }
     public static void setCurrentArchitecture(String currentArchitecture) {
+        System.out.println("SET CURRENT ARCHITECTURE CAlled"+ currentArchitecture);
         Config.currentArchitecture = currentArchitecture;
     }
 

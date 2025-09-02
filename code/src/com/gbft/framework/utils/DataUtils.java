@@ -32,8 +32,8 @@ public class DataUtils {
         return UnitData.newBuilder().setUnit(unit).setNodeCount(nodeCount).setClientCount(clientCount).build();
     }
 
-    public static ConfigData createConfigData(Map<String, String> configContent, String defaultProtocol, List<UnitData> unitDataList) {
-        return ConfigData.newBuilder().putAllData(configContent).setDefaultProtocol(defaultProtocol).addAllUnits(unitDataList).build();
+    public static ConfigData createConfigData(Map<String, String> configContent, String defaultProtocol, String defaultArchitecture, List<UnitData> unitDataList) {
+        return ConfigData.newBuilder().putAllData(configContent).setDefaultProtocol(defaultProtocol).setDefaultArchitecture(defaultArchitecture).addAllUnits(unitDataList).build();
     }
 
     public static PluginData createPluginData(String name, int messageType, ByteString data, int source,
@@ -113,44 +113,44 @@ public class DataUtils {
         return builder.build();
     }
 
-    public static MessageData createMessage(Long seqnum, long viewNum, int messageType, int source,
-                                            List<Integer> targets, List<Long> reqnums, List<RequestData> requests, Map<Long, Integer> replies,
-                                            ByteString digest, List<RequestDataList> dependencyList) {
-
-        var builder = MessageData.newBuilder();
-        builder.setViewNum(viewNum)
-                .setMessageType(messageType)
-                .setSource(source)
-                .addAllTargets(targets);
-
-        if (seqnum != null) {
-            builder.setSequenceNum(seqnum);
-        }
-
-        if (reqnums != null) {
-            builder.addAllRequestNums(reqnums);
-        }
-
-        if (dependencyList != null) {
-            builder.addAllReqLists(dependencyList);
-        }
-
-        if (requests != null) {
-            builder.addAllRequests(requests);
-        }
-
-        if (replies != null) {
-            builder.putAllReplyData(replies);
-        }
-
-        if (digest != null) {
-            builder.setDigest(digest);
-        }
-
-        builder.setTimestamp(Timestamps.fromNanos(System.nanoTime()));
-
-        return builder.build();
-    }
+//    public static MessageData createMessage(Long seqnum, long viewNum, int messageType, int source,
+//                                            List<Integer> targets, List<Long> reqnums, List<RequestData> requests, Map<Long, Integer> replies,
+//                                            ByteString digest, List<RequestDataList> dependencyList) {
+//
+//        var builder = MessageData.newBuilder();
+//        builder.setViewNum(viewNum)
+//                .setMessageType(messageType)
+//                .setSource(source)
+//                .addAllTargets(targets);
+//
+//        if (seqnum != null) {
+//            builder.setSequenceNum(seqnum);
+//        }
+//
+//        if (reqnums != null) {
+//            builder.addAllRequestNums(reqnums);
+//        }
+//
+//        if (dependencyList != null) {
+//            builder.addAllReqLists(dependencyList);
+//        }
+//
+//        if (requests != null) {
+//            builder.addAllRequests(requests);
+//        }
+//
+//        if (replies != null) {
+//            builder.putAllReplyData(replies);
+//        }
+//
+//        if (digest != null) {
+//            builder.setDigest(digest);
+//        }
+//
+//        builder.setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+//
+//        return builder.build();
+//    }
 
 
 
@@ -159,7 +159,7 @@ public class DataUtils {
     private static final int WORKLOAD_40 = 2;
     private static final int WORKLOAD_44 = 3;
 
-    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId, int numTotal) {
+    public static RequestData createRequest(long reqnum, int record, Operation operation, int value, int clientId, int numTotal, String curr_architecture) {
         var probabilities = Config.doubleList("workload.distribution");
 
         var r = random.nextDouble();
@@ -196,21 +196,47 @@ public class DataUtils {
         var builder = RequestData.newBuilder();
 
         try {
-
-            OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
-
-            if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
-                builder.addReadSet(opset);
-            }
-            else{
-                builder.addWriteSet(opset);
-                builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
-                for (int j = 1; j < numTotal; j++) {
-                    int randOperation = random.nextInt(5);
-                    builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(
-                        random.nextInt(AdvanceConfig.integer("workload.contention-level"))).build() );
+            if(random.nextInt(100) < AdvanceConfig.integer("workload.read-only-ratio")) {
+                for(int j = 0; j <= numTotal; j++){
+                    Operation new_operation = Operation.NOP;
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
+                    OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
+                    builder.addReadSet(opset);
                 }
             }
+            else{
+                int rand = random.nextInt(50);
+                if(rand % 2 == 0){
+                    Operation new_operation = Operation.NOP;
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
+                    OperationSet opset = OperationSet.newBuilder().setOp(new_operation).setRecord(new_record).build();
+                    builder.addReadSet(opset);
+                }
+                for(int j = 0; j <= numTotal; j++) {
+                    int new_operation = random.nextInt(5);
+                    var new_record = random.nextInt((AdvanceConfig.integer("workload.contention-level") * Config.integer("benchmark.block-size") ) / 100);
+                    int new_value = 0;
+                    new_value = random.nextInt(100);
+                    OperationSet opset = OperationSet.newBuilder().setOp(Operation.forNumber(new_operation)).setRecord(new_record).setValue(new_value).build();
+                    builder.addWriteSet(opset);
+                }
+
+            }
+
+            // OperationSet opset = OperationSet.newBuilder().setOp(operation).setRecord(record).build();
+
+            // if(opset.getOp() == Operation.NOP || opset.getOp() == Operation.READ_ONLY ) {
+            //     builder.addReadSet(opset);
+            // }
+            // else{
+            //     builder.addWriteSet(opset);
+            //     builder.addReadSet( OperationSet.newBuilder().setOp(Operation.READ_ONLY).setRecord(opset.getRecord()).build() );
+            //     for (int j = 1; j < numTotal; j++) {
+            //         int randOperation = random.nextInt(5);
+            //         builder.addWriteSet( OperationSet.newBuilder().setOp(Operation.forNumber(randOperation)).setRecord(
+            //             random.nextInt(AdvanceConfig.integer("workload.contention-level"))).build() );
+            //     }
+            // }
 
             builder.setRequestNum(reqnum)
                    .setClient(clientId)
@@ -218,7 +244,8 @@ public class DataUtils {
                    .setReplySize(replySize)
                    .setRequestDummy(ByteString.readFrom(new RandomDataStream(requestSize)))
                    .setComputeFactor(AdvanceConfig.integer("workload.compute-factor"))
-                   .setTimestamp(Timestamps.fromNanos(System.nanoTime()));
+                   .setTimestamp(Timestamps.fromNanos(System.nanoTime()))
+                    .setCurrArchitecture(curr_architecture);
 
 
 

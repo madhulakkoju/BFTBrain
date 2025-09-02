@@ -54,25 +54,37 @@ public interface ConfigDataOrBuilder extends
       getDefaultProtocolBytes();
 
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>string defaultArchitecture = 3;</code>
+   * @return The defaultArchitecture.
+   */
+  java.lang.String getDefaultArchitecture();
+  /**
+   * <code>string defaultArchitecture = 3;</code>
+   * @return The bytes for defaultArchitecture.
+   */
+  com.google.protobuf.ByteString
+      getDefaultArchitectureBytes();
+
+  /**
+   * <code>repeated .UnitData units = 4;</code>
    */
   java.util.List<com.gbft.framework.data.UnitData> 
       getUnitsList();
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   com.gbft.framework.data.UnitData getUnits(int index);
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   int getUnitsCount();
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   java.util.List<? extends com.gbft.framework.data.UnitDataOrBuilder> 
       getUnitsOrBuilderList();
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   com.gbft.framework.data.UnitDataOrBuilder getUnitsOrBuilder(
       int index);

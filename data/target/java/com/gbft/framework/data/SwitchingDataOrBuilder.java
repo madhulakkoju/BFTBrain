@@ -24,4 +24,22 @@ public interface SwitchingDataOrBuilder extends
    */
   com.google.protobuf.ByteString
       getNextProtocolBytes();
+
+  /**
+   * <code>uint64 next_blocksize = 3;</code>
+   * @return The nextBlocksize.
+   */
+  long getNextBlocksize();
+
+  /**
+   * <code>string next_architecture = 4;</code>
+   * @return The nextArchitecture.
+   */
+  java.lang.String getNextArchitecture();
+  /**
+   * <code>string next_architecture = 4;</code>
+   * @return The bytes for nextArchitecture.
+   */
+  com.google.protobuf.ByteString
+      getNextArchitectureBytes();
 }

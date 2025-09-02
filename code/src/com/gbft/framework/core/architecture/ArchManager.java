@@ -9,28 +9,34 @@ import com.gbft.framework.utils.Config;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class ArchManager {
 
 //    public HashMap<String, Architecture> architectures;
 
-    public String currentArchitectureKey;
+    public AtomicReference<String> currentArchitectureKey;
 
     private Entity entity;
 
     public HashSet<String> architectures;
 
     public ArchManager(Entity entity) {
-        architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
+//        architectures = new HashSet<>(Set.of("OX", "OXII", "XOV", "XOV++"));
+        architectures = new HashSet<>(Set.of("XOV", "OXII", "XOV++"));
+//        architectures = new HashSet<>(Set.of("OXII", "OX"));
+//        architectures = new HashSet<>(Set.of("XOV", "XOV++"));
+//        architectures = new HashSet<>(Set.of("XOV++","OX"));
 
+        //TODO: here use this point.
 
-        currentArchitectureKey = Config.string("general.architecture");//"OXII"; //change
+        currentArchitectureKey = new AtomicReference<>( Config.getCurrentArchitecture() );
         this.entity = entity;
     }
 
-    public void setCurrentArchitecture(String arch) {
-        currentArchitectureKey = arch;
+    public void setCurrentArchitectureKey(String arch) {
+        currentArchitectureKey.set( arch );
     }
 
     public MessageData createEndorsedMessageToClient(MessageData oldMessage, List<RequestData> requests){
@@ -61,11 +67,7 @@ public class ArchManager {
 
 
     public String getCurrentArchitectureKey() {
-        return currentArchitectureKey;
-    }
-
-    public void setCurrentArchitectureKey(String currentArchitectureKey) {
-        this.currentArchitectureKey = currentArchitectureKey;
+        return currentArchitectureKey.get();
     }
 
     public Entity getEntity() {

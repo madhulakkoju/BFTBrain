@@ -17,6 +17,7 @@ private static final long serialVersionUID = 0L;
   }
   private ConfigData() {
     defaultProtocol_ = "";
+    defaultArchitecture_ = "";
     units_ = java.util.Collections.emptyList();
   }
 
@@ -71,6 +72,12 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 26: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            defaultArchitecture_ = s;
+            break;
+          }
+          case 34: {
             if (!((mutable_bitField0_ & 0x00000002) != 0)) {
               units_ = new java.util.ArrayList<com.gbft.framework.data.UnitData>();
               mutable_bitField0_ |= 0x00000002;
@@ -245,17 +252,55 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int UNITS_FIELD_NUMBER = 3;
+  public static final int DEFAULTARCHITECTURE_FIELD_NUMBER = 3;
+  private volatile java.lang.Object defaultArchitecture_;
+  /**
+   * <code>string defaultArchitecture = 3;</code>
+   * @return The defaultArchitecture.
+   */
+  @java.lang.Override
+  public java.lang.String getDefaultArchitecture() {
+    java.lang.Object ref = defaultArchitecture_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      defaultArchitecture_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string defaultArchitecture = 3;</code>
+   * @return The bytes for defaultArchitecture.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getDefaultArchitectureBytes() {
+    java.lang.Object ref = defaultArchitecture_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      defaultArchitecture_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int UNITS_FIELD_NUMBER = 4;
   private java.util.List<com.gbft.framework.data.UnitData> units_;
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   @java.lang.Override
   public java.util.List<com.gbft.framework.data.UnitData> getUnitsList() {
     return units_;
   }
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   @java.lang.Override
   public java.util.List<? extends com.gbft.framework.data.UnitDataOrBuilder> 
@@ -263,21 +308,21 @@ private static final long serialVersionUID = 0L;
     return units_;
   }
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   @java.lang.Override
   public int getUnitsCount() {
     return units_.size();
   }
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   @java.lang.Override
   public com.gbft.framework.data.UnitData getUnits(int index) {
     return units_.get(index);
   }
   /**
-   * <code>repeated .UnitData units = 3;</code>
+   * <code>repeated .UnitData units = 4;</code>
    */
   @java.lang.Override
   public com.gbft.framework.data.UnitDataOrBuilder getUnitsOrBuilder(
@@ -308,8 +353,11 @@ private static final long serialVersionUID = 0L;
     if (!getDefaultProtocolBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, defaultProtocol_);
     }
+    if (!getDefaultArchitectureBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, defaultArchitecture_);
+    }
     for (int i = 0; i < units_.size(); i++) {
-      output.writeMessage(3, units_.get(i));
+      output.writeMessage(4, units_.get(i));
     }
     unknownFields.writeTo(output);
   }
@@ -333,9 +381,12 @@ private static final long serialVersionUID = 0L;
     if (!getDefaultProtocolBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, defaultProtocol_);
     }
+    if (!getDefaultArchitectureBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, defaultArchitecture_);
+    }
     for (int i = 0; i < units_.size(); i++) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, units_.get(i));
+        .computeMessageSize(4, units_.get(i));
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -356,6 +407,8 @@ private static final long serialVersionUID = 0L;
         other.internalGetData())) return false;
     if (!getDefaultProtocol()
         .equals(other.getDefaultProtocol())) return false;
+    if (!getDefaultArchitecture()
+        .equals(other.getDefaultArchitecture())) return false;
     if (!getUnitsList()
         .equals(other.getUnitsList())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -375,6 +428,8 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + DEFAULTPROTOCOL_FIELD_NUMBER;
     hash = (53 * hash) + getDefaultProtocol().hashCode();
+    hash = (37 * hash) + DEFAULTARCHITECTURE_FIELD_NUMBER;
+    hash = (53 * hash) + getDefaultArchitecture().hashCode();
     if (getUnitsCount() > 0) {
       hash = (37 * hash) + UNITS_FIELD_NUMBER;
       hash = (53 * hash) + getUnitsList().hashCode();
@@ -538,6 +593,8 @@ private static final long serialVersionUID = 0L;
       internalGetMutableData().clear();
       defaultProtocol_ = "";
 
+      defaultArchitecture_ = "";
+
       if (unitsBuilder_ == null) {
         units_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000002);
@@ -574,6 +631,7 @@ private static final long serialVersionUID = 0L;
       result.data_ = internalGetData();
       result.data_.makeImmutable();
       result.defaultProtocol_ = defaultProtocol_;
+      result.defaultArchitecture_ = defaultArchitecture_;
       if (unitsBuilder_ == null) {
         if (((bitField0_ & 0x00000002) != 0)) {
           units_ = java.util.Collections.unmodifiableList(units_);
@@ -635,6 +693,10 @@ private static final long serialVersionUID = 0L;
           other.internalGetData());
       if (!other.getDefaultProtocol().isEmpty()) {
         defaultProtocol_ = other.defaultProtocol_;
+        onChanged();
+      }
+      if (!other.getDefaultArchitecture().isEmpty()) {
+        defaultArchitecture_ = other.defaultArchitecture_;
         onChanged();
       }
       if (unitsBuilder_ == null) {
@@ -897,6 +959,82 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private java.lang.Object defaultArchitecture_ = "";
+    /**
+     * <code>string defaultArchitecture = 3;</code>
+     * @return The defaultArchitecture.
+     */
+    public java.lang.String getDefaultArchitecture() {
+      java.lang.Object ref = defaultArchitecture_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        defaultArchitecture_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string defaultArchitecture = 3;</code>
+     * @return The bytes for defaultArchitecture.
+     */
+    public com.google.protobuf.ByteString
+        getDefaultArchitectureBytes() {
+      java.lang.Object ref = defaultArchitecture_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        defaultArchitecture_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string defaultArchitecture = 3;</code>
+     * @param value The defaultArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultArchitecture(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      defaultArchitecture_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string defaultArchitecture = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDefaultArchitecture() {
+      
+      defaultArchitecture_ = getDefaultInstance().getDefaultArchitecture();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string defaultArchitecture = 3;</code>
+     * @param value The bytes for defaultArchitecture to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDefaultArchitectureBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      defaultArchitecture_ = value;
+      onChanged();
+      return this;
+    }
+
     private java.util.List<com.gbft.framework.data.UnitData> units_ =
       java.util.Collections.emptyList();
     private void ensureUnitsIsMutable() {
@@ -910,7 +1048,7 @@ private static final long serialVersionUID = 0L;
         com.gbft.framework.data.UnitData, com.gbft.framework.data.UnitData.Builder, com.gbft.framework.data.UnitDataOrBuilder> unitsBuilder_;
 
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public java.util.List<com.gbft.framework.data.UnitData> getUnitsList() {
       if (unitsBuilder_ == null) {
@@ -920,7 +1058,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public int getUnitsCount() {
       if (unitsBuilder_ == null) {
@@ -930,7 +1068,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public com.gbft.framework.data.UnitData getUnits(int index) {
       if (unitsBuilder_ == null) {
@@ -940,7 +1078,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder setUnits(
         int index, com.gbft.framework.data.UnitData value) {
@@ -957,7 +1095,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder setUnits(
         int index, com.gbft.framework.data.UnitData.Builder builderForValue) {
@@ -971,7 +1109,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder addUnits(com.gbft.framework.data.UnitData value) {
       if (unitsBuilder_ == null) {
@@ -987,7 +1125,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder addUnits(
         int index, com.gbft.framework.data.UnitData value) {
@@ -1004,7 +1142,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder addUnits(
         com.gbft.framework.data.UnitData.Builder builderForValue) {
@@ -1018,7 +1156,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder addUnits(
         int index, com.gbft.framework.data.UnitData.Builder builderForValue) {
@@ -1032,7 +1170,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder addAllUnits(
         java.lang.Iterable<? extends com.gbft.framework.data.UnitData> values) {
@@ -1047,7 +1185,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder clearUnits() {
       if (unitsBuilder_ == null) {
@@ -1060,7 +1198,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public Builder removeUnits(int index) {
       if (unitsBuilder_ == null) {
@@ -1073,14 +1211,14 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public com.gbft.framework.data.UnitData.Builder getUnitsBuilder(
         int index) {
       return getUnitsFieldBuilder().getBuilder(index);
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public com.gbft.framework.data.UnitDataOrBuilder getUnitsOrBuilder(
         int index) {
@@ -1090,7 +1228,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public java.util.List<? extends com.gbft.framework.data.UnitDataOrBuilder> 
          getUnitsOrBuilderList() {
@@ -1101,14 +1239,14 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public com.gbft.framework.data.UnitData.Builder addUnitsBuilder() {
       return getUnitsFieldBuilder().addBuilder(
           com.gbft.framework.data.UnitData.getDefaultInstance());
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public com.gbft.framework.data.UnitData.Builder addUnitsBuilder(
         int index) {
@@ -1116,7 +1254,7 @@ private static final long serialVersionUID = 0L;
           index, com.gbft.framework.data.UnitData.getDefaultInstance());
     }
     /**
-     * <code>repeated .UnitData units = 3;</code>
+     * <code>repeated .UnitData units = 4;</code>
      */
     public java.util.List<com.gbft.framework.data.UnitData.Builder> 
          getUnitsBuilderList() {

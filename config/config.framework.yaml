@@ -10,17 +10,16 @@ general:
   f: 1
   max-active-requests: 1000
   verbosity: v
-  logfile: false # true -> file, false -> stdout
+  logfile: true # true -> file, false -> stdout
   learning: true
-  report-sequence: 2500
-  exchange-sequence: 3000
-  architecture: OXII
+  report-sequence: 250
+  exchange-sequence: 300
 benchmark:
-  block-size: 100
-  checkpoint-size: 5000
+  block-size: 30
+  checkpoint-size: 500
   catch-up-k: 2
   request-interval-micros: 100
-  benchmark-interval-ms: 3000
+  benchmark-interval-ms: 30000
   timeout: fixed
   timeout-trigger-interval-ms: 50
   client: basic
@@ -32,24 +31,68 @@ benchmark:
   aggregation-delay-ms: 200
 workload:
   # lower for more contention
-  contention-level: 10
+#  contention-level: 10
+  contention-level:
+    advance: true
+    init: 30
+    delay: 0
+    schedule:
+      values:
+        - 10
+        - 100
+        - 50
+      intervals:
+        - 120000   # 3 min in ms
+        - 180000   # next 3 min
+
   dataset-size: 100
   payload:
     request-size: 1000000
     reply-size: 1000000
-  compute-factor: 0
+#  compute-factor: 0
+
+  compute-factor:
+    advance: true
+    init: 300000
+    delay: 0
+    schedule:
+      values:
+        - 20000
+        - 300000
+        - 10000
+        - 1000
+        - 0
+      intervals:
+        - 180000
+        - 120000
+        - 120000
+        - 120000
   distribution:
     - 1 # 00
     - 0 # 04
     - 0 # 40
     - 0 # 44
-  read-only-ratio: 0
+#  read-only-ratio: 0
+  read-only-ratio:
+    advance: true
+    init: 10
+    delay: 0
+    schedule:
+      values:
+        - 10
+        - 70
+        - 30
+        - 100
+      intervals:
+        - 60000
+        - 240000
+        - 120000
 fault:
   in-dark:
     # the affected entities will always be excluded from leader rotation
     # set it to be a `non-existing` node (e.g., 100) to avoid this
     affected-entities:
-      - 1
+      - 100
     generator:
       advance: true
       init: false
@@ -62,7 +105,7 @@ fault:
           - 10000
   timeout:
     affected-entities:
-      - 2
+      - 200
     generator:
       advance: true
       init: 0
@@ -73,8 +116,8 @@ fault:
     # affected entities here are the malicious leaders
     # instead of victims of malicious leaders
     affected-entities:
-      - 0
-    attacking: true
+      - 100
+    attacking: false
     timer: 100
     
 switching:
@@ -85,6 +128,11 @@ switching:
     - cheapbft
     - sbft
     - prime
+  architecture-pool:
+    - OX
+    - XOV
+    - XOV++
+    - OXII
   # debug-sequence:
   #   - cheapbft
   #   - hotstuff

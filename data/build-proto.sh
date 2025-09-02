@@ -1,4 +1,8 @@
 # The following command requires protoc-gen-grpc-java plugin to be installed
+
+source ../.venv/bin/activate
+
+
 mkdir -p target/java && protoc --plugin=protoc-gen-grpc-java=/usr/local/bin/protoc-gen-grpc-java \
     --grpc-java_out=target/java --proto_path=include/ --proto_path=proto/ proto/gbft.proto
 protoc --proto_path=include/ --proto_path=proto/ --java_out=target/java proto/gbft.proto

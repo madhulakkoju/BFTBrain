@@ -4,87 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="modified Request Data.. for further changes to Parallel Implementations">
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Operation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/OperationSet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/OperationSetOrBuilder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/RequestUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Operation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/OperationSet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/OperationSetOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/BFTBrain.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/BFTBrain.iml" afterDir="false" />
+    <list default="true" id="00cc9e73-3637-40d1-a1fe-6c2b4d342501" name="Changes" comment="Switching between all architectures working. Kept a lot of try catch blocks.">
+      <change afterPath="$PROJECT_DIR$/log/csv/8282.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/learning/gbft_pb2.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/learning/gbft_pb2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/code/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/coordination/CoordinatorUnit.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Client.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/ClientDataset.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Dataset.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/Architecture.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/DependencyGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/architecture/DependencyGraph.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EntityCommGrpc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Event.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EventOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/EventOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FaultDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/FetchDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/Gbft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/LearningDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlockOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageBlockOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/MessageDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/PluginDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataList.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataListOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataListOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/SwitchingDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/data/UnitDataOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/DataUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Printer.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/framework/utils/Printer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/CheckpointMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/CheckpointMessagePlugin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/ReadOnlyMessagePlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/message/ReadOnlyMessagePlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/src/com/gbft/plugin/transition/CheckpointTransitionPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/code/src/com/gbft/plugin/transition/CheckpointTransitionPlugin.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/proto/gbft.proto" beforeDir="false" afterPath="$PROJECT_DIR$/data/proto/gbft.proto" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/AgentCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/AgentCommGrpc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ConfigDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EntityCommGrpc.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EntityCommGrpc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Event.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EventOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/EventOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FaultDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/FetchDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/Gbft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/LearningDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlock.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlockOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageBlockOrBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageData.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/MessageDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/PluginDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/ReportDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataList.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataListOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataListOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/RequestDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/SwitchingDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitData.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitDataOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/data/target/java/com/gbft/framework/data/UnitDataOrBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/local_exp.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/local_exp.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,14 +59,20 @@
     &quot;assignee&quot;: &quot;madhulakkoju&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/madhulakkoju/BFTBrain.git",
-    "accountId": "666a2e22-48c1-4b7a-ba9a-426c74873699"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;git@github.com:madhulakkoju/BFTBrain.git&quot;,
+    &quot;accountId&quot;: &quot;af475058-a351-436f-ac6d-523e0ffd5429&quot;
   }
-}]]></component>
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jrt:///usr/lib/jvm/java-1.21.0-openjdk-amd64!/java.base/javax/crypto/spec/SecretKeySpec.class" root0="SKIP_INSPECTION" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="QODANA_PROBLEMS_VIEW_TAB" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
@@ -152,18 +93,20 @@
     "Repository.Attach.Sources": "false",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Shell Script.local_exp.sh.executor": "Run",
-    "git-widget-placeholder": "new-requestdata-type",
+    "git-widget-placeholder": "#4 on stable5",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/sai/Desktop/AP2/BFTBrain",
+    "last_opened_file_path": "/home/msiddhu/IdeaProjects/BFTBrain/log/csv",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "project.structure.last.edited": "Modules",
+    "project.structure.last.edited": "SDKs",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -171,14 +114,9 @@
       <recent name="com.gbft.framework.core.architecture" />
       <recent name="com.gbft.framework.core.architecture.impls" />
     </key>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23726.103" />
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23726.103" />
-      </set>
-    </attachedChunks>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/log/csv" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -222,7 +160,47 @@
       <option name="project" value="LOCAL" />
       <updated>1714166787677</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="stable commit for ML model integration.">
+      <option name="closed" value="true" />
+      <created>1741407734496</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1741407734496</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Mostly protobuf changes.">
+      <option name="closed" value="true" />
+      <created>1741566626636</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1741566626636</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Working with Set of architectures&#10;&#10;(OX, XOV) or (XOV,XOV++)&#10;&#10;Combined not working.">
+      <option name="closed" value="true" />
+      <created>1742755532813</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1742755532813</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Architecture from learning_agent.py working.">
+      <option name="closed" value="true" />
+      <created>1743469474393</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1743469474393</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Switching between all architectures working. Kept a lot of try catch blocks.">
+      <option name="closed" value="true" />
+      <created>1744133494713</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1744133494713</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -257,56 +235,11 @@
     <MESSAGE value="include execute intiations and added block retrieve using seq num" />
     <MESSAGE value="added parallel execute ahead requests" />
     <MESSAGE value="modified Request Data.. for further changes to Parallel Implementations" />
-    <option name="LAST_COMMIT_MESSAGE" value="modified Request Data.. for further changes to Parallel Implementations" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
-          <line>29</line>
-          <option name="timeStamp" value="6" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Node.java</url>
-          <line>79</line>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>697</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>715</line>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>708</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>706</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/core/Entity.java</url>
-          <line>579</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/code/src/com/gbft/framework/utils/LogUtils.java</url>
-          <line>46</line>
-          <properties class="com.gbft.framework.utils.LogUtils">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="stable commit for ML model integration." />
+    <MESSAGE value="Mostly protobuf changes." />
+    <MESSAGE value="Working with Set of architectures&#10;&#10;(OX, XOV) or (XOV,XOV++)&#10;&#10;Combined not working." />
+    <MESSAGE value="Architecture from learning_agent.py working." />
+    <MESSAGE value="Switching between all architectures working. Kept a lot of try catch blocks." />
+    <option name="LAST_COMMIT_MESSAGE" value="Switching between all architectures working. Kept a lot of try catch blocks." />
   </component>
 </project>

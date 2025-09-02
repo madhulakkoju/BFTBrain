@@ -60,6 +60,7 @@ public class CoordinatorUnit extends CoordinatorBase {
     protected BenchmarkManager benchmarkManager;
 
     public String defaultProtocol;
+    public String defaultArchitecture;
     public int port;
 
     public CoordinatorUnit(int port, int unit, int nodeCount, int clientCount, String coordinationServerAddress) {
@@ -85,9 +86,11 @@ public class CoordinatorUnit extends CoordinatorBase {
     public void receiveEvent(Event event, Socket socket) {
         var coordinationType = event.getEventType();
         if (coordinationType == EventType.CONFIG) {
-            initFromConfig(event.getConfigData().getDataMap(), event.getConfigData().getDefaultProtocol(), event.getConfigData().getUnitsList());
+            initFromConfig(event.getConfigData().getDataMap(), event.getConfigData().getDefaultProtocol(), event.getConfigData().getDefaultArchitecture(),event.getConfigData().getUnitsList());
             defaultProtocol = event.getConfigData().getDefaultProtocol();
+            defaultArchitecture = event.getConfigData().getDefaultArchitecture();
             Config.setCurrentProtocol(defaultProtocol);
+            Config.setCurrentArchitecture(defaultArchitecture);
 
             var clientType = Config.string("benchmark.client");
             EntityMapUtils.getUnitClients(myUnit).forEach(id -> entities.put(id, genClient(clientType, id)));
@@ -229,9 +232,14 @@ public class CoordinatorUnit extends CoordinatorBase {
 					new Thread(() -> {
 						try {
 							if (_delay > 0L) Thread.sleep(_delay);
-							entities.get(target).handleMessage(message);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+                            if( message.getXovState() == 1) entities.get(target).endorseMessage(message);
+                            else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
+                            else entities.get(target).handleMessage(message);
+						} catch (Exception e) {
+                            e.printStackTrace(System.err);
+                            System.out.println("Exception "+e);
+                            System.exit(1);
+
 						}
 					}).start();
                 }
@@ -275,9 +283,13 @@ public class CoordinatorUnit extends CoordinatorBase {
 									new Thread(() -> {
 										try {
 											if (_delay > 0L) Thread.sleep(_delay);
-											entities.get(target).handleMessage(message);
-										} catch (InterruptedException e) {
-											e.printStackTrace();
+                                            if(message.getXovState() == 1) entities.get(target).endorseMessage(message);
+                                            else if(message.getXovState() == 2) entities.get(target).sendEndorsedMessageToLeader(message);
+                                            else entities.get(target).handleMessage(message);
+										} catch (Exception e) {
+                                            System.out.println("[Run coordination Unit] Exception "+e);
+                                            System.exit(1);
+
 										}
 									}).start();
                                 }
@@ -371,13 +383,13 @@ public class CoordinatorUnit extends CoordinatorBase {
 
     }
 
-    public void initFromConfig(Map<String, String> configContent, String defaultProtocol, List<UnitData> unitData) {
-        initFromConfig(configContent, defaultProtocol);
-
-        Printer.init();
-        PluginManager.initDefaultPlugins();
-        unitData.forEach(item -> EntityMapUtils.addUnitData(item));
-    }
+//    public void initFromConfig(Map<String, String> configContent, String defaultProtocol, List<UnitData> unitData) {
+//        initFromConfig(configContent, defaultProtocol);
+//
+//        Printer.init();
+//        PluginManager.initDefaultPlugins();
+//        unitData.forEach(item -> EntityMapUtils.addUnitData(item));
+//    }
 
     public void initFromConfig(Map<String, String> configContent, String defaultProtocol, String defaultArchitecture, List<UnitData> unitData) {
         initFromConfig(configContent, defaultProtocol, defaultArchitecture);

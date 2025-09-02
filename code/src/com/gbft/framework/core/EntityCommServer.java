@@ -68,10 +68,12 @@ public class EntityCommServer {
         @Override
         public void sendDecision(LearningData request, StreamObserver<Empty> responseObserver) {
             var epoch = entity.currentEpisodeNum.get();
-            System.out.println("epoch: " + epoch + ", received next protocol: " + request.getNextProtocol());
+
+            System.out.println("epoch: " + epoch + ", received next protocol: " +
+                    request.getNextProtocol() + ", received next architecture "+ request.getNextArchitecture());
 
             var checkpoint = entity.getCheckpointManager().getCheckpoint(epoch);
-            checkpoint.tallyDecision(request.getNextProtocol());
+            checkpoint.tallyDecision(request.getNextProtocol(),request.getNextArchitecture());
 
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
